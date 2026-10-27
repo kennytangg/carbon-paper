@@ -1,0 +1,14 @@
+model_name,subset,n_samples,unit,mean_ground_truth,mean_predicted,rmse,rrmse_pct,mae,mape_pct,bias,relative_bias_pct,r2_score,pearson_r,lins_ccc
+"Chave et al. (2014) Eq. 4 (D, H, WD)",Level 2: Pantropical Destructive Harvest (All Sites),4016,kg CO2e / tree,1948.6693,1944.7234,2076.2154,106.55,475.7841,31.32,-3.9459,-0.2,0.9052,0.9535,0.9471
+"Chave et al. (2014) Eq. 7 (D, WD, Climate E)",Level 2: Pantropical Destructive Harvest (All Sites),4350,kg CO2e / tree,2298.2955,2307.7231,2745.3137,119.45,670.8523,36.7,9.4276,0.41,0.8739,0.9349,0.9324
+"Ketterings et al. (2001) Indonesia SNI 7724 (D, WD)",Level 2: Pantropical Destructive Harvest (All Sites),4350,kg CO2e / tree,2298.2955,2150.1702,2694.0441,117.22,684.972,46.5,-148.1253,-6.45,0.8786,0.9376,0.9348
+Brown (1997) UNFCCC AR-ACM0003 (D only),Level 2: Pantropical Destructive Harvest (All Sites),5228,kg CO2e / tree,2024.8369,2316.3641,3496.1295,172.66,803.6129,68.44,291.5272,14.4,0.7601,0.8967,0.8918
+"Chave et al. (2014) Eq. 4 (D, H, WD)","Level 2: Indonesia Forest Sites (Kalimantan, Sumatra, Java, Moluccas)",263,kg CO2e / tree,2305.8815,2487.1379,1127.1321,48.88,405.5288,19.61,181.2564,7.86,0.9662,0.9908,0.9849
+"Chave et al. (2014) Eq. 7 (D, WD, Climate E)","Level 2: Indonesia Forest Sites (Kalimantan, Sumatra, Java, Moluccas)",346,kg CO2e / tree,2933.8732,3725.6476,4530.9231,154.43,1326.5032,40.29,791.7744,26.99,0.6438,0.9264,0.8775
+"Ketterings et al. (2001) Indonesia SNI 7724 (D, WD)","Level 2: Indonesia Forest Sites (Kalimantan, Sumatra, Java, Moluccas)",346,kg CO2e / tree,2933.8732,3323.3222,4918.5976,167.65,1392.8024,34.65,389.449,13.27,0.5802,0.9126,0.86
+Brown (1997) UNFCCC AR-ACM0003 (D only),"Level 2: Indonesia Forest Sites (Kalimantan, Sumatra, Java, Moluccas)",537,kg CO2e / tree,1895.3013,2537.0479,4327.1666,228.31,946.7536,64.17,641.7466,33.86,0.521,0.898,0.8421
+Labrière et al. (2018) Airborne LiDAR TCH + BA + WD Model,"Level 3: TropiSAR & AfriSAR Calibration Plots (1,093 plots)",1081,tCO2e / ha,561.334,558.4257,50.2852,8.96,34.4603,6.96,-2.9083,-0.52,0.943,0.9756,0.968
+Chave (2014) Eq. 4 + Feldpausch Regional H-D Curve,"Level 3: TropiSAR & AfriSAR Calibration Plots (1,093 plots)",1086,tCO2e / ha,559.0519,627.4712,76.7271,13.72,68.9271,14.45,68.4193,12.24,0.8703,0.9902,0.9426
+Chave (2014) Eq. 7 Bioclimatic E (No Height),"Level 3: TropiSAR & AfriSAR Calibration Plots (1,093 plots)",1086,tCO2e / ha,559.0519,581.0193,36.4983,6.53,25.8629,6.03,21.9674,3.93,0.9707,0.9927,0.9862
+CARB / Verra / CAR / ACR IFM Pool Accounting Formula,"Level 1: Registry IFM Projects (Verra VCSOPR, CAR, ACR)",74,tCO2e / project,1643843.9808,1688173.1835,192320.5795,11.7,48543.0463,7.21,44329.2027,2.7,0.9953,0.9983,0.9977
+ESA CCI Spaceborne Global Biomass Map vs. FAO FRA NFI Ground Truth,Level 3: National Forest Inventories (Tropical & Global Countries),182,tCO2e / ha,217.5395,146.3435,129.2249,59.4,89.9442,44.48,-71.196,-32.73,0.0962,0.6432,0.5478

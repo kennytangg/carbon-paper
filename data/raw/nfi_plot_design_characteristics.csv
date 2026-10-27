@@ -1,0 +1,80 @@
+﻿Country,NFI_extent,NFI_component,sampling_stratification,sampling_design,psu_unit,psu_distance_km,cluster_shape,plot_shape,cluster_plotdis_m,plotsize_ha
+Angola,nationwide,forests and trees outside forests,ecological zones,stratified systematic sampling,cluster,37,square,rectangular ,250,0.5
+Angola,,,,,,50,,,,
+Argentina,nationwide,forests,uniform,systematic sampling,single plot,10,,circular,,0.1
+Bangladesh,nationwide,forests and trees outside forests,ecological zones,stratified systematic sampling,cluster,5.9,circular,circular ,38,0.11
+Bangladesh,,,,,,10.4,,,,
+Bhutan,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,4,L-shape,circular,50,0.05
+Brazil,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,20,cross,rectangular,50,0.2
+Brazil,,,,,,,,,,0.1
+Cambodia,nationwide,forests,forest types,stratified systematic sampling,cluster,6,square,circular,100,0.13
+Cambodia,,,,,,4,,,,
+Cambodia,,,,,,3,,,,
+Cameroon,nationwide,forests and trees outside forests,ecological zones,stratified systematic sampling,cluster,25,square,rectangular ,250,0.5
+Cameroon,,,,,,50,,,,
+Colombia,nationwide,forests,uniform,systematic sampling,cluster,,cross,circular,80,0.07
+Comoros,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,,square,rectangular,100,0.2
+Costa Rica,nationwide,forests,vegetation types,stratified systematic sampling,single plot,23,,rectangular,,0.1
+Costa Rica,,,,,,15,,,,
+Costa Rica,,,,,,5,,,,
+Costa Rica,,,,,,11,,,,
+Costa Rica,,,,,,2,,,,
+Dominican Republic,nationwide,forests,forest types,stratified systematic sampling,single plot,7,,rectangular,,0.1
+Dominican Republic,,,,,,6,,,,
+Dominican Republic,,,,,,5,,,,
+Dominican Republic,,,,,,2,,,,
+DRC,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,,square,square,250,0.56
+Ecuador,nationwide,forests,forest types,stratified random sampling,cluster,,L-shape,square,250,0.36
+Ecuador,,,,,,,,rectangular,,0.24
+EL Salvador,nationwide,forests,vegetation types,stratified systematic sampling,single plot,,,rectangular,,0.1
+Ethiopia,nationwide,forests and trees outside forests,ecological zones,stratified systematic sampling,cluster,28,square,rectangular ,250,0.5
+Ethiopia,,,,,,56,,,,
+Ethiopia,,,,,,72,,,,
+Gabon,nationwide,forests,forest types,stratified systematic sampling,cluster,,cross,circular,100,0.1
+Gabon,,,,,,,,,,
+Gambia,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,9,square,rectangular ,250,0.5
+Guatemala,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,,rectangular,circular,40,0.07
+Hondurus,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,,rectangular,circular,50,0.07
+India,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,5,circular,circular,40,0.02
+Indonesia,nationwide,forests,uniform,systematic sampling,cluster,10,square,square,500,1
+Kenya,nationwide,forests and trees outside forests,ecological zones,stratified systematic sampling,cluster,,rectangular,circular,250,0.13
+Kenya,,,,,,,square,,150,0.07
+Lao PDR,nationwide,forests and trees outside forests,ILUA,stratified random sampling,cluster,,L-shape,circular,200,0.2
+Lebanon,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,7.4,square,rectangular,250,0.5
+Liberia,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,19.9,L-shape,circular,60,0.1
+Malawi,nationwide,forests,forest types,stratified random sampling,cluster,,T-shape,circular,100,0.13
+Malawi,,,,,,,,,50,
+Malaysia,nationwide,forests,forest types,stratified random sampling,cluster,,square,circular,100,0.01
+Malaysia,,,,,,,,,,0.04
+Mexico,nationwide,forests and trees outside forests,vegetation types,stratified systematic sampling,cluster,5,Y-shape,circular,45.14,0.04
+Mexico,,,,,,10,,rectangular,,
+Mexico,,,,,,20,,,,
+Mozambique,nationwide,forests,ecological zones,stratified random sampling,cluster,,square,rectangular ,50,0.1
+Mozambique,,,,,,,,circular,,
+Myanmar,nationwide,forests and trees outside forests,ecological zones,stratified systematic sampling,cluster,12,L-shape,circular,100,0.1
+Myanmar,,,,,,3,,,50,
+Nepal,nationwide,forests and trees outside forests,ecological zones,stratified systematic sampling,cluster,,square,circular,300,0.13
+Nepal,,,,,,,,,150,
+Nicaragua,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,18,square,rectangular,250,0.5
+Nigeria,nationwide,forests,ecological zones,stratified random sampling,cluster,,L-shape,square,100,0.12
+Nigeria,,,,,,,,rectangular,10,0.02
+Pakistan,nationwide,forests,ecological zones,stratified systematic sampling,cluster,16,square,circular,200,0.1
+Paraguay,nationwide,forests,forest types,stratified systematic sampling,cluster,,L-shape,square,250,0.36
+Paraguay,,,,,,,,,,0.16
+Peru,nationwide,forests,ecological zones,stratified systematic sampling,cluster,19,L-shape,circular,30,0.05
+Peru,,,,,,8,,,,
+Peru,,,,,,31,,,,
+Peru,,,,,,20,,,,
+Peru,,,,,,34,,,,
+Peru,,,,,,24,,rectangular ,75,0.1
+Philippines,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,27.75,square,rectangular,250,0.5
+Republic of Congo,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,25,square,rectangular,250,0.5
+Sri Lanka,nationwide,forests,uniform,systematic sampling,cluster,2,circular,circular,40,0.03
+Suriname,partial,forests and trees outside forests,uniform,systematic sampling,cluster,20,cross,rectangular,50,0.2
+Suriname,,,,,,,,,100,
+Tanzania,nationwide,forests and trees outside forests,ILUA,stratified systematic sampling,cluster,10,L-shape,circular,250,0.07
+Thailand,nationwide,forests,uniform,systematic sampling,cluster,20,circular,circular ,50,0.1
+Timor-Leste,partial,forests and trees outside forests,uniform,systematic sampling,cluster,4,rectangular,circular ,408,0.1
+Uganda,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,5,cross,square,300,0.25
+Viet Nam,nationwide,forests and trees outside forests,uniform,systematic sampling,cluster,8,L-shape,circular,150,0.1
+Zambia,nationwide,forests and trees outside forests,ILUA,stratified systematic sampling,cluster,10,square,rectangular,450,0.1
