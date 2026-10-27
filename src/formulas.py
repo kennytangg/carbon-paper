@@ -184,6 +184,23 @@ FORMULA_REGISTRY: Dict[str, FormulaMetadata] = {
         output_unit="tCO2e/ha",
         notes="Verifies exact spectral index derivation from raw Sentinel-2 surface reflectance bands and converts field plot AGB to tC/ha and tCO2e/ha.",
     ),
+    "LASELVA_BROWN_WET_FOREST_PLOT_AGB": FormulaMetadata(
+        formula_id="LASELVA_BROWN_WET_FOREST_PLOT_AGB",
+        name="Repeated-Census Plot AGB Stock (Brown Tropical Wet Forest Allometry) & Annual Change",
+        standard_or_citation="Brown (1997) FAO Forestry Paper 134; Clark et al. (2019) PLOS ONE 14(11):e0224896; IPCC (2006) carbon fraction",
+        level="plot_time_series",
+        expression_latex=r"\text{AGB}_{\text{Mg/ha}} = \frac{\sum_i \text{EAGB}_i}{1000 \cdot A_{\text{plot}}}, \quad \text{CO}_2e = 0.47 \cdot \text{AGB} \cdot \frac{44}{12}",
+        expression_code="co2e_tCO2e_ha = 0.47 * (sum(eagb_kg) / 1000 / plot_area_ha) * (44/12)",
+        input_variables={
+            "n_stems_ge10cm": "Number of live stems >= 10 cm DBH in the plot-year census",
+            "eagb_kg_sum": "Sum of stem-level estimated above-ground biomass (kg) in the plot",
+            "plot_area_ha": "Plot area (0.5 ha)",
+            "census_year": "Year of the annual diameter census",
+        },
+        output_variable="co2e_tCO2e_ha",
+        output_unit="tCO2e/ha",
+        notes="Annual re-measurement of the same plots enables timestamp-specific scoring and year-over-year net change (delta_co2e_tCO2e_ha_yr).",
+    ),
 }
 
 

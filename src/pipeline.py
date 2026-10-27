@@ -21,6 +21,8 @@ from src.scrapers.allometry_scraper import AllometryAndPlotScraper
 from src.scrapers.base import ProvenanceRecord, utc_now_iso
 from src.scrapers.registry_scraper import RegistryMRVScraper
 from src.scrapers.remote_sensing_scraper import RemoteSensingPlotScraper
+from src.scrapers.time_series_scraper import LongTermPlotTimeSeriesScraper
+from src.timestamps import TIMESTAMP_BASIS, normalize_timestamp
 
 
 class ForestCarbonMRVPipeline:
@@ -40,6 +42,7 @@ class ForestCarbonMRVPipeline:
         self.registry_scraper = RegistryMRVScraper(self.raw_dir)
         self.allometry_scraper = AllometryAndPlotScraper(self.raw_dir)
         self.rs_scraper = RemoteSensingPlotScraper(self.raw_dir)
+        self.time_series_scraper = LongTermPlotTimeSeriesScraper(self.raw_dir)
 
     def run(self, force_refresh: bool = False) -> Dict[str, Any]:
         """Execute all scrapers, build unified dataset, run benchmarks, and export artifacts."""
@@ -73,6 +76,10 @@ class ForestCarbonMRVPipeline:
         df_plots = self.allometry_scraper.fetch_multi_continent_plot_inventories(force_refresh=force_refresh)
         print(f"     Ingested {len(df_plots):,} forest inventory plot records.")
 
+        print("  -> [Level 2] Scraping La Selva repeated-census annual plot AGB time series (1997-2018)...")
+        df_time_series = self.time_series_scraper.fetch_la_selva_annual_plot_agb(force_refresh=force_refresh)
+        print(f"     Ingested {len(df_time_series):,} plot-year records with census dates.")
+
         # --- LEVEL 3: Remote Sensing (LiDAR, Sentinel-2 Optical, Sentinel-1 SAR, ESA CCI) + Field Plots ---
         print("  -> [Level 3] Scraping ESA/NASA TropiSAR & AfriSAR Airborne LiDAR + Field Calibration Plots...")
         df_lidar_plots = self.rs_scraper.fetch_tropisar_afrisar_lidar_plots(force_refresh=force_refresh)
@@ -96,6 +103,7 @@ class ForestCarbonMRVPipeline:
             df_lidar_plots=df_lidar_plots,
             df_sentinel_plots=df_sentinel_plots,
             df_nfi_sat=df_nfi_sat,
+            df_time_series=df_time_series,
         )
         print(f"     Built unified master table with {len(df_unified):,} standardized ground-truth rows.")
 
@@ -116,6 +124,7 @@ class ForestCarbonMRVPipeline:
             "level2_tree_allometry_groundtruth": df_trees,
             "level2_allodb_equations_catalog": df_allodb,
             "level2_plot_inventory_fia_neotropical": df_plots,
+            "level2_plot_time_series_la_selva": df_time_series,
             "level3_remote_sensing_lidar_sar_plots": df_lidar_plots,
             "level3_remote_sensing_sentinel_optical_sar_plots": df_sentinel_plots,
             "level3_national_nfi_satellite_intercomparison": df_nfi_sat,
@@ -151,6 +160,7 @@ class ForestCarbonMRVPipeline:
             self.registry_scraper.provenance_records
             + self.allometry_scraper.provenance_records
             + self.rs_scraper.provenance_records
+            + self.time_series_scraper.provenance_records
         )
 
         manifest = {
@@ -188,6 +198,7 @@ class ForestCarbonMRVPipeline:
         df_lidar_plots: pd.DataFrame,
         df_sentinel_plots: pd.DataFrame,
         df_nfi_sat: pd.DataFrame,
+        df_time_series: pd.DataFrame | None = None,
     ) -> pd.DataFrame:
         """
         Harmonize records across all 3 MRV levels into a single Unified Benchmark Schema:
@@ -469,7 +480,51 @@ class ForestCarbonMRVPipeline:
                 }
             )
 
-        return pd.DataFrame(unified_rows)
+        # 8. Level 2: La Selva repeated-census plot-year time series
+        if df_time_series is not None:
+            for _, r in df_time_series.iterrows():
+                inputs = {
+                    "plot_id": str(r["plot_id"]),
+                    "census_year": int(r["census_year"]),
+                    "n_stems_ge10cm": int(r["n_stems_ge10cm"]),
+                    "eagb_kg_sum": self._clean_num(r["eagb_kg_sum"]),
+                    "plot_area_ha": self._clean_num(r["plot_area_ha"]),
+                    "survey_date_first": None if pd.isna(r["survey_date_first"]) else str(r["survey_date_first"]),
+                    "delta_co2e_tCO2e_ha_yr": self._clean_num(r["delta_co2e_tCO2e_ha_yr"]),
+                }
+                unified_rows.append(
+                    {
+                        "record_id": f"LASELVA_{r['plot_id']}_{int(r['census_year'])}",
+                        "observation_level": "level2_plot_time_series",
+                        "dataset_source": "Zenodo_4574686_LaSelva_Annual_Census",
+                        "standard_or_registry": "Repeated-census permanent plots + IPCC (2006) Biomass-to-Carbon",
+                        "country": str(r["country"]),
+                        "site_or_project_name": f"La Selva plot {r['plot_id']} ({int(r['census_year'])})",
+                        "latitude": self._clean_num(r["latitude"]),
+                        "longitude": self._clean_num(r["longitude"]),
+                        "area_ha": self._clean_num(r["plot_area_ha"]),
+                        "data_generated_timestamp": str(r["data_generated_timestamp"]),
+                        "data_ingested_timestamp_utc": str(r["data_ingested_timestamp_utc"]),
+                        "input_variables_json": json.dumps(inputs),
+                        "formula_id": str(r["formula_id"]),
+                        "formula_expression": str(r["formula_expression"]),
+                        "ground_truth_outcome_value": self._clean_num(r["outcome_co2e_tCO2e_ha"]),
+                        "ground_truth_outcome_unit": "tCO2e/ha",
+                        "standard_formula_predicted_value": self._clean_num(r["outcome_co2e_tCO2e_ha"]),
+                        "standardized_co2e_value": self._clean_num(r["outcome_co2e_tCO2e_ha"]),
+                        "standardized_co2e_unit": "tCO2e/ha",
+                    }
+                )
+
+        df_out = pd.DataFrame(unified_rows)
+
+        # Normalize free-text timestamps into queryable ISO-8601 bounds + precision + basis.
+        parsed = df_out["data_generated_timestamp"].map(normalize_timestamp)
+        df_out["measurement_date_start"] = parsed.map(lambda d: d["start"])
+        df_out["measurement_date_end"] = parsed.map(lambda d: d["end"])
+        df_out["timestamp_precision"] = parsed.map(lambda d: d["precision"])
+        df_out["timestamp_basis"] = df_out["dataset_source"].map(TIMESTAMP_BASIS).fillna("measurement")
+        return df_out
 
     @staticmethod
     def _clean_num(val: Any) -> float | None:

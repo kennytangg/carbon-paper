@@ -105,3 +105,67 @@ Digunakan pada tabel `level3_remote_sensing_sentinel_optical_sar_plots.csv` (305
   $$\text{NDVI} = \frac{B_8 - B_4}{B_8 + B_4}, \qquad \text{SAVI} = \frac{1,5(B_8 - B_4)}{B_8 + B_4 + 0,5}, \qquad \text{NDRE} = \frac{B_8 - B_5}{B_8 + B_5}, \qquad \text{IRECI} = \frac{B_7 - B_4}{B_5 / B_6}$$
 - **Outcome Ground Truth ($Y$)**:
   - `outcome_agb_Mg_ha` ($\text{Mg/ha}$), `outcome_carbon_tC_ha` ($\text{tC/ha}$), dan `outcome_co2e_tCO2e_ha` ($\text{tCO}_2\text{e/ha}$).
+
+### 3.3 Komparasi Nasional: National Forest Inventory (NFI / FAO FRA 2020) vs. Satelit ESA CCI Biomass
+Digunakan pada tabel `level3_national_nfi_satellite_intercomparison.csv` (182 observasi tingkat negara/kawasan tropis & global):
+- **Variabel Input ($X$)**:
+  - `Forest_area_FRA2020`: Luas tutupan hutan nasional (hektar) dari laporan FAO Global Forest Resources Assessment 2020.
+  - `FRA_AGB_ton.ha`: Rata-rata biomassa di atas permukaan tanah dari inventarisasi hutan nasional terestrial (NFI ground truth, ton/ha).
+  - `CCI_Map_AGB_ton.ha`: Estimasi biomassa dari peta satelit global ESA CCI Biomass (SAR + optical, ton/ha).
+  - `sampling_design` & `plotsize_ha`: Desain statistik sampling lapangan NFI.
+- **Outcome Ground Truth ($Y$)**:
+  - `outcome_nfi_groundtruth_co2e_tCO2e_ha`: Stok karbon berbasis NFI ($\text{tCO}_2\text{e/ha}$)
+  - `outcome_esa_cci_satellite_co2e_tCO2e_ha`: Estimasi berbasis satelit ESA CCI ($\text{tCO}_2\text{e/ha}$)
+
+---
+
+## 4. Level 2 (Time Series): Sensus Tahunan Plot Berulang (La Selva 1997–2018) & Dinamika Laju Karbon
+
+Digunakan pada tabel `level2_plot_time_series_la_selva.csv` (396 observasi plot-tahun dengan sensus tahunan pada 18 plot tetap berukuran $0,50\text{ ha}$ selama 22 tahun berturut-turut, 1997–2018, Clark et al., Zenodo 4574686):
+
+### 4.1 Variabel Input ($X$)
+- `plot_id`: Identitas unik plot permanen ($0,50\text{ ha}$).
+- `census_year`: Tahun sensus pengukuran diameter batang pohon.
+- `n_stems_ge10cm`: Jumlah pohon hidup dengan diameter $\ge 10\text{ cm}$ pada tahun sensus tersebut.
+- `eagb_kg_sum`: Total biomassa pohon hidup ($\text{kg}$) hasil allometrik Sandra Brown Tropical Wet Forest.
+- `plot_area_ha`: Luas plot baku ($0,50\text{ ha}$).
+
+### 4.2 Formula Stok & Perubahan Tahunan ($\Delta\text{CO}_2\text{e}$)
+$$\text{AGB}_{\text{Mg/ha}} = \frac{\sum_i \text{EAGB}_i}{1000 \cdot A_{\text{plot}}}$$
+$$\text{CO}_2\text{e}_{\text{tCO}_2\text{e/ha}} = \text{AGB}_{\text{Mg/ha}} \times 0,47 \times \frac{44}{12}$$
+$$\Delta\text{CO}_2\text{e}_t = \text{CO}_2\text{e}_t - \text{CO}_2\text{e}_{t-1} \quad (\text{tCO}_2\text{e/ha/tahun})$$
+
+Fitur ini krusial bagi Digital MRV (DMRV) karena kredit karbon tidak diterbitkan atas dasar stok statis semata, melainkan atas dasar **penyerapan netto tahunan ($\Delta\text{CO}_2\text{e}$)** yang dapat dilacak secara temporal.
+
+---
+
+## 5. Standar CSBH (*Cadangan Stok Biomassa Hutan*) & Konversi CBH/DBH
+
+Dalam konteks kehutanan Indonesia (Standar Kompetensi Kerja Nasional Indonesia / BNSP, Kementerian LHK, serta Standar Nasional Indonesia SNI 7724:2011), **CSBH** (*Cadangan Stok Biomassa Hutan*) merujuk pada metodologi penghitungan 5 kantung (*pool*) karbon:
+1. Biomassa di atas permukaan tanah (*Above-Ground Biomass* / AGB)
+2. Biomassa di bawah permukaan tanah / perakaran (*Below-Ground Biomass* / BGB)
+3. Kayu mati (*Necromass / Dead Wood*)
+4. Serasah (*Litter*)
+5. Karbon organik tanah (*Soil Organic Carbon* / SOC)
+
+### Konversi Keliling Batang (CBH) ke Diameter (DBH)
+Pada inventarisasi lapangan seringkali diukur **CBH** (*Circumference at Breast Height* / Keliling Setinggi Dada) menggunakan pita ukur:
+$$\text{DBH} = \frac{\text{CBH}}{\pi} \approx \frac{\text{CBH}}{3,14159265}$$
+Nilai $\text{DBH}$ ini kemudian dimasukkan ke formula allometrik SNI 7724 / Ketterings et al. (2001) atau Chave et al. (2014) untuk memperoleh biomassa pohon.
+
+---
+
+## 6. Arsitektur Timestamp Terstandarisasi
+
+Setiap baris data pada tabel master terpadu `unified_ground_truth_benchmark` memiliki atribut temporal yang lengkap dan terstruktur:
+
+| Kolom | Format | Deskripsi |
+| :--- | :--- | :--- |
+| `data_generated_timestamp` | String bebas | Timestamp asli dari sumber (misal: `"2024"`, `"2015-10-30/2017-10-29"`, `"2016"`) |
+| `data_ingested_timestamp_utc` | ISO-8601 UTC | Waktu saat sistem melakukan ekstraksi/ingestion data |
+| `measurement_date_start` | `YYYY-MM-DD` | Batas awal tanggal kalender periode pengukuran |
+| `measurement_date_end` | `YYYY-MM-DD` | Batas akhir tanggal kalender periode pengukuran |
+| `timestamp_precision` | Enum | Presisi temporal: `day`, `day_range`, `month`, `year`, `year_range` |
+| `timestamp_basis` | Enum | Basis acuan: `measurement`, `campaign_year`, `registry_event_date`, `crediting_period`, `reporting_year`, `publication_year_proxy` |
+
+Dengan kolom-kolom ini, algoritma Digital MRV (DMRV) dapat melakukan *temporal slicing* untuk membandingkan variabel satelit optik/radar pada tanggal tertentu terhadap ground truth lapangan pada tanggal yang sama.

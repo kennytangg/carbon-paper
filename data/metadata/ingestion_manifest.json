@@ -1,11 +1,11 @@
 {
   "pipeline_version": "1.0.0",
-  "pipeline_started_at_utc": "2026-10-27T07:45:37Z",
-  "pipeline_completed_at_utc": "2026-10-27T07:45:46Z",
+  "pipeline_started_at_utc": "2026-10-27T14:08:32Z",
+  "pipeline_completed_at_utc": "2026-10-27T14:08:43Z",
   "sqlite_database_path": "/home/kenny/personal/github-clones/paper/data/sqlite/forest_carbon_mrv_groundtruth.db",
-  "total_provenance_sources_ingested": 39,
-  "total_records_across_tables": 26576,
-  "total_unified_ground_truth_records": 12154,
+  "total_provenance_sources_ingested": 40,
+  "total_records_across_tables": 27368,
+  "total_unified_ground_truth_records": 12550,
   "tables": {
     "level1_registry_projects_mrv": {
       "rows": 1042,
@@ -43,6 +43,12 @@
       "csv_path": "/home/kenny/personal/github-clones/paper/data/processed/level2_plot_inventory_fia_neotropical.csv",
       "parquet_path": "/home/kenny/personal/github-clones/paper/data/processed/level2_plot_inventory_fia_neotropical.parquet"
     },
+    "level2_plot_time_series_la_selva": {
+      "rows": 396,
+      "columns": 18,
+      "csv_path": "/home/kenny/personal/github-clones/paper/data/processed/level2_plot_time_series_la_selva.csv",
+      "parquet_path": "/home/kenny/personal/github-clones/paper/data/processed/level2_plot_time_series_la_selva.parquet"
+    },
     "level3_remote_sensing_lidar_sar_plots": {
       "rows": 1093,
       "columns": 41,
@@ -62,8 +68,8 @@
       "parquet_path": "/home/kenny/personal/github-clones/paper/data/processed/level3_national_nfi_satellite_intercomparison.parquet"
     },
     "unified_ground_truth_benchmark": {
-      "rows": 12154,
-      "columns": 19,
+      "rows": 12550,
+      "columns": 23,
       "csv_path": "/home/kenny/personal/github-clones/paper/data/processed/unified_ground_truth_benchmark.csv",
       "parquet_path": "/home/kenny/personal/github-clones/paper/data/processed/unified_ground_truth_benchmark.parquet"
     },
@@ -213,6 +219,23 @@
       "output_variable": "co2e_tCO2e_ha",
       "output_unit": "tCO2e/ha",
       "notes": "Verifies exact spectral index derivation from raw Sentinel-2 surface reflectance bands and converts field plot AGB to tC/ha and tCO2e/ha."
+    },
+    "LASELVA_BROWN_WET_FOREST_PLOT_AGB": {
+      "formula_id": "LASELVA_BROWN_WET_FOREST_PLOT_AGB",
+      "name": "Repeated-Census Plot AGB Stock (Brown Tropical Wet Forest Allometry) & Annual Change",
+      "standard_or_citation": "Brown (1997) FAO Forestry Paper 134; Clark et al. (2019) PLOS ONE 14(11):e0224896; IPCC (2006) carbon fraction",
+      "level": "plot_time_series",
+      "expression_latex": "\\text{AGB}_{\\text{Mg/ha}} = \\frac{\\sum_i \\text{EAGB}_i}{1000 \\cdot A_{\\text{plot}}}, \\quad \\text{CO}_2e = 0.47 \\cdot \\text{AGB} \\cdot \\frac{44}{12}",
+      "expression_code": "co2e_tCO2e_ha = 0.47 * (sum(eagb_kg) / 1000 / plot_area_ha) * (44/12)",
+      "input_variables": {
+        "n_stems_ge10cm": "Number of live stems >= 10 cm DBH in the plot-year census",
+        "eagb_kg_sum": "Sum of stem-level estimated above-ground biomass (kg) in the plot",
+        "plot_area_ha": "Plot area (0.5 ha)",
+        "census_year": "Year of the annual diameter census"
+      },
+      "output_variable": "co2e_tCO2e_ha",
+      "output_unit": "tCO2e/ha",
+      "notes": "Annual re-measurement of the same plots enables timestamp-specific scoring and year-over-year net change (delta_co2e_tCO2e_ha_yr)."
     }
   },
   "provenance_manifest": [
@@ -225,7 +248,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_verra_page1.json",
       "sha256": "3c78aeae0fdb8b933a15a4b1dd698b9ff650fda8fd72aff5dba705f0210cece1",
       "byte_size": 130915,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 100,
       "description": "Forest carbon credit projects registered under verra"
@@ -239,7 +262,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_verra_page2.json",
       "sha256": "f8c618e7c515e376fd062d3e4141cdae6be84542fff141058072c7520b71f9f8",
       "byte_size": 86223,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 100,
       "description": "Forest carbon credit projects registered under verra"
@@ -253,7 +276,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_verra_page3.json",
       "sha256": "fe4c317945dd8f8138f5bddd9b5a295086c997e294d43984e86a04af026ed9cf",
       "byte_size": 81709,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 100,
       "description": "Forest carbon credit projects registered under verra"
@@ -267,7 +290,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_verra_page4.json",
       "sha256": "efb150310e3900bae50c3c012b09ad979f0160a336f1375aba135d93ace4b0db",
       "byte_size": 59749,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 100,
       "description": "Forest carbon credit projects registered under verra"
@@ -281,7 +304,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_verra_page5.json",
       "sha256": "60fefab8961cdee11f51129c72e4b982e0adea50d451397e36958109ecccd301",
       "byte_size": 56925,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 100,
       "description": "Forest carbon credit projects registered under verra"
@@ -295,7 +318,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_gold-standard_page1.json",
       "sha256": "298e15520b71bb7f2c7726f5da2e1be3e53eebf7354a98c9eeb80f2028bcb251",
       "byte_size": 15176,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 21,
       "description": "Forest carbon credit projects registered under gold-standard"
@@ -309,7 +332,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_american-carbon-registry_page1.json",
       "sha256": "78055889714d9d0d9b990de42a2414f618d6c9ea49a4bfeccc382755cb440ba3",
       "byte_size": 71040,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 100,
       "description": "Forest carbon credit projects registered under american-carbon-registry"
@@ -323,7 +346,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_american-carbon-registry_page2.json",
       "sha256": "d70f47df5a9a7f96b9874c584b1b671138a3fa1c6972e4e8f1e30086b3737771",
       "byte_size": 64366,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 100,
       "description": "Forest carbon credit projects registered under american-carbon-registry"
@@ -337,7 +360,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_climate-action-reserve_page1.json",
       "sha256": "0780925c2ea2ffb82d911f62984b6fbfc4d33f026b5e7be2eb1c076d08db6ea0",
       "byte_size": 65291,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 100,
       "description": "Forest carbon credit projects registered under climate-action-reserve"
@@ -351,7 +374,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_climate-action-reserve_page2.json",
       "sha256": "c90871f8637f0f73056ca6227be34e5fd025c3a0a2bf54b6b4c5ef90b7dfd062",
       "byte_size": 65441,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 100,
       "description": "Forest carbon credit projects registered under climate-action-reserve"
@@ -365,7 +388,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_art-trees_page1.json",
       "sha256": "831bb699392fb6afb6e879f35e147c272ca7dd1f260b57b5da0bc79130f0446b",
       "byte_size": 18786,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 28,
       "description": "Forest carbon credit projects registered under art-trees"
@@ -379,7 +402,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_projects_cercarbono_page1.json",
       "sha256": "5ada1146ff499b4bd3e8889cceb2655d7ad22e5c4adc7ec5459ef2aa51a5a3fc",
       "byte_size": 52171,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1999-2025 (Registry Listing & Issuance Dates)",
       "record_count": 93,
       "description": "Forest carbon credit projects registered under cercarbono"
@@ -393,7 +416,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_verra_page1.json",
       "sha256": "540d5f61481ccfb617d4e0eb9b6ae68ee4fcd590577f334267ce81f5e4104d7d",
       "byte_size": 36423,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 100,
       "description": "Verified forest carbon credit issuance records for verra"
@@ -407,7 +430,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_verra_page2.json",
       "sha256": "6eb392e5491c56d246f832b53f9caf6157e0cde37cd72783ea061fc06cf37938",
       "byte_size": 36583,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 100,
       "description": "Verified forest carbon credit issuance records for verra"
@@ -421,7 +444,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_verra_page3.json",
       "sha256": "d9a0607ed9a2b0477027caad2d3de545c1e6181ad12a39ae167953ef8d3ad216",
       "byte_size": 36878,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 100,
       "description": "Verified forest carbon credit issuance records for verra"
@@ -435,7 +458,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_verra_page4.json",
       "sha256": "551d984aad0c22cce952e26b52bd1eb8059318008cd513b04c9adb1164e0d767",
       "byte_size": 36584,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 100,
       "description": "Verified forest carbon credit issuance records for verra"
@@ -449,7 +472,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_verra_page5.json",
       "sha256": "d12298f3ee71f6d4894fb134d338355c5116d695f6c26ab70355c64b423a6861",
       "byte_size": 36856,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 100,
       "description": "Verified forest carbon credit issuance records for verra"
@@ -463,7 +486,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_gold-standard_page1.json",
       "sha256": "3354ba5df3bc781824dff96a555364863c94aeaebd259bb2243937ee89fafd31",
       "byte_size": 38289,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 100,
       "description": "Verified forest carbon credit issuance records for gold-standard"
@@ -477,7 +500,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_gold-standard_page2.json",
       "sha256": "32bbda90c5abc4465c669a3d967f7c8533ea3c7fd46b0a0af174f282fdc6a334",
       "byte_size": 18766,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 49,
       "description": "Verified forest carbon credit issuance records for gold-standard"
@@ -491,7 +514,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_american-carbon-registry_page1.json",
       "sha256": "db7ece4b9f61b667ddbe1f30c8324f6c63eee1eb14e85e0483a25804f313ce10",
       "byte_size": 38106,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 100,
       "description": "Verified forest carbon credit issuance records for american-carbon-registry"
@@ -505,7 +528,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_american-carbon-registry_page2.json",
       "sha256": "743289799d4915270ff635ca1a8227b651b43ab6a968379a9e8e42f756fdd808",
       "byte_size": 37990,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 100,
       "description": "Verified forest carbon credit issuance records for american-carbon-registry"
@@ -519,7 +542,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_climate-action-reserve_page1.json",
       "sha256": "2be3788a7ac98ff0d88c64307fbeb55ee547f80181dc5f326241e58d30a9434c",
       "byte_size": 37990,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 100,
       "description": "Verified forest carbon credit issuance records for climate-action-reserve"
@@ -533,7 +556,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_climate-action-reserve_page2.json",
       "sha256": "00091a1e970e84e75cb27e402647eac956621b8e60962b0d2b33256053042b22",
       "byte_size": 38118,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 100,
       "description": "Verified forest carbon credit issuance records for climate-action-reserve"
@@ -547,7 +570,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_art-trees_page1.json",
       "sha256": "96f4c442b66cc02781797f4255a6cce536e838f27bfb51605134d573eefc3adc",
       "byte_size": 4827,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 13,
       "description": "Verified forest carbon credit issuance records for art-trees"
@@ -561,7 +584,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/offsets_db_issuances_cercarbono_page1.json",
       "sha256": "b5585956b0b071507448216f37a8cb071e1f223af876f47329321b212f7291f5",
       "byte_size": 36162,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2002-2025 (Issuance Transaction Dates & Vintages)",
       "record_count": 100,
       "description": "Verified forest carbon credit issuance records for cercarbono"
@@ -575,7 +598,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/forest_offsets_database_v1.0.csv",
       "sha256": "907e65bc0ed33b37d47f7ae0d1662a0e99f71aa91c86670e540336a4a1ae26f9",
       "byte_size": 106880,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2013-2020 (Project Reporting Period 1 Start/End Dates)",
       "record_count": 74,
       "description": "Complete biophysical & pool-level MRV inputs, baselines, species basal areas, and verified credits for 78 forest offset projects."
@@ -589,7 +612,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/forest_offsets_projects_crediting.json",
       "sha256": "a63f61cfe410985630c4ad9fe960a1d57222f84666d114d26af0165d7b35f714",
       "byte_size": 66713,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2013-2020",
       "record_count": 74,
       "description": "Project location, developers, owners, initial carbon stock, common practice, and alternative baseline metrics."
@@ -603,7 +626,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/chave_2014_allometry_trees.csv",
       "sha256": "5d1a93eeb3ec95a5903fc15ecc974f05bf29a3733114cd29004ee9a8e8f19b9e",
       "byte_size": 638111,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1950-2013 (Compiled in Chave05 [2005] & Chave10 [2014])",
       "record_count": 5228,
       "description": "5,228 destructively felled and weighed tropical trees with DBH, total height, wood specific gravity, and dry weight components."
@@ -617,7 +640,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/chave_2014_allometry_envsub.csv",
       "sha256": "978b58c7f66468e48c60f99ea6e3ebbc212a3ca2e799d1805dd7f41566211d81",
       "byte_size": 5454,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2005-2014",
       "record_count": 69,
       "description": "Latitude, longitude, temperature seasonality, precipitation seasonality, and climatic water deficit for 69 pantropical harvest sites."
@@ -631,7 +654,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/allodb_equations.csv",
       "sha256": "e725433c0450edcb94459e855811e0fee1929abc8f54475a669f5ffa88ea6a33",
       "byte_size": 282296,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1966-2021 (Peer-Reviewed Allometric Studies)",
       "record_count": 570,
       "description": "570+ standardized forest biomass and height allometric equations with algebraic formula strings."
@@ -645,7 +668,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/allodb_references.csv",
       "sha256": "b6b96c53a99c470d9674efdcb1c0b94c0e9eb5fa08cb0387f4ea290906ccc330",
       "byte_size": 19679,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1966-2021",
       "record_count": 57,
       "description": "Bibliographic citations and publication years for allodb equations."
@@ -659,7 +682,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/usfs_rfia_assessment_area_1.csv",
       "sha256": "cb97b6709bc194183ff31dc343c3eb4e9cfd91829dc35f6576766edc3418bcfa",
       "byte_size": 78299,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2005-2019 (Annual FIA Inventory Cycles)",
       "record_count": 289,
       "description": "USFS FIA forest type plot aggregations with biomass/acre, carbon/acre, variances, plot counts, and tree counts."
@@ -673,7 +696,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/fia_fortyp_to_common_name.json",
       "sha256": "74cabec3bd45e28eba748c99ec537b2ad73aa2fb08813610931b6bdf6ffbfc4b",
       "byte_size": 1961,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2015",
       "record_count": 0,
       "description": "Mapping from FIA forest type code (FORTYPCD) to species group name."
@@ -687,7 +710,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/bennett_2020_plot_biomass_climate_soil.csv",
       "sha256": "6cbbb4624315d3a37716caf2cde82f711631592d4f3a37761bd16bc86e50aa44",
       "byte_size": 1088244,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "2020-08-08 (Ecography Publication & Plot Inventory)",
       "record_count": 3130,
       "description": "3,130 field plots with aboveground dry biomass (Mg/ha), canopy height/cover classes, 8 WorldClim bioclimatic variables, and 6 soil variables."
@@ -701,7 +724,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/poorter_2ndfor_neotropical_secondary_forest_agb.csv",
       "sha256": "6a48c7de65c2e3983714e32da238e5a974778a014c49e21218151abb22e2eb0d",
       "byte_size": 147001,
-      "ingested_at_utc": "2026-10-27T07:45:37Z",
+      "ingested_at_utc": "2026-10-27T14:08:32Z",
       "data_generated_period": "1995-2016 (Published 2016 Nature / 2021 Zenodo)",
       "record_count": 1334,
       "description": "1,334 secondary forest chronosequence plots across the Neotropics with stand age (yr) and field-measured AGB (Mg/ha)."
@@ -715,7 +738,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/tropisar_afrisar_insitu_lidar.zip",
       "sha256": "ada2e6dc4c3d94a5436769279ff1a5c21801e748e100eca67b5070bf6e43ed46",
       "byte_size": 1576008,
-      "ingested_at_utc": "2026-10-27T07:45:38Z",
+      "ingested_at_utc": "2026-10-27T14:08:40Z",
       "data_generated_period": "2009-2016 (Published 2018 IEEE JSTARS)",
       "record_count": 1093,
       "description": "1,093 calibration plots (1ha, 0.25ha, 0.16ha) with 1m LiDAR CHM metrics (TCH, H50, GF20, STDV), plot BA/WD/stem density, and 3 Chave et al. (2014) AGB outcomes."
@@ -729,7 +752,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/sentinel2_sentinel1_field_plot_agb.csv",
       "sha256": "d780c9bbbe3a2127eaf29042af7fc6181bc2f7c8ee0b1f51220f55d41e5ebffc",
       "byte_size": 224576,
-      "ingested_at_utc": "2026-10-27T07:45:39Z",
+      "ingested_at_utc": "2026-10-27T14:08:40Z",
       "data_generated_period": "2020-2024 (Published 2025-06-09 Zenodo)",
       "record_count": 305,
       "description": "305 field-sampled forest inventory plots with Sentinel-2 bands B1-B12, 35 spectral indices (NDVI, EVI, SAVI, NDRE, IRECI), Sentinel-1 SAR VV/VH, topography, climate, and AGB (Mg/ha)."
@@ -743,7 +766,7 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/national_biomass_intercomparison_data.csv",
       "sha256": "039e45ac405ad59b7f82dd09878e5b9ceb293e6ea21a81df9b3f98eac754c684",
       "byte_size": 12001,
-      "ingested_at_utc": "2026-10-27T07:45:39Z",
+      "ingested_at_utc": "2026-10-27T14:08:40Z",
       "data_generated_period": "2000-2020 (FRA 2020 & ESA CCI Biomass Maps)",
       "record_count": 182,
       "description": "Comparison of ground-based National Forest Inventory AGB (ton/ha & Gt) against ESA CCI spaceborne biomass maps across tropical countries."
@@ -757,10 +780,24 @@
       "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/nfi_plot_design_characteristics.csv",
       "sha256": "7bf3ad81fafa996463b428d75899cf833af0e0e9043542dc8a29308ad7d05500",
       "byte_size": 6328,
-      "ingested_at_utc": "2026-10-27T07:45:39Z",
+      "ingested_at_utc": "2026-10-27T14:08:40Z",
       "data_generated_period": "2000-2020",
       "record_count": 79,
       "description": "Plot size (ha), cluster shape, stratification, and sampling design for tropical NFIs."
+    },
+    {
+      "source_id": "ZENODO_4574686_LASELVA_EAGB",
+      "source_name": "La Selva Costa Rica Annual Stem-Level Estimated AGB 1997-2018 (Clark et al.)",
+      "observation_level": "plot_time_series",
+      "source_url": "https://zenodo.org/api/records/4574686/files/Estimated_Above-Ground_Biomass_1997-2018.xlsx/content",
+      "doi_or_registry": "10.5061/dryad.fn2z34tst (Zenodo 4574686)",
+      "local_raw_path": "/home/kenny/personal/github-clones/paper/data/raw/laselva_estimated_agb_1997_2018.xlsx",
+      "sha256": "2b40139872380c56ceca1211d2b33bf8f03766e3b71c00059699b0404eb68113",
+      "byte_size": 2457068,
+      "ingested_at_utc": "2026-10-27T14:08:33Z",
+      "data_generated_period": "1997-2018 (annual census)",
+      "record_count": 396,
+      "description": "Stem-level EAGB (kg) in 18 x 0.5 ha plots, censused annually 1997-2018."
     }
   ]
 }
