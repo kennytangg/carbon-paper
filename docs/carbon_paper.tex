@@ -1,0 +1,464 @@
+\documentclass[conference,a4paper]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc,backgrounds}
+\usepackage[most]{tcolorbox}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cite}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\newtheorem{proposition}{Proposition}
+
+\definecolor{binusblue}{HTML}{1F3A68}
+\definecolor{accent}{HTML}{2E6FB5}
+\definecolor{softgray}{HTML}{F2F4F7}
+\definecolor{evid}{HTML}{E8F0FA}
+\definecolor{antic}{HTML}{FFF4E0}
+\definecolor{dsgreen}{HTML}{E6F4EA}
+\definecolor{aipurple}{HTML}{F1EAFB}
+
+\newtcolorbox{callout}[2][]{enhanced,breakable,colback=#2,colframe=binusblue,
+  boxrule=0pt,leftrule=2.2pt,arc=0pt,left=5pt,right=5pt,top=4pt,bottom=4pt,
+  fonttitle=\bfseries\small,coltitle=binusblue,colbacktitle=#2,
+  attach title to upper={\ },#1}
+
+\newcommand{\tCha}{\,t\,C\,ha$^{-1}$}
+\newcommand{\Chat}{\widehat{C}}
+\newcommand{\chat}{\widehat{c}}
+\newcommand{\Bhat}{\widehat{B}}
+
+\begin{document}
+
+\title{NestMRV: Consensus-Pinned Distributed dMRV with Machine-Learning Metadata Auditing for Allometric Reproduction and Sampling-Area Sensitivity in Indonesian Forest Carbon Inventories\\[4pt]}
+
+\author{
+\IEEEauthorblockN{Kenny Tang}
+\IEEEauthorblockA{\textit{Computer Science Department}\\
+\textit{Bina Nusantara University}\\
+Jakarta, Indonesia 11480\\
+kenny.tang@binus.ac.id}
+\and
+\IEEEauthorblockN{Riki Awal Syahputra}
+\IEEEauthorblockA{\textit{Computer Science Department}\\
+\textit{Bina Nusantara University}\\
+Jakarta, Indonesia 11480\\
+riki.syahputra@binus.ac.id}
+\and
+\IEEEauthorblockN{Richard Hans}
+\IEEEauthorblockA{\textit{Computer Science Department}\\
+\textit{Bina Nusantara University}\\
+Jakarta, Indonesia 11480\\
+richard.hans001@binus.ac.id}
+\linebreakand
+\IEEEauthorblockN{Evelyn Jane Sutjiadi}
+\IEEEauthorblockA{\textit{Computer Science Department}\\
+\textit{Bina Nusantara University}\\
+Jakarta, Indonesia 11480\\
+evelyn.sutjiadi@binus.ac.id}    
+\and
+\IEEEauthorblockN{Yenny Chen}
+\IEEEauthorblockA{\textit{Computer Science Department}\\
+\textit{Bina Nusantara University}\\
+Jakarta, Indonesia 11480\\
+yenny.chen@binus.edu}
+\and
+\IEEEauthorblockN{Jude Joseph Lamug Martinez}
+\IEEEauthorblockA{\textit{Computer Science Department}\\
+\textit{Bina Nusantara University}\\
+Jakarta, Indonesia 11480\\
+jmartinez@binus.edu}    
+}
+\makeatletter
+\newcommand{\linebreakand}{%
+  \end{@IEEEauthorhalign}
+  \hfill\mbox{}\par
+  \mbox{}\hfill
+  \begin{@IEEEauthorhalign}
+}
+\makeatother
+\maketitle
+
+\begin{abstract}
+Digital measurement, reporting, and verification (dMRV) pipelines turn field inventories into per-hectare carbon estimates that underpin carbon-credit issuance, yet the sampling-area metadata governing this conversion can be silently lost when records are merged, exported, or moved between machines. This work proposes NestMRV, a distributed dMRV pipeline that combines four elements: a deterministic, provenance-tracked allometric calculation; closed-form sensitivity analysis of sampling-metadata faults; a machine-learning auditor that pairs an unsupervised Isolation Forest with a supervised gradient-boosted classifier to flag corrupt inventory records; and a distributed architecture with plot-co-located geographic sharding across six Indonesian regional nodes, Ray or Spark execution on Kubernetes, checkpointed exactly-once processing, a Raft-replicated configuration store, and a Practical Byzantine Fault Tolerance (PBFT) ledger that pins SHA-256 digests of datasets, rules, and formula versions across independent verifiers. A preliminary analysis of a public High Carbon Stock Approach (HCSA) inventory (714 records, 39 young-regrowth plots, six regions) reproduced 501 archived biomass values within relative tolerance $10^{-6}$. Overwriting nested sampling areas with a uniform 0.05\,ha lowered mean carbon density from 49.37 to 40.41\tCha{} ($-18.14\%$); omitting stems below 15\,cm lowered it to 39.25\tCha{} ($-20.49\%$); and 15 records with inconsistent diameter and area assignments shift plot estimates by $-44.23\%$ to $+16.05\%$. We derive $\delta^{U}_j=-80f_j$ for the area-overwrite fault and show that naive regional sharding has a load-imbalance factor of 2.24. The study defines four research questions covering reproducibility, area-loss sensitivity, AI anomaly detection, and distributed scalability with consensus, each with measurable targets.
+\end{abstract}
+
+\begin{IEEEkeywords}
+digital MRV, distributed systems, Raft, Byzantine fault tolerance, sharding, checkpointing, anomaly detection, Isolation Forest, gradient boosting, allometry, nested sampling
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+\subsection{From Tree Measurements to Tradable Carbon}
+Forest carbon density depends jointly on tree attributes and the area in which those trees were sampled. Diameter $D$, height $H$, and wood density $\rho$ enter an allometric biomass equation; a carbon fraction converts biomass to carbon mass; and a sampling estimator divides each tree's carbon by the area in which trees of its size class were counted (Fig.~\ref{fig:chain}). Nested inventories such as the High Carbon Stock Approach (HCSA) count small stems (5 to 14.9\,cm) in a 0.01\,ha subplot and larger stems ($\geq 15$\,cm) in a 0.05\,ha plot \cite{rosoman2017hcsa}. The sampling area is therefore not descriptive metadata: it is a multiplicative factor in every per-hectare estimate.
+
+Verra's VM0047 methodology for afforestation, reforestation, and revegetation (ARR) requires representative sampling, fixed size thresholds, published allometry, directly measured attributes, and a stock-difference procedure across at least two measurement occasions \cite{verra2025vm0047}. As these calculations move from spreadsheets into automated, multi-party dMRV platforms, the integrity of each record's computational context, namely its size class, sampling area, units, stem identifier, measurement occasion, and equation version, becomes a distributed systems and data-quality problem as much as an ecological one.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  node distance=3.2mm,
+  box/.style={draw=binusblue,fill=softgray,rounded corners=1.5pt,align=left,
+    font=\scriptsize,text width=0.88\columnwidth,inner sep=3.5pt},
+  arr/.style={-{Stealth[length=2mm]},thick,binusblue}]
+\node[box] (a) {\textbf{1 Measured attributes}\quad $D$ (cm), $H$ (m), $\rho$ (g\,cm$^{-3}$)};
+\node[box,below=of a] (b) {\textbf{2 Dry biomass (kg)}\quad $\Bhat=0.0673\,(\rho D^{2}H)^{0.976}$};
+\node[box,below=of b] (c) {\textbf{3 Carbon mass (t C)}\quad $\chat=0.47\,\Bhat/1000$};
+\node[box,below=of c,fill=evid] (d) {\textbf{4 Expansion (t C ha$^{-1}$)}\quad $\Chat_j=\sum_i \chat_{ij}/a_{ij}$\\[1pt]
+\emph{The sampled area $a_{ij}$ must travel with every record, across every machine.}};
+\draw[arr] (a) -- (b); \draw[arr] (b) -- (c); \draw[arr] (c) -- (d);
+\end{tikzpicture}
+\caption{Measurement chain and units. Steps 1 to 3 are embarrassingly parallel per tree; step 4 is a per-plot reduction that is corrupted if $a_{ij}$ is lost in transit.}
+\label{fig:chain}
+\end{figure}
+
+\subsection{Why the Problem Is Distributed}
+Real dMRV data rarely live on one machine. Field teams in different provinces upload inventories; a developer's pipeline aggregates them; a validation and verification body (VVB) recomputes them; a registry stores the result; and buyers audit it. Each hop is a network transfer, a schema conversion, or a join, and each is an opportunity to drop or misassign $a_{ij}$. These parties do not fully trust one another, so agreement on \emph{which} dataset and \emph{which} formula version produced a number is a consensus problem among potentially faulty or adversarial participants \cite{castro1999pbft}. At the same time, national-scale inventories and repeated monitoring occasions create workloads that benefit from parallel execution \cite{zaharia2012rdd,moritz2018ray}. The problem therefore spans three computer science areas: data integrity under distribution, scalable computation, and automated anomaly detection.
+
+\subsection{Problem Statement}
+Existing biomass tooling validates numerical ranges and propagates statistical uncertainty \cite{rejou2017biomass}; plot-design studies compare legitimate sampling configurations \cite{tomppo2026plot,fararoda2024plot}; and general-purpose distributed frameworks guarantee fault-tolerant execution of whatever data they receive \cite{zaharia2012rdd}. None enforces that the sampling area, size class, units, and equation version remain bound to each record as data cross machines and organisations, and none provides learned detection of corrupt records whose values remain individually plausible. \textbf{The research problem is the absence of a distributed, provenance-aware, and machine-learning-assisted dMRV pipeline that (a) preserves nested sampling metadata under partitioning, transfer, and failure, (b) detects corrupt inventory records before carbon is computed, and (c) lets mutually distrustful parties agree on exactly which data and formula produced each estimate, together with the lack of quantitative evidence on how large such metadata faults are.}
+
+\subsection{Scope}
+The study covers one-time aboveground live-tree carbon stocks from secondary data. Belowground biomass, soil carbon, additionality, baselines, leakage, and credit quantities are excluded. The HCSA plots are not registered ARR projects; VM0047 is the measurement-requirements reference, not an eligibility test. No new field, drone, LiDAR, or satellite measurements are collected. Scalability experiments use synthetically replicated plots, because the public inventory alone is too small to stress a cluster.
+
+\subsection{Research Questions}
+\textbf{RQ1 (allometric reproducibility).} How closely can archived biomass estimates be reproduced from their published tree attributes, and which provenance factors explain records that do not reproduce?
+
+\textbf{RQ2 (area-loss sensitivity).} How much do aboveground carbon estimates change when nested sampling areas are replaced by a uniform area, stems below 15\,cm are omitted, or other realistic processing faults occur?
+
+\textbf{RQ3 (AI anomaly detection and ML regression).} Can unsupervised and supervised machine-learning detectors identify corrupt inventory metadata, including height-unit mismatches and the 15 disputed diameter-to-area records, better than range checks and as well as explicit rules; and how do non-parametric biomass regressors compare with the deterministic Chave 2014 equation inside and outside the training domain?
+
+\textbf{RQ4 (distributed scalability and consensus).} Can a plot-co-located, region-sharded, checkpointed, and consensus-pinned pipeline scale near-linearly while guaranteeing zero loss of $a_{ij}$ and bit-identical outputs under node crashes, leader failure, network partition, and one Byzantine verifier, and at what consensus overhead?
+
+\section{Related Work}
+
+\subsection{Allometry and Input Quality}
+Pantropical biomass models combine diameter, height, and wood density \cite{chave2014improved}. Including height can reduce estimation error, but height measurement and model-transfer errors remain \cite{hunter2013height}. Local height sampling improves height-diameter models, and species-level wood-density variation affects biomass at multiple scales \cite{phillips2019species}. These studies treat inputs to step 2 of Fig.~\ref{fig:chain}; none examines whether the expansion context survives data processing.
+
+\subsection{Uncertainty Propagation and Software Tooling}
+Chave \textit{et al.} decompose biomass error into measurement, allometric, sampling, and representativeness components \cite{chave2004error}; Molto \textit{et al.} distinguish propagated uncertainty from bias \cite{molto2013error}. The BIOMASS R package implements allometry with Monte Carlo error propagation \cite{rejou2017biomass}, and Vorster \textit{et al.} show how equation choice changes estimates across scales \cite{vorster2020variability}. This literature quantifies \emph{statistical} uncertainty under correct data; it does not model \emph{deterministic} faults introduced by data handling.
+
+\subsection{Sampling Design and Spatial Support}
+Tomppo \textit{et al.} compare plot configurations by cost and precision \cite{tomppo2026plot}; Fararoda \textit{et al.} examine plot size, height models, and allometry \cite{fararoda2024plot}; Araza \textit{et al.} show that reference-plot errors and spatial support affect biomass-map validation \cite{araza2022framework}. These works compare \emph{valid} designs. Overwriting a recorded denominator is not a design choice.
+
+\subsection{Carbon Conversion, Standards, and Market Integrity}
+Carbon fractions vary among species \cite{martin2011reassessment} and tissues. Community inventories can supply useful observations without advanced sensors. HCSA and VM0047 define the sampling and measurement contexts \cite{rosoman2017hcsa,verra2025vm0047}. West \textit{et al.} document large-scale over-crediting \cite{west2023redd}, motivating auditable calculation chains. W3C PROV-DM offers a vocabulary for recording which entity, activity, and agent produced each value.
+
+\subsection{Machine Learning for Anomaly Detection and Regression}
+Chandola \textit{et al.} survey anomaly detection and distinguish point, contextual, and collective anomalies \cite{chandola2009anomaly}; a height recorded in centimetres is a point anomaly, whereas a plausible height that contradicts its plot's height-diameter relation is contextual. Isolation Forest isolates anomalies with random partitions in expected $O(n\log n)$ time without density estimation \cite{liu2008isolation}. Gradient-boosted decision trees \cite{chen2016xgboost} and random forests are strong supervised baselines on tabular data, and TreeSHAP-style attributions \cite{lundberg2017shap} explain individual predictions. Standard implementations are available in scikit-learn \cite{pedregosa2011scikit}. We found no study in the reviewed literature that applies these detectors to forest-inventory \emph{metadata} faults, or that benchmarks non-parametric biomass regressors against a deterministic allometric reference for extrapolation and physical monotonicity.
+
+\subsection{Distributed Data Processing, Fault Tolerance, and Consensus}
+MapReduce and Spark's resilient distributed datasets \cite{zaharia2012rdd} provide fault-tolerant parallel batch processing through lineage and re-execution; Ray supports task and actor parallelism for AI workloads \cite{moritz2018ray}; and Kubernetes descends from Borg and Omega as a container orchestrator \cite{burns2016borg}. Kafka provides a partitioned, replicated log for ingestion. Consistent hashing balances keys across nodes with minimal remapping \cite{karger1997consistent}. Chandy and Lamport define consistent distributed snapshots \cite{chandy1985snapshots}, and Young gives a first-order optimum checkpoint interval \cite{young1974checkpoint}. Consensus is impossible deterministically in a fully asynchronous system with one crash; Paxos and Raft \cite{ongaro2014raft} achieve crash-fault-tolerant replication under partial synchrony, while PBFT tolerates $f$ Byzantine replicas with $n\geq 3f+1$ \cite{castro1999pbft}. Merkle trees authenticate large datasets with a single root hash \cite{merkle1988signature}. The CAP theorem frames consistency and availability trade-offs under partition. Amdahl's and Gustafson's laws bound strong and weak scaling, and floating-point non-associativity complicates bit-reproducible parallel reductions. These general frameworks guarantee that \emph{what they receive} is processed reliably; none encodes domain constraints such as ``a record's sampling area must equal its size-class area''.
+
+\section{Methodology}
+
+\subsection{Data Source, Acquisition, and Screening}
+The 3,137-row HCSA inventory was retrieved from the public Fair Forward/GIZ distribution on 16 October 2026 under CC BY-SA 4.0 \cite{hcsa2026data} and pinned by SHA-256. Four land-cover labels are aliased after trimming and lowercasing (``young regeneration forest'', ``young regenerating forest'', ``young generation forest'', ``young regeneretaion forest''), yielding 881 records in 49 region-plot groups. Composite keys include region, plot, sampling area, and tree number, because numbering can restart between subplots. A plot is excluded entirely if any record violates a rule in Table~\ref{tab:screen}; no value is imputed.
+
+\begin{table}[t]
+\centering
+\caption{Whole-Plot Screening Rules and Outcomes}
+\label{tab:screen}
+\renewcommand{\arraystretch}{1.12}
+\footnotesize
+\begin{tabular}{@{}p{5.0cm} c@{}}
+\toprule
+\textbf{Exclusion rule (any record in plot)} & \textbf{Plots}\\
+\midrule
+Missing required numerical input & 6\\
+Height below 1.3\,m breast-height point & 2\\
+Conflicting coordinate values & 1\\
+$D<5$\,cm and $\rho>1.5$\,g\,cm$^{-3}$ (same plot) & 1\\
+Non-positive dimension; unit mismatch; area outside $\{0.01,0.05\}$\,ha & 0\\
+\midrule
+\textbf{Excluded} (167 records) & \textbf{10}\\
+\textbf{Retained} (714 records, 6 regions) & \textbf{39}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Allometric and Expansion Models}
+For stem $i$ in plot $j$ \cite{chave2014improved}:
+\begin{equation}
+\Bhat_{ij}=0.0673\left(\rho_{ij}D_{ij}^{2}H_{ij}\right)^{0.976},
+\label{eq:chave}
+\end{equation}
+\begin{equation}
+\chat_{ij}=\mathrm{CF}\,\Bhat_{ij}/1000,\qquad \mathrm{CF}=0.47,
+\end{equation}
+\begin{equation}
+\Chat^{R}_j=\sum_{i\in j}\frac{\chat_{ij}}{a_{ij}}\quad[\mathrm{t\,C\,ha^{-1}}],
+\label{eq:ref}
+\end{equation}
+with $D$ in cm, $H$ in m, $\rho$ in g\,cm$^{-3}$, and CF fixed by the selected guidance \cite{verra2025vm0047,rosoman2017hcsa} to isolate area effects from species and tissue variation \cite{martin2011reassessment}.
+
+\paragraph*{Fault conditions} Six processing faults are simulated:
+\textbf{U (F1)} every $a_{ij}$ overwritten with 0.05\,ha, $\Chat^{U}_j=\frac{1}{0.05}\sum_{i}\chat_{ij}$;
+\textbf{O (F2)} stems with $D<15$\,cm dropped, $\Chat^{O}_j=\sum_{i}\frac{\chat_{ij}}{a_{ij}}\mathbb{1}(D_{ij}\geq 15)$;
+\textbf{F3} all stems divided by a summed denominator of 0.06\,ha;
+\textbf{F4} a random subset of area labels swapped;
+\textbf{F5} key collapse when merging on (region, plot, tree number) without the area field;
+\textbf{F6} CF replaced by 0.50 without a provenance entry.
+For the 15 disputed records, a hypothetical reassignment applies the diameter rule:
+\begin{equation}
+a^{*}_{ij}=\begin{cases}0.01, & 5\leq D_{ij}<15,\\ 0.05, & D_{ij}\geq 15,\end{cases}\qquad
+\Chat^{A}_j=\sum_{i\in j}\frac{\chat_{ij}}{a^{*}_{ij}}.
+\end{equation}
+
+\subsection{Analytical Sensitivity Proofs}
+Let plot $j$ have sampling classes $k$ with areas $a_k$ and class carbon sums $S_{jk}$, so $\Chat^{R}_j=\sum_k S_{jk}/a_k$. With class share $f_{jk}=(S_{jk}/a_k)/\Chat^{R}_j$ and $\sum_k f_{jk}=1$, overwriting every area with $a^{\dagger}$ gives $\Chat^{\dagger}_j=\Chat^{R}_j\sum_k f_{jk}a_k/a^{\dagger}$, hence
+\begin{equation}
+\delta^{\dagger}_j=100\Big(\sum_k f_{jk}a_k/a^{\dagger}-1\Big).
+\end{equation}
+With $f_j$ the share of reference carbon from 0.01\,ha records, $a^{\dagger}=0.05$ gives
+\begin{equation}
+\delta^{U}_j=-80\,f_j,\qquad 0\leq f_j\leq 1.
+\end{equation}
+On rule-consistent plots, omission removes exactly the small-area share, so
+\begin{equation}
+\delta^{O}_j=-100\,f_j\;\Rightarrow\;\delta^{U}_j=0.8\,\delta^{O}_j,
+\label{eq:dO}
+\end{equation}
+and $a^{\dagger}=0.06$ gives
+\begin{equation}
+\delta^{F3}_j=-\tfrac{50}{3}\left(1+4f_j\right).
+\end{equation}
+For F6, $\delta^{F6}=100(0.50/0.47-1)=+6.38\%$ on every plot. Prediction (\ref{eq:dO}) is falsifiable: South Sumatera's regional means show a larger U than O reduction, which will be examined plot by plot. Taking logarithms of (\ref{eq:chave}) gives the local elasticities
+\begin{equation}
+\begin{split}
+d\ln q={}&1.952\,d\ln D+0.976\,d\ln H\\&+0.976\,d\ln\rho+d\ln\mathrm{CF}-d\ln a
+\end{split}
+\end{equation}
+for a contribution $q=\mathrm{CF}\,\Bhat/(1000a)$: a 1\% diameter error moves $q$ about twice as much as a 1\% height error, and an area error moves it one-for-one. Fig.~\ref{fig:sens} plots the three identities; each is linear in $f_j$, so an auditor can bound a plot's exposure from one statistic.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.95\columnwidth,height=4.6cm,xmin=0,xmax=1,ymin=-100,ymax=0,
+  xlabel={$f_j$ (share of plot carbon from 0.01\,ha records)},ylabel={$\delta_j$ (\%)},
+  label style={font=\scriptsize},tick label style={font=\scriptsize},
+  legend style={font=\scriptsize,at={(0.02,0.03)},anchor=south west,draw=none,fill=white,fill opacity=0.85},
+  grid=major,grid style={gray!20}]
+\addplot[thick,color={rgb,255:red,217;green,130;blue,43},domain=0:1] {-80*x};
+\addplot[thick,color={rgb,255:red,62;green,142;blue,94},dashed,domain=0:1] {-100*x};
+\addplot[thick,color={rgb,255:red,31;green,58;blue,104},dotted,domain=0:1] {-50/3*(1+4*x)};
+\legend{U: $-80f_j$,O: $-100f_j$ (consistent plots),F3: $-\frac{50}{3}(1+4f_j)$}
+\end{axis}
+\end{tikzpicture}
+\caption{Closed-form plot-level change under three metadata faults as a function of the small-area carbon share $f_j$. These are analytical identities, to be verified plot by plot (target residual $<10^{-9}$ points).}
+\label{fig:sens}
+\end{figure}
+
+\subsection{AI Module: ML Metadata Auditor (RQ3)}
+\paragraph*{Feature design} Each record is represented by point features ($\ln D$, $\ln H$, $\ln\rho$, area class, $D-15$) and contextual features computed within its plot and region: the residual of $\ln H$ from a regional log-log height-diameter fit, within-plot $z$-scores of $D$ and $H$, the record's carbon share $(\chat_{ij}/a_{ij})/\Chat^{R}_j$, and the count of duplicate composite keys. The explicit diameter-to-area rule flag is \emph{withheld} from the ML features so that the models must learn the pattern, which makes the comparison with the rule validator meaningful.
+
+\paragraph*{Unsupervised detector} An Isolation Forest \cite{liu2008isolation} assigns each record an anomaly score
+\begin{equation}
+s(x,n)=2^{-\mathbb{E}[h(x)]/c(n)},\qquad c(n)=2H_{n-1}-\tfrac{2(n-1)}{n},
+\end{equation}
+where $h(x)$ is the path length to isolate $x$, $H_{n-1}$ the harmonic number, and scores near 1 indicate anomalies. It needs no labels and therefore also runs on the real 39-plot data, where we report the rank of the 15 disputed records.
+
+\paragraph*{Supervised detector} A gradient-boosted decision tree classifier \cite{chen2016xgboost} is trained on labels produced by fault injection: unit mismatches ($H\times 100$ for centimetres, $H\times 3.281$ for feet, $D\times 10$ for millimetres), area-class swaps (F4), duplicate-key collapses (F5), and diameter-to-area inconsistencies modelled on the 15 real cases. Validation uses five-fold GroupKFold by plot, so no plot appears in both training and test folds, and leave-one-region-out (LORO) evaluation, so each regional shard is tested on a model trained on the other five. LORO tests whether a model deployed to one regional node generalises to another.
+
+\paragraph*{Hybrid auditor and explainability} The deployed auditor is the union of explicit rules (layer L2) and the GBDT. Each ML flag carries per-feature SHAP attributions \cite{lundberg2017shap} so a reviewer can see why a record was flagged. Flagged records are quarantined for human review and never auto-corrected.
+
+\subsection{Distributed System Design: NestMRV Architecture (RQ4)}
+All services run as containers on Kubernetes \cite{burns2016borg}.
+
+\paragraph*{Partitioning and the plot co-location invariant} Records are routed by the key $(\text{region},\text{plot})$. The core invariant is
+\begin{equation}
+\forall\,i,i'\in j:\quad \mathrm{shard}(i)=\mathrm{shard}(i'),
+\label{eq:coloc}
+\end{equation}
+so (\ref{eq:ref}) is computed locally and the expansion step needs no cross-shard shuffle. Under random record-level partitioning across $p$ workers, the probability that a plot with $n_j$ records stays on one worker is $p^{\,1-n_j}$. With the sample mean of 18.3 records per plot, even $p=2$ splits a plot with probability $1-2^{-17.3}>0.9999$, so nearly every plot would require a network shuffle in which $a_{ij}$ could be dropped or misjoined.
+
+\paragraph*{Load balancing} Region-only sharding is skewed. With shard loads $L_k$ in records, the imbalance factor
+\begin{equation}
+\lambda=\frac{\max_k L_k}{\tfrac{1}{K}\sum_k L_k}=\frac{267}{119}=2.24
+\end{equation}
+means WK would take 2.24 times the mean load and bound the makespan. NestMRV therefore keeps geographic routing for data governance but splits large regions into virtual partitions by consistent hashing of plot identifiers \cite{karger1997consistent}, preserving (\ref{eq:coloc}) while targeting $\lambda\leq 1.2$.
+
+\paragraph*{Parallel execution} Per-record allometry, carbon conversion, and ML scoring form a map stage; per-plot, per-class sums form a combiner; plot densities form the reduce stage. Two interchangeable back ends are implemented: Ray tasks and actors \cite{moritz2018ray} and Spark RDD or DataFrame operations \cite{zaharia2012rdd}. Model inference is batched per shard so the auditor scales with the same partitioning.
+
+\paragraph*{Exactly-once effect and denominator integrity} Ingestion uses a partitioned, replicated log with at-least-once delivery. Shard writes are idempotent upserts keyed by $K=(\text{region},\text{plot},a,\text{tree})$, so redelivery cannot double-count. Because $a$ is part of $K$, a record that loses its area cannot form a valid key and is rejected at layer L1 rather than silently defaulted. Each record's leaf hash $h_i=\mathrm{SHA256}(K\,\|\,D\,\|\,H\,\|\,\rho\,\|\,\text{eq\_id})$ feeds a per-plot Merkle tree \cite{merkle1988signature}; any change to $a_{ij}$ in transit changes the root and is detected with probability $1-2^{-256}$ against random corruption.
+
+\paragraph*{Checkpointing and recovery} Each shard periodically persists \{log offset, partial class sums, Merkle roots\} as an aligned snapshot in the spirit of Chandy and Lamport \cite{chandy1985snapshots}. After a crash, Kubernetes restarts the pod, which restores the last checkpoint and replays the log from the stored offset; idempotent keys make replay safe. Young's approximation \cite{young1974checkpoint} sets the interval
+\begin{equation}
+T_{\mathrm{opt}}\approx\sqrt{2\,C\,M},
+\end{equation}
+for checkpoint cost $C$ and mean time between failures $M$. For illustration, $C=5$\,s and $M=24$\,h give $T_{\mathrm{opt}}\approx 15.5$\,min; measured $C$ will replace this assumption.
+
+\paragraph*{Deterministic reduction} Floating-point addition is not associative, so a parallel sum can differ in its last bits depending on worker count and arrival order, breaking digest-based verification. NestMRV sorts records by $K$ within each plot before reduction and performs the per-plot sum in a single task with compensated summation, making outputs bit-identical regardless of $p$ or failure schedule.
+
+\paragraph*{Raft configuration store} The sampling-design specification, rule versions, model versions, and dataset digests live in a five-node Raft cluster \cite{ongaro2014raft} (CP under CAP). A write commits when a majority $q=\lfloor n/2\rfloor+1=3$ acknowledges, so the store tolerates $f=\lfloor (n-1)/2\rfloor=2$ crash failures; any two majorities intersect, so a committed configuration cannot be lost by a leader change. Per entry, the leader exchanges $2(n-1)=8$ messages. With independent node availability $A=0.99$, store availability is
+\begin{equation}
+A_{\mathrm{Raft}}=\sum_{k=3}^{5}\binom{5}{k}A^{k}(1-A)^{5-k}\approx 0.99999.
+\end{equation}
+
+\paragraph*{PBFT verifier ledger} Developers, VVBs, registries, and buyers do not fully trust one another, so crash tolerance is insufficient. At the end of each run, the aggregator proposes the tuple (dataset digest, configuration version, output Merkle root) to a four-node PBFT group \cite{castro1999pbft}, one replica per stakeholder type. With $n=3f+1=4$, the ledger tolerates $f=1$ Byzantine verifier and commits with quorum $2f+1=3$. The normal case costs
+\begin{equation}
+M_{\mathrm{PBFT}}=(n-1)+(n-1)^2+n(n-1)=2n(n-1)=24
+\end{equation}
+messages per committed run, which is negligible because the ledger commits one digest per run rather than per record. The ledger stores hashes only, never raw measurements or coordinates.
+
+\section{Results and Discussion}
+
+Retained diameters range from 5.0 to 100.5\,cm, heights from 1.7 to 47.4\,m, and wood densities from 0.2700 to 0.9945\,g\,cm$^{-3}$; 283 records use 0.01\,ha and 431 use 0.05\,ha (Table~\ref{tab:prelim}).
+
+\begin{table*}[t]
+\centering
+\caption{Preliminary Feasibility Benchmark and Regional Shard Sizes}
+\label{tab:prelim}
+\renewcommand{\arraystretch}{1.12}
+\small
+\begin{tabular}{@{}l l r r r r r r r r@{}}
+\toprule
+\textbf{Shard} & \textbf{Region} & \textbf{Plots} & \textbf{Records} & \textbf{Load share} & \textbf{Reproduced} & \textbf{Mean R} & \textbf{Mean U} & \textbf{Mean O} & \textbf{Mean $\delta^{U}$ (\%)}\\
+\midrule
+CK & Central Kalimantan & 6 & 118 & 16.5\% & 118 & 55.02 & 37.42 & 35.51 & $-36.05$\\
+JA & Jambi & 3 & 51 & 7.1\% & 51 & 44.85 & 35.27 & 34.52 & $-21.03$\\
+RI & Riau & 7 & 81 & 11.3\% & 53 & 39.63 & 36.41 & 35.61 & $-8.67$\\
+SS & South Sumatera & 5 & 91 & 12.7\% & 91 & 51.78 & 42.75 & 45.57 & $-17.89$\\
+WK & West Kalimantan & 12 & 267 & 37.4\% & 84 & 52.16 & 42.21 & 39.63 & $-21.69$\\
+WP & West Papua & 6 & 106 & 14.8\% & 104 & 49.77 & 45.11 & 43.58 & $-8.92$\\
+\midrule
+\textbf{All} & Retained sample & \textbf{39} & \textbf{714} & 100\% & \textbf{501} & \textbf{49.37} & \textbf{40.41} & \textbf{39.25} & $\bm{-19.06}$\\
+\bottomrule
+\multicolumn{10}{@{}p{0.96\textwidth}@{}}{\footnotesize Carbon densities in t\,C\,ha$^{-1}$. R: recorded areas; U: uniform 0.05\,ha; O: omit $D<15$\,cm. Reproduced: within relative tolerance $10^{-6}$. The last column averages paired plot percentages. Load share is the fraction of records each regional shard would hold under region-only partitioning.}
+\end{tabular}
+\end{table*}
+
+\begin{callout}[title={Documented evidence (preliminary analysis, completed 16 Oct 2026).}]{evid}
+\small
+\begin{itemize}\setlength\itemsep{1pt}
+\item 213 of 714 archived biomass values (29.83\%) are \emph{not} reproducible at relative tolerance $10^{-6}$; the largest record-level discrepancy is 9.80\% and the largest plot-level discrepancy 8.70\%. The archive holds no calculation-version history.
+\item Replacing nested areas with a uniform 0.05\,ha lowers mean density by 18.14\% (paired plot mean 19.06\%, maximum 64.52\%); omitting stems below 15\,cm lowers it by 20.49\% (paired mean 21.39\%, maximum 75.25\%).
+\item 15 records in 8 plots violate the published diameter-to-area rule; hypothetical reassignment moves plot estimates from $-44.23\%$ to $+16.05\%$.
+\item On the 31 plots without disputed records, the uniform-area reduction persists (mean 16.68\%, range 0 to 60.20\%).
+\item Records per region range from 51 (JA) to 267 (WK); region-only sharding has load-imbalance factor $\lambda=2.24$.
+\end{itemize}
+\textit{Status: magnitudes measured in one public dataset under simulated processing faults; not observed errors in any registered carbon project.}
+\end{callout}
+
+\section{Conclusion and Future Work}
+\emph{Internal:} the archive is not ground truth; CF is fixed; ML regression targets are model outputs. \emph{Construct:} injected faults may not span all real failures; they are derived from issues observed in the data. \emph{External:} one dataset of young-regrowth plots; synthetic replication tests systems scaling, not ecological generality. \emph{Conclusion:} inventory statistics are descriptive; systems and ML results report variation across seeds and runs.
+
+\begin{callout}[title={Anticipated benefits (to be tested).}]{antic}
+\small
+\begin{itemize}\setlength\itemsep{1pt}
+\item Provenance records attribute non-reproducible archive values to specific causes (RO1).
+\item Closed-form identities predict plot-level effects of area faults from one statistic, $f_j$ (RO2).
+\item A hybrid rule-plus-ML auditor detects injected metadata faults, including height-unit mismatches, with recall at least 0.95 (RO3).
+\item The distributed pipeline scales with parallel efficiency at least 0.70 on eight workers and returns bit-identical outputs with zero $a_{ij}$ loss under node crashes, leader failure, and one Byzantine verifier (RO4).
+\end{itemize}
+\textit{Status: not yet demonstrated.}
+\end{callout}
+
+\section*{Data and Code Availability}
+Python with NumPy 2.3.5, pandas 2.2.3, Matplotlib 3.10.8, and scikit-learn \cite{pedregosa2011scikit} implements the analysis and ML; Ray and PySpark provide the parallel back ends; Docker images run on Kubernetes (kind for development, up to 16 worker pods for scaling runs); etcd or a team-built Raft module provides the configuration store; and a minimal PBFT module in Python implements the verifier ledger. Every experiment is driven by a seeded configuration file committed to the Git repository, and the package includes the source CSV and licence, pinned digests, injected datasets, trained model files, and scripts regenerating every table and figure.
+
+\begin{thebibliography}{29}
+
+\bibitem{hcsa2026data}
+High Carbon Stock Approach, ``Forest field plot data for indicative HCS mapping, Indonesia,'' Fair Forward/GIZ, HCSA Foundation, and JKPP, CC BY-SA 4.0. Accessed: Oct. 16, 2026. [Online]. Available: \url{https://huggingface.co/datasets/fair-forward/hcsa_indonesia}
+
+\bibitem{rosoman2017hcsa}
+G. Rosoman, S. S. Sheun, C. Opal, P. Anderson, and R. Trapshah, Eds., \textit{The HCS Approach Toolkit}, ver. 2.0, Module 4, Sec. C, ``Using field plots to estimate carbon stock and finalise delineation of land cover classes.'' Singapore: HCS Approach Steering Group, May 2017, pp. 26-40. [Online]. Available: \url{https://highcarbonstock.org/wp-content/uploads/2017/09/HCSA-Toolkit-v2.0-Module-4-Forest-and-vegetation-stratification-190917-web.pdf}
+
+\bibitem{verra2025vm0047}
+Verra, \textit{VM0047 Afforestation, Reforestation, and Revegetation}, ver. 1.1, May 14, 2025. Accessed: Oct. 16, 2026. [Online]. Available: \url{https://verra.org/wp-content/uploads/2025/05/VM0047-v1.1_Final.pdf}
+
+\bibitem{chave2014improved}
+J. Chave \textit{et al.}, ``Improved allometric models to estimate the aboveground biomass of tropical trees,'' \textit{Global Change Biol.}, vol. 20, no. 10, pp. 3177-3190, 2014, doi: 10.1111/gcb.12629.
+
+\bibitem{hunter2013height}
+M. O. Hunter, M. Keller, D. Victoria, and D. C. Morton, ``Tree height and tropical forest biomass estimation,'' \textit{Biogeosciences}, vol. 10, pp. 8385-8399, 2013, doi: 10.5194/bg-10-8385-2013.
+
+\bibitem{phillips2019species}
+O. L. Phillips \textit{et al.}, ``Species matter: Wood density influences tropical forest biomass at multiple scales,'' \textit{Surv. Geophys.}, vol. 40, pp. 913-935, 2019, doi: 10.1007/s10712-019-09540-0.
+
+\bibitem{chave2004error}
+J. Chave, R. Condit, S. Aguilar, A. Hern\'andez, S. Lao, and R. P\'erez, ``Error propagation and scaling for tropical forest biomass estimates,'' \textit{Philos. Trans. R. Soc. B}, vol. 359, pp. 409-420, 2004, doi: 10.1098/rstb.2003.1425.
+
+\bibitem{molto2013error}
+Q. Molto, V. Rossi, and L. Blanc, ``Error propagation in biomass estimation in tropical forests,'' \textit{Methods Ecol. Evol.}, vol. 4, pp. 175-183, 2013, doi: 10.1111/j.2041-210x.2012.00266.x.
+
+\bibitem{rejou2017biomass}
+M. R\'ejou-M\'echain, A. Tanguy, C. Piponiot, J. Chave, and B. H\'erault, ``BIOMASS: An R package for estimating above-ground biomass and its uncertainty in tropical forests,'' \textit{Methods Ecol. Evol.}, vol. 8, no. 9, pp. 1163-1167, 2017, doi: 10.1111/2041-210X.12753.
+
+\bibitem{vorster2020variability}
+A. G. Vorster, P. H. Evangelista, A. E. L. Stovall, and S. Ex, ``Variability and uncertainty in forest biomass estimates from the tree to landscape scale: The role of allometric equations,'' \textit{Carbon Balance Manage.}, vol. 15, Art. no. 8, 2020, doi: 10.1186/s13021-020-00143-6.
+
+\bibitem{tomppo2026plot}
+E. O. Tomppo, B. C. Foster, L. S. Kenefic, and M. J. Ducey, ``Costs and precisions of alternative plot configurations for estimating aboveground tree biomass in tropical forests,'' \textit{Forestry}, vol. 99, no. 1, Art. no. cpaf034, 2026, first published 2025, doi: 10.1093/forestry/cpaf034.
+
+\bibitem{fararoda2024plot}
+R. Fararoda \textit{et al.}, ``Improving plot-level above ground biomass estimation in tropical Indian forests,'' \textit{Ecol. Informatics}, vol. 81, Art. no. 102621, 2024, doi: 10.1016/j.ecoinf.2024.102621.
+
+\bibitem{araza2022framework}
+A. Araza \textit{et al.}, ``A comprehensive framework for assessing the accuracy and uncertainty of global above-ground biomass maps,'' \textit{Remote Sens. Environ.}, vol. 272, Art. no. 112917, 2022, doi: 10.1016/j.rse.2022.112917.
+
+\bibitem{martin2011reassessment}
+A. R. Martin and S. C. Thomas, ``A reassessment of carbon content in tropical trees,'' \textit{PLoS ONE}, vol. 6, Art. no. e23533, 2011, doi: 10.1371/journal.pone.0023533.
+
+\bibitem{west2023redd}
+T. A. P. West \textit{et al.}, ``Action needed to make carbon offsets from forest conservation work for climate change mitigation,'' \textit{Science}, vol. 381, no. 6660, pp. 873-877, 2023, doi: 10.1126/science.ade3535.
+
+\bibitem{liu2008isolation}
+F. T. Liu, K. M. Ting, and Z.-H. Zhou, ``Isolation forest,'' in \textit{Proc. 8th IEEE Int. Conf. Data Mining (ICDM)}, 2008, pp. 413-422, doi: 10.1109/ICDM.2008.17.
+
+\bibitem{chandola2009anomaly}
+V. Chandola, A. Banerjee, and V. Kumar, ``Anomaly detection: A survey,'' \textit{ACM Comput. Surv.}, vol. 41, no. 3, Art. no. 15, 2009, doi: 10.1145/1541880.1541882.
+
+\bibitem{chen2016xgboost}
+T. Chen and C. Guestrin, ``XGBoost: A scalable tree boosting system,'' in \textit{Proc. 22nd ACM SIGKDD Int. Conf. Knowl. Discov. Data Min.}, 2016, pp. 785-794, doi: 10.1145/2939672.2939785.
+
+\bibitem{lundberg2017shap}
+S. M. Lundberg and S.-I. Lee, ``A unified approach to interpreting model predictions,'' in \textit{Adv. Neural Inf. Process. Syst. 30 (NeurIPS)}, 2017, pp. 4765-4774.
+
+\bibitem{pedregosa2011scikit}
+F. Pedregosa \textit{et al.}, ``Scikit-learn: Machine learning in Python,'' \textit{J. Mach. Learn. Res.}, vol. 12, pp. 2825-2830, 2011.
+
+\bibitem{zaharia2012rdd}
+M. Zaharia \textit{et al.}, ``Resilient distributed datasets: A fault-tolerant abstraction for in-memory cluster computing,'' in \textit{Proc. 9th USENIX Symp. Netw. Syst. Design Implement. (NSDI)}, 2012, pp. 15-28.
+
+\bibitem{moritz2018ray}
+P. Moritz \textit{et al.}, ``Ray: A distributed framework for emerging AI applications,'' in \textit{Proc. 13th USENIX Symp. Oper. Syst. Design Implement. (OSDI)}, 2018, pp. 561-577.
+
+\bibitem{burns2016borg}
+B. Burns, B. Grant, D. Oppenheimer, E. Brewer, and J. Wilkes, ``Borg, Omega, and Kubernetes,'' \textit{Commun. ACM}, vol. 59, no. 5, pp. 50-57, 2016, doi: 10.1145/2890784.
+
+\bibitem{ongaro2014raft}
+D. Ongaro and J. Ousterhout, ``In search of an understandable consensus algorithm,'' in \textit{Proc. USENIX Annu. Tech. Conf. (ATC)}, 2014, pp. 305-319.
+
+\bibitem{castro1999pbft}
+M. Castro and B. Liskov, ``Practical Byzantine fault tolerance,'' in \textit{Proc. 3rd USENIX Symp. Oper. Syst. Design Implement. (OSDI)}, 1999, pp. 173-186.
+
+\bibitem{chandy1985snapshots}
+K. M. Chandy and L. Lamport, ``Distributed snapshots: Determining global states of distributed systems,'' \textit{ACM Trans. Comput. Syst.}, vol. 3, no. 1, pp. 63-75, 1985, doi: 10.1145/214451.214456.
+
+\bibitem{young1974checkpoint}
+J. W. Young, ``A first order approximation to the optimum checkpoint interval,'' \textit{Commun. ACM}, vol. 17, no. 9, pp. 530-531, 1974, doi: 10.1145/361147.361115.
+
+\bibitem{karger1997consistent}
+D. Karger, E. Lehman, T. Leighton, R. Panigrahy, M. Levine, and D. Lewin, ``Consistent hashing and random trees: Distributed caching protocols for relieving hot spots on the World Wide Web,'' in \textit{Proc. 29th ACM Symp. Theory Comput. (STOC)}, 1997, pp. 654-663, doi: 10.1145/258533.258660.
+
+\bibitem{merkle1988signature}
+R. C. Merkle, ``A digital signature based on a conventional encryption function,'' in \textit{Advances in Cryptology (CRYPTO '87)}, LNCS vol. 293, 1988, pp. 369-378.
+
+\end{thebibliography}
+
+\end{document}
+
