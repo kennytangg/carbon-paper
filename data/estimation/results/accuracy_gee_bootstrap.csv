@@ -1,0 +1,5 @@
+subset,comparison,diff_points,ci_lo,ci_hi
+All,+ canopy height + GEDI - baseline,-9.0,-12.97,-6.11
+GEO-TREES,+ canopy height + GEDI - baseline,-14.28,-27.4,-7.16
+HCSA_Indonesia,+ canopy height + GEDI - baseline,-9.22,-13.15,-2.86
+Labriere2018,+ canopy height + GEDI - baseline,-8.19,-12.76,-3.1

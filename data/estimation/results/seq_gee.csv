@@ -1,0 +1,7 @@
+level,estimator,rmse,mae,r
+plot,no change,8.122,4.523,
+plot,regional default rate,7.912,4.025,-0.118
+plot,change model with GEE inputs (LOBO),8.225,4.403,-0.0
+block mean,no change,2.298,2.054,
+block mean,regional default rate,1.324,0.982,-0.934
+block mean,change model with GEE inputs (LOBO),1.616,1.2,0.271
