@@ -5,6 +5,7 @@
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{bm}
 \usepackage{graphicx}
+\graphicspath{{figures/}}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{tabularx}
@@ -20,29 +21,26 @@
 \pgfplotsset{compat=1.18}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
-\newtheorem{proposition}{Proposition}
 
 \definecolor{binusblue}{HTML}{1F3A68}
 \definecolor{accent}{HTML}{2E6FB5}
 \definecolor{softgray}{HTML}{F2F4F7}
-\definecolor{evid}{HTML}{E8F0FA}
-\definecolor{antic}{HTML}{FFF4E0}
-\definecolor{dsgreen}{HTML}{E6F4EA}
-\definecolor{aipurple}{HTML}{F1EAFB}
+\definecolor{rightgrid}{HTML}{E6F4EA}
+\definecolor{leftgrid}{HTML}{E8F0FA}
+\definecolor{ledger}{HTML}{FFF4E0}
+
+\newcommand{\tbd}[1]{\textcolor{red}{[TBD: #1]}}
+\newcommand{\Mgha}{\,Mg\,ha$^{-1}$}
+\newcommand{\tCha}{\,t\,C\,ha$^{-1}$}
 
 \newtcolorbox{callout}[2][]{enhanced,breakable,colback=#2,colframe=binusblue,
   boxrule=0pt,leftrule=2.2pt,arc=0pt,left=5pt,right=5pt,top=4pt,bottom=4pt,
   fonttitle=\bfseries\small,coltitle=binusblue,colbacktitle=#2,
   attach title to upper={\ },#1}
 
-\newcommand{\tCha}{\,t\,C\,ha$^{-1}$}
-\newcommand{\Chat}{\widehat{C}}
-\newcommand{\chat}{\widehat{c}}
-\newcommand{\Bhat}{\widehat{B}}
-
 \begin{document}
 
-\title{NestMRV: Consensus-Pinned Distributed dMRV with Machine-Learning Metadata Auditing for Allometric Reproduction and Sampling-Area Sensitivity in Indonesian Forest Carbon Inventories\\[4pt]}
+\title{Can Satellites Replace the Field Plot? A Blind, Time-Matched Benchmark of Satellite-Only Forest Carbon Estimation Against Standard-Formula Ground Truth}
 
 \author{
 \IEEEauthorblockN{Kenny Tang}
@@ -67,7 +65,7 @@ richard.hans001@binus.ac.id}
 \IEEEauthorblockA{\textit{Computer Science Department}\\
 \textit{Bina Nusantara University}\\
 Jakarta, Indonesia 11480\\
-evelyn.sutjiadi@binus.ac.id}    
+evelyn.sutjiadi@binus.ac.id}
 \and
 \IEEEauthorblockN{Yenny Chen}
 \IEEEauthorblockA{\textit{Computer Science Department}\\
@@ -79,7 +77,7 @@ yenny.chen@binus.edu}
 \IEEEauthorblockA{\textit{Computer Science Department}\\
 \textit{Bina Nusantara University}\\
 Jakarta, Indonesia 11480\\
-jmartinez@binus.edu}    
+jmartinez@binus.edu}
 }
 \makeatletter
 \newcommand{\linebreakand}{%
@@ -92,373 +90,893 @@ jmartinez@binus.edu}
 \maketitle
 
 \begin{abstract}
-Digital measurement, reporting, and verification (dMRV) pipelines turn field inventories into per-hectare carbon estimates that underpin carbon-credit issuance, yet the sampling-area metadata governing this conversion can be silently lost when records are merged, exported, or moved between machines. This work proposes NestMRV, a distributed dMRV pipeline that combines four elements: a deterministic, provenance-tracked allometric calculation; closed-form sensitivity analysis of sampling-metadata faults; a machine-learning auditor that pairs an unsupervised Isolation Forest with a supervised gradient-boosted classifier to flag corrupt inventory records; and a distributed architecture with plot-co-located geographic sharding across six Indonesian regional nodes, Ray or Spark execution on Kubernetes, checkpointed exactly-once processing, a Raft-replicated configuration store, and a Practical Byzantine Fault Tolerance (PBFT) ledger that pins SHA-256 digests of datasets, rules, and formula versions across independent verifiers. A preliminary analysis of a public High Carbon Stock Approach (HCSA) inventory (714 records, 39 young-regrowth plots, six regions) reproduced 501 archived biomass values within relative tolerance $10^{-6}$. Overwriting nested sampling areas with a uniform 0.05\,ha lowered mean carbon density from 49.37 to 40.41\tCha{} ($-18.14\%$); omitting stems below 15\,cm lowered it to 39.25\tCha{} ($-20.49\%$); and 15 records with inconsistent diameter and area assignments shift plot estimates by $-44.23\%$ to $+16.05\%$. We derive $\delta^{U}_j=-80f_j$ for the area-overwrite fault and show that naive regional sharding has a load-imbalance factor of 2.24. The study defines four research questions covering reproducibility, area-loss sensitivity, AI anomaly detection, and distributed scalability with consensus, each with measurable targets.
+Satellite platforms promise to replace field inventories in forest carbon crediting, but their estimates are rarely tested blind against the standard-formula answer, and two practical problems, clouds and confidence, are rarely quantified. We separate the question into two isolated grids. The right grid computes field ground truth step by step to SNI 7724, IPCC, CDM, and Verra rules, with a Monte Carlo uncertainty budget, and is sealed; the left grid sees only plot coordinates and dates, reads time-matched Sentinel-1/2, Landsat, PALSAR, and terrain data, and estimates carbon blind. A hash-chained commit-reveal ledger proves that predictions were fixed first. On 476 stock plots, blind error was 45--49\% relative RMSE: about 30\% on 1\,ha plots, over 100\% on small Indonesian plots, with saturation near 300\,Mg\,ha$^{-1}$. A plot-level climatology of 22{,}697 Sentinel-2 acquisitions shows that only 21.5\% see an Indonesian plot clear, yet a common scene-level filter discards 65\% of those; a radar-led model lost two points without optical data. Cloud-aware conformal quantile regression, calibrated on synthetic cloud, kept 90\% coverage under full cloud, while a metadata confidence score ranked errors in the wrong direction. Project intervals that ignore correlated map error covered 74\% of projects; as auxiliary data for field plots, the satellite halved the plots needed on large-plot datasets. For annual growth on 196 Bornean plots, no satellite estimate beat assuming no change. Satellites can map stock and save field plots; growth still needs remeasurement, and confidence must be calibrated, not graded.
 \end{abstract}
 
 \begin{IEEEkeywords}
-digital MRV, distributed systems, Raft, Byzantine fault tolerance, sharding, checkpointing, anomaly detection, Isolation Forest, gradient boosting, allometry, nested sampling
+forest carbon, MRV, SNI 7724, VM0047, remote sensing, cloud cover, Sentinel, ALOS PALSAR, machine learning, spatial cross-validation, conformal prediction, uncertainty, model-assisted estimation, commit-reveal ledger, distributed processing
 \end{IEEEkeywords}
 
+%=====================================================================
 \section{Introduction}
 
-\subsection{From Tree Measurements to Tradable Carbon}
-Forest carbon density depends jointly on tree attributes and the area in which those trees were sampled. Diameter $D$, height $H$, and wood density $\rho$ enter an allometric biomass equation; a carbon fraction converts biomass to carbon mass; and a sampling estimator divides each tree's carbon by the area in which trees of its size class were counted (Fig.~\ref{fig:chain}). Nested inventories such as the High Carbon Stock Approach (HCSA) count small stems (5 to 14.9\,cm) in a 0.01\,ha subplot and larger stems ($\geq 15$\,cm) in a 0.05\,ha plot \cite{rosoman2017hcsa}. The sampling area is therefore not descriptive metadata: it is a multiplicative factor in every per-hectare estimate.
+\subsection{Two Ways to Measure Forest Carbon}
+\emph{Traditional MRV} (measurement, reporting, and verification) is field based. Crews lay out plots, measure each stem's diameter $D$ and height $H$, identify species to assign wood density $\rho$, and pass these inputs through a published allometric equation~\cite{chave2014improved}. Carbon follows from a fixed carbon fraction and the CO$_2$ to C mass ratio. Methodologies such as Verra VM0047 prescribe this chain~\cite{verra2025vm0047}; its output is deterministic and is the number on which credits are issued. Nobody can change the formula: it is the international standard. What is costly is the visit, especially in remote Indonesian peat swamps and hill forests.
 
-Verra's VM0047 methodology for afforestation, reforestation, and revegetation (ARR) requires representative sampling, fixed size thresholds, published allometry, directly measured attributes, and a stock-difference procedure across at least two measurement occasions \cite{verra2025vm0047}. As these calculations move from spreadsheets into automated, multi-party dMRV platforms, the integrity of each record's computational context, namely its size class, sampling area, units, stem identifier, measurement occasion, and equation version, becomes a distributed systems and data-quality problem as much as an ecological one.
+\emph{System-based MRV} replaces or supplements the visit with satellites and software. Optical sensors observe canopy greenness, radar observes canopy structure and moisture, and spaceborne lidar measures height~\cite{dubayah2020gedi}. Global biomass maps exist~\cite{santoro2021global,spawn2020harmonized}, and commercial platforms, including our own NusaCarbon prototype, turn polygons into carbon numbers. The open question is how close such numbers are to what the field formula would have produced at the same place and time.
+
+\subsection{Why the Comparison Is Hard to Do Honestly}
+Three traps inflate reported accuracy. First, \emph{leakage}: if a model is trained or tuned on the plots it is scored on, or on plots next to them, the score measures memory rather than skill; spatially blocked validation of large-scale biomass maps reveals much lower skill than random validation~\cite{ploton2020spatial,roberts2017cv}. Second, \emph{temporal mismatch}: a plot measured in 2009 and an image from 2023 describe different forests. Third, \emph{scale}: a plot is a fraction of a hectare while satellite pixels range from 10\,m to 4.6\,km. A fair test must isolate the estimator from the answer, match time explicitly, and report how error changes with scale.
+
+Our own platform illustrates the need. An audit of the NusaCarbon code base found that its forest and mangrove figures depended mostly on default constants (for example, a fixed sequestration rate and tree density bins from NDVI) rather than on satellite measurement, that clouds were screened only at scene level, that the reported confidence was a grade computed from image metadata, and that no estimate had been compared with field data. This paper builds the comparison that was missing, and tests the cloud handling and the confidence statement as carefully as the estimate itself.
+
+\subsection{Two Isolated Grids}
+We separate the problem into two grids (Fig.~\ref{fig:grids}). The \textbf{right grid} is fixed: published field plots, the standard formula, a carbon density in t\,C\,ha$^{-1}$. We never modify it. The \textbf{left grid} is free: any satellite data, any algorithm, any machine-learning method, subject to one rule: it never sees the right grid's outcomes for the plots it is scored on. A ledger enforces the rule and makes it auditable.
 
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}[
-  node distance=3.2mm,
-  box/.style={draw=binusblue,fill=softgray,rounded corners=1.5pt,align=left,
-    font=\scriptsize,text width=0.88\columnwidth,inner sep=3.5pt},
-  arr/.style={-{Stealth[length=2mm]},thick,binusblue}]
-\node[box] (a) {\textbf{1 Measured attributes}\quad $D$ (cm), $H$ (m), $\rho$ (g\,cm$^{-3}$)};
-\node[box,below=of a] (b) {\textbf{2 Dry biomass (kg)}\quad $\Bhat=0.0673\,(\rho D^{2}H)^{0.976}$};
-\node[box,below=of b] (c) {\textbf{3 Carbon mass (t C)}\quad $\chat=0.47\,\Bhat/1000$};
-\node[box,below=of c,fill=evid] (d) {\textbf{4 Expansion (t C ha$^{-1}$)}\quad $\Chat_j=\sum_i \chat_{ij}/a_{ij}$\\[1pt]
-\emph{The sampled area $a_{ij}$ must travel with every record, across every machine.}};
-\draw[arr] (a) -- (b); \draw[arr] (b) -- (c); \draw[arr] (c) -- (d);
+  font=\scriptsize,
+  box/.style={draw=binusblue,rounded corners=1.5pt,align=center,inner sep=3pt,text width=3.55cm},
+  arr/.style={-{Stealth[length=1.8mm]},thick,binusblue}]
+\node[box,fill=leftgrid] (L1) {\textbf{Left grid (free)}\\coordinates + date only};
+\node[box,fill=leftgrid,below=3mm of L1] (L2) {time-matched S1, S2, Landsat,\\PALSAR, DEM, GEDI};
+\node[box,fill=leftgrid,below=3mm of L2] (L3) {E0 products / E1 GEDI-trained /\\E2 transfer ML / E3 $k$-shot};
+\node[box,fill=rightgrid,right=4mm of L1] (R1) {\textbf{Right grid (fixed)}\\field plots $D,H,\rho$};
+\node[box,fill=rightgrid,below=3mm of R1] (R2) {Chave 2014 $\to$ CF 0.47\\$\to$ 44/12 (Verra/IPCC)};
+\node[box,fill=rightgrid,below=3mm of R2] (R3) {ground-truth t\,C\,ha$^{-1}$\\\textbf{sealed}};
+\node[box,fill=ledger,below=4mm of $(L3.south)!0.5!(R3.south)$,text width=7.4cm] (G) {\textbf{Ledger:} seal(right) $\rightarrow$ commit(left predictions) $\rightarrow$ reveal(right) $\rightarrow$ score};
+\draw[arr] (L1)--(L2); \draw[arr] (L2)--(L3); \draw[arr] (R1)--(R2); \draw[arr] (R2)--(R3);
+\draw[arr] (L3.south)--(L3.south|-G.north); \draw[arr] (R3.south)--(R3.south|-G.north);
 \end{tikzpicture}
-\caption{Measurement chain and units. Steps 1 to 3 are embarrassingly parallel per tree; step 4 is a per-plot reduction that is corrupted if $a_{ij}$ is lost in transit.}
-\label{fig:chain}
+\caption{Blind two-grid design. Only the public manifest (plot id, coordinates, date, radius) crosses from right to left.}
+\label{fig:grids}
 \end{figure}
 
-\subsection{Why the Problem Is Distributed}
-Real dMRV data rarely live on one machine. Field teams in different provinces upload inventories; a developer's pipeline aggregates them; a validation and verification body (VVB) recomputes them; a registry stores the result; and buyers audit it. Each hop is a network transfer, a schema conversion, or a join, and each is an opportunity to drop or misassign $a_{ij}$. These parties do not fully trust one another, so agreement on \emph{which} dataset and \emph{which} formula version produced a number is a consensus problem among potentially faulty or adversarial participants \cite{castro1999pbft}. At the same time, national-scale inventories and repeated monitoring occasions create workloads that benefit from parallel execution \cite{zaharia2012rdd,moritz2018ray}. The problem therefore spans three computer science areas: data integrity under distribution, scalable computation, and automated anomaly detection.
-
-\subsection{Problem Statement}
-Existing biomass tooling validates numerical ranges and propagates statistical uncertainty \cite{rejou2017biomass}; plot-design studies compare legitimate sampling configurations \cite{tomppo2026plot,fararoda2024plot}; and general-purpose distributed frameworks guarantee fault-tolerant execution of whatever data they receive \cite{zaharia2012rdd}. None enforces that the sampling area, size class, units, and equation version remain bound to each record as data cross machines and organisations, and none provides learned detection of corrupt records whose values remain individually plausible. \textbf{The research problem is the absence of a distributed, provenance-aware, and machine-learning-assisted dMRV pipeline that (a) preserves nested sampling metadata under partitioning, transfer, and failure, (b) detects corrupt inventory records before carbon is computed, and (c) lets mutually distrustful parties agree on exactly which data and formula produced each estimate, together with the lack of quantitative evidence on how large such metadata faults are.}
-
-\subsection{Scope}
-The study covers one-time aboveground live-tree carbon stocks from secondary data. Belowground biomass, soil carbon, additionality, baselines, leakage, and credit quantities are excluded. The HCSA plots are not registered ARR projects; VM0047 is the measurement-requirements reference, not an eligibility test. No new field, drone, LiDAR, or satellite measurements are collected. Scalability experiments use synthetically replicated plots, because the public inventory alone is too small to stress a cluster.
-
 \subsection{Research Questions}
-\textbf{RQ1 (allometric reproducibility).} How closely can archived biomass estimates be reproduced from their published tree attributes, and which provenance factors explain records that do not reproduce?
+\textbf{RQ1 (blind accuracy; research methodology).} How far does a blind, satellite-only estimate of aboveground carbon stock deviate from standard-formula field ground truth, and how does the deviation depend on the temporal gap between field and satellite observations and on the area over which it is aggregated?
 
-\textbf{RQ2 (area-loss sensitivity).} How much do aboveground carbon estimates change when nested sampling areas are replaced by a uniform area, stems below 15\,cm are omitted, or other realistic processing faults occur?
+\textbf{RQ2 (closing the gap; AI).} Which learning strategy brings the satellite estimate closest to the field answer: off-the-shelf global products, a model trained only on spaceborne lidar, a model transferred from other regions, or a model calibrated with $k$ local field plots? Are its prediction intervals honest?
 
-\textbf{RQ3 (AI anomaly detection and ML regression).} Can unsupervised and supervised machine-learning detectors identify corrupt inventory metadata, including height-unit mismatches and the 15 disputed diameter-to-area records, better than range checks and as well as explicit rules; and how do non-parametric biomass regressors compare with the deterministic Chave 2014 equation inside and outside the training domain?
+\textbf{RQ3 (clouds and confidence; AI and methodology).} How often do clouds hide an Indonesian plot from optical satellites, how much accuracy does that cost, and can the estimate and its prediction interval stay honest when they do? At the scale of a project, does the stated uncertainty protect against over-crediting, and how many field plots does a satellite save?
 
-\textbf{RQ4 (distributed scalability and consensus).} Can a plot-co-located, region-sharded, checkpointed, and consensus-pinned pipeline scale near-linearly while guaranteeing zero loss of $a_{ij}$ and bit-identical outputs under node crashes, leader failure, network partition, and one Byzantine verifier, and at what consensus overhead?
+\textbf{RQ4 (sequestration).} Can the annual change in carbon stock, the quantity credits are issued on, be estimated blind from satellites, and how certain is the field answer itself?
 
+\textbf{RQ5 (distributed systems).} Can time-matched extraction for hundreds of plots and sensors be sharded, balanced, and made fault tolerant with bit-identical outputs, and can a hash-chained ledger prove that the left grid was blind?
+
+\subsection{Contributions}
+(i) A blind, time-matched evaluation protocol with a commit-reveal ledger, reusable for any MRV estimator. (ii) A right grid built step by step to SNI 7724, IPCC, CDM, Verra, and Gold Standard rules, with a Monte Carlo uncertainty budget, on 476 stock plots (148 Indonesian plots recomputed tree by tree) and 223 day-dated repeat-census plots in Borneo. (iii) An estimator ladder from zero field data to $k$ local plots, with spatially blocked validation. (iv) The first plot-level cloud climatology for Indonesian forest plots that we are aware of, a cloud-robust estimator, and \emph{cloud-aware conformal} intervals calibrated on synthetic cloud. (v) Project-level uncertainty that accounts for spatially correlated map error, model-assisted estimators that quantify how many field plots a satellite saves, and an over-crediting test under the Verra deduction. (vi) A sharded, idempotent extraction runner with measured scaling and fault tolerance.
+
+%=====================================================================
 \section{Related Work}
 
-\subsection{Allometry and Input Quality}
-Pantropical biomass models combine diameter, height, and wood density \cite{chave2014improved}. Including height can reduce estimation error, but height measurement and model-transfer errors remain \cite{hunter2013height}. Local height sampling improves height-diameter models, and species-level wood-density variation affects biomass at multiple scales \cite{phillips2019species}. These studies treat inputs to step 2 of Fig.~\ref{fig:chain}; none examines whether the expansion context survives data processing.
+\subsection{Allometry and Standards}
+Pantropical allometry links $D$, $H$, and $\rho$ to aboveground biomass (AGB)~\cite{chave2014improved}; the BIOMASS package propagates its uncertainty~\cite{rejou2017biomass}. Verra VM0047 and the HCSA toolkit specify sampling, measurement thresholds, and plot designs~\cite{verra2025vm0047,rosoman2017hcsa}. Investigations of REDD+ crediting show that unverifiable baselines produce over-crediting~\cite{west2023redd}, which motivates auditable estimates.
 
-\subsection{Uncertainty Propagation and Software Tooling}
-Chave \textit{et al.} decompose biomass error into measurement, allometric, sampling, and representativeness components \cite{chave2004error}; Molto \textit{et al.} distinguish propagated uncertainty from bias \cite{molto2013error}. The BIOMASS R package implements allometry with Monte Carlo error propagation \cite{rejou2017biomass}, and Vorster \textit{et al.} show how equation choice changes estimates across scales \cite{vorster2020variability}. This literature quantifies \emph{statistical} uncertainty under correct data; it does not model \emph{deterministic} faults introduced by data handling.
+\subsection{Remote Sensing of Biomass}
+Optical reflectance saturates over dense canopies. C-band radar mostly sees the upper canopy; L-band radar penetrates further and tracks woody biomass up to moderate densities~\cite{mitchard2009using}, but its backscatter can \emph{decrease} in very dense forest~\cite{mermoz2015decrease}. Spaceborne lidar from GEDI samples canopy height in 25\,m footprints and is converted to biomass by footprint models calibrated on field data~\cite{dubayah2020gedi,duncanson2022gedi}. Global AGB maps combine these signals: ESA CCI Biomass~\cite{santoro2021global}, the 2010 harmonized map of Spawn \textit{et al.}~\cite{spawn2020harmonized}, and the annual Chloris product~\cite{chloris2022}. Canopy height alone predicts plot carbon well where lidar is available~\cite{asner2014mapping}.
 
-\subsection{Sampling Design and Spatial Support}
-Tomppo \textit{et al.} compare plot configurations by cost and precision \cite{tomppo2026plot}; Fararoda \textit{et al.} examine plot size, height models, and allometry \cite{fararoda2024plot}; Araza \textit{et al.} show that reference-plot errors and spatial support affect biomass-map validation \cite{araza2022framework}. These works compare \emph{valid} designs. Overwriting a recorded denominator is not a design choice.
+\subsection{Machine Learning and Honest Validation}
+Gradient-boosted trees are strong tabular regressors~\cite{ke2017lightgbm}; models fitted on log biomass need a retransformation correction~\cite{duan1983smearing}. Spatial autocorrelation makes random cross-validation optimistic; blocked or leave-region-out designs are required~\cite{roberts2017cv,ploton2020spatial}. Conformal prediction yields distribution-free intervals with finite-sample coverage~\cite{vovk2005algorithmic}. Agreement is assessed with RMSE, bias, and Lin's concordance~\cite{lin1989concordance}.
 
-\subsection{Carbon Conversion, Standards, and Market Integrity}
-Carbon fractions vary among species \cite{martin2011reassessment} and tissues. Community inventories can supply useful observations without advanced sensors. HCSA and VM0047 define the sampling and measurement contexts \cite{rosoman2017hcsa,verra2025vm0047}. West \textit{et al.} document large-scale over-crediting \cite{west2023redd}, motivating auditable calculation chains. W3C PROV-DM offers a vocabulary for recording which entity, activity, and agent produced each value.
+\subsection{Clouds and Uncertainty}
+Southeast Asia is cloudy on at least 80\% of days~\cite{wilson2016cloud}, and scene metadata suggest at most one cloud-free Sentinel-2 scene per year over much of tropical Indonesia~\cite{sudmanns2020eocompass}. The combined Sentinel-2 and Landsat revisit is 2.9 days~\cite{li2017revisit}. Cloud masks such as Fmask and Cloud Score+ reach about 90\% accuracy, with thin cloud and shadow the main failures~\cite{zhu2012fmask,skakun2022cmix,pasquarella2023cloudscore}. Workarounds include best-available-pixel compositing~\cite{white2014pixel}, harmonized Landsat--Sentinel data~\cite{claverie2018hls}, SAR--optical fusion~\cite{reiche2016combining}, and deep SAR-to-optical cloud removal~\cite{meraner2020cloud}. On the uncertainty side, split conformal prediction~\cite{lei2018distribution}, conformalized quantile regression~\cite{romano2019cqr}, normalized~\cite{papadopoulos2008normalized} and Mondrian~\cite{bostrom2020mondrian} variants, and weighted or spatial conformal prediction under shift~\cite{tibshirani2019conformal,mao2024spatial} give distribution-free intervals. For biomass maps, the CEOS protocol~\cite{duncanson2021ceos} and Duncanson \textit{et al.}~\cite{duncanson2019importance} recommend plots of at least 1\,ha and explicit error propagation, and Araza \textit{et al.} separate map error from plot error~\cite{araza2022comprehensive}. Model-assisted estimators that combine remote sensing with field samples are standard in survey sampling~\cite{cochran1977sampling,sarndal1992model}.
 
-\subsection{Machine Learning for Anomaly Detection and Regression}
-Chandola \textit{et al.} survey anomaly detection and distinguish point, contextual, and collective anomalies \cite{chandola2009anomaly}; a height recorded in centimetres is a point anomaly, whereas a plausible height that contradicts its plot's height-diameter relation is contextual. Isolation Forest isolates anomalies with random partitions in expected $O(n\log n)$ time without density estimation \cite{liu2008isolation}. Gradient-boosted decision trees \cite{chen2016xgboost} and random forests are strong supervised baselines on tabular data, and TreeSHAP-style attributions \cite{lundberg2017shap} explain individual predictions. Standard implementations are available in scikit-learn \cite{pedregosa2011scikit}. We found no study in the reviewed literature that applies these detectors to forest-inventory \emph{metadata} faults, or that benchmarks non-parametric biomass regressors against a deterministic allometric reference for extrapolation and physical monotonicity.
+\subsection{Integrity and Distributed Processing}
+Hash-chained time-stamping makes a document's existence at a time verifiable~\cite{haber1991timestamp}; commit-reveal protocols bind a party to a value before another party reveals theirs~\cite{blum1983coin}. Large geospatial workloads are processed as independent map tasks~\cite{dean2008mapreduce}; consistent hashing places keys on workers with minimal remapping~\cite{karger1997consistent}, and Graham's longest-processing-time rule bounds makespan within $4/3$ of optimal~\cite{graham1969bounds}. Cloud catalogues such as the Microsoft Planetary Computer~\cite{mpc2022} and Google Earth Engine expose these archives through APIs.
 
-\subsection{Distributed Data Processing, Fault Tolerance, and Consensus}
-MapReduce and Spark's resilient distributed datasets \cite{zaharia2012rdd} provide fault-tolerant parallel batch processing through lineage and re-execution; Ray supports task and actor parallelism for AI workloads \cite{moritz2018ray}; and Kubernetes descends from Borg and Omega as a container orchestrator \cite{burns2016borg}. Kafka provides a partitioned, replicated log for ingestion. Consistent hashing balances keys across nodes with minimal remapping \cite{karger1997consistent}. Chandy and Lamport define consistent distributed snapshots \cite{chandy1985snapshots}, and Young gives a first-order optimum checkpoint interval \cite{young1974checkpoint}. Consensus is impossible deterministically in a fully asynchronous system with one crash; Paxos and Raft \cite{ongaro2014raft} achieve crash-fault-tolerant replication under partial synchrony, while PBFT tolerates $f$ Byzantine replicas with $n\geq 3f+1$ \cite{castro1999pbft}. Merkle trees authenticate large datasets with a single root hash \cite{merkle1988signature}. The CAP theorem frames consistency and availability trade-offs under partition. Amdahl's and Gustafson's laws bound strong and weak scaling, and floating-point non-associativity complicates bit-reproducible parallel reductions. These general frameworks guarantee that \emph{what they receive} is processed reliably; none encodes domain constraints such as ``a record's sampling area must equal its size-class area''.
-
+%=====================================================================
 \section{Methodology}
 
-\subsection{Data Source, Acquisition, and Screening}
-The 3,137-row HCSA inventory was retrieved from the public Fair Forward/GIZ distribution on 16 October 2026 under CC BY-SA 4.0 \cite{hcsa2026data} and pinned by SHA-256. Four land-cover labels are aliased after trimming and lowercasing (``young regeneration forest'', ``young regenerating forest'', ``young generation forest'', ``young regeneretaion forest''), yielding 881 records in 49 region-plot groups. Composite keys include region, plot, sampling area, and tree number, because numbering can restart between subplots. A plot is excluded entirely if any record violates a rule in Table~\ref{tab:screen}; no value is imputed.
+\subsection{Right Grid: Field Ground Truth by the Standards}
+The right grid is the number a carbon standard would accept. We therefore build it the way the standards prescribe, from sampling design to deduction, and keep the deterministic point value separate from its uncertainty. Table~\ref{tab:data} lists the plot sources and Table~\ref{tab:standards} the frameworks we follow.
 
 \begin{table}[t]
 \centering
-\caption{Whole-Plot Screening Rules and Outcomes}
-\label{tab:screen}
-\renewcommand{\arraystretch}{1.12}
+\caption{Right-Grid Field Datasets (Stock)}
+\label{tab:data}
 \footnotesize
-\begin{tabular}{@{}p{5.0cm} c@{}}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}l l r r l@{}}
 \toprule
-\textbf{Exclusion rule (any record in plot)} & \textbf{Plots}\\
+\textbf{Source} & \textbf{Region} & \textbf{Plots} & \textbf{Blocks} & \textbf{Date basis}\\
 \midrule
-Missing required numerical input & 6\\
-Height below 1.3\,m breast-height point & 2\\
-Conflicting coordinate values & 1\\
-$D<5$\,cm and $\rho>1.5$\,g\,cm$^{-3}$ (same plot) & 1\\
-Non-positive dimension; unit mismatch; area outside $\{0.01,0.05\}$\,ha & 0\\
+HCSA~\cite{hcsa2023data} & Indonesia (6 prov.) & 148 & 6 & release 2023\\
+GEO-TREES~\cite{geotrees2024} & Pantropical & 142 & 15 & census year\\
+Labri\`ere~\cite{labriere2018insitu} & Fr.\ Guiana, Gabon & 186 & 6 & campaign year\\
 \midrule
-\textbf{Excluded} (167 records) & \textbf{10}\\
-\textbf{Retained} (714 records, 6 regions) & \textbf{39}\\
+\textbf{Total} & & \textbf{476} & \textbf{27} & \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Allometric and Expansion Models}
-For stem $i$ in plot $j$ \cite{chave2014improved}:
-\begin{equation}
-\Bhat_{ij}=0.0673\left(\rho_{ij}D_{ij}^{2}H_{ij}\right)^{0.976},
-\label{eq:chave}
-\end{equation}
-\begin{equation}
-\chat_{ij}=\mathrm{CF}\,\Bhat_{ij}/1000,\qquad \mathrm{CF}=0.47,
-\end{equation}
-\begin{equation}
-\Chat^{R}_j=\sum_{i\in j}\frac{\chat_{ij}}{a_{ij}}\quad[\mathrm{t\,C\,ha^{-1}}],
-\label{eq:ref}
-\end{equation}
-with $D$ in cm, $H$ in m, $\rho$ in g\,cm$^{-3}$, and CF fixed by the selected guidance \cite{verra2025vm0047,rosoman2017hcsa} to isolate area effects from species and tissue variation \cite{martin2011reassessment}.
+\begin{table*}[t]
+\centering
+\caption{Field-Inventory Rules of the Frameworks Applied to the Right Grid}
+\label{tab:standards}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}l X l l X@{}}
+\toprule
+\textbf{Framework} & \textbf{Plot design (minimum stem size)} & \textbf{Confidence} & \textbf{Precision} & \textbf{Uncertainty rule}\\
+\midrule
+SNI 7724:2011~\cite{sni7724} & nested 2$\times$2 (seedlings, litter), 5$\times$5 (saplings 2--10\,cm), 10$\times$10 (poles 10--20\,cm), 20$\times$20\,m (trees $\geq$20\,cm); five pools, Tier 3 & not stated & sampling error $\leq$20\% & stratified systematic or random sampling\\
+Indonesian NFI~\cite{klhk2022frl} & 20\,km grid; 100$\times$100\,m permanent plot of 16 units of 25$\times$25\,m; subplot radii 1/2/5\,m; trees $\geq$20\,cm & -- & -- & national FRL, Manuri allometry, CF 0.47\\
+HCSA Toolkit v2.0~\cite{rosoman2017hcsa} & circular, $r=5.64$\,m for 5--14.9\,cm, $r=12.61$\,m (0.05\,ha) for $\geq$15\,cm & 90\% & $\pm$10\% & classes HDF, MDF, LDF, YRF, S, OL\\
+IPCC 2006/2019~\cite{ipcc2006v4,ipcc2019v4,ipcc2006v1} & five pools; CF 0.47; root-to-shoot $R$ by zone & 95\% & -- & Approach 1 propagation or Approach 2 Monte Carlo\\
+CDM AR-TOOL14/03~\cite{artool14,artool03} & stratified random plots & 90\% & $\pm$10\% & stepped discount above 10\%; sampling error only\\
+Verra VM0047 v1.1~\cite{verra2025vm0047} & plot sampling, remeasured $\leq$5\,yr & 90\% & -- & deduct $U-10\%$; zero credit if $U>100\%$\\
+Gold Standard A/R~\cite{gs2024ar} & Winrock sourcebook plots; CF 0.475 & 90\% & $\pm$20\% & deduct the excess over 20\%\\
+\bottomrule
+\end{tabularx}
+\end{table*}
 
-\paragraph*{Fault conditions} Six processing faults are simulated:
-\textbf{U (F1)} every $a_{ij}$ overwritten with 0.05\,ha, $\Chat^{U}_j=\frac{1}{0.05}\sum_{i}\chat_{ij}$;
-\textbf{O (F2)} stems with $D<15$\,cm dropped, $\Chat^{O}_j=\sum_{i}\frac{\chat_{ij}}{a_{ij}}\mathbb{1}(D_{ij}\geq 15)$;
-\textbf{F3} all stems divided by a summed denominator of 0.06\,ha;
-\textbf{F4} a random subset of area labels swapped;
-\textbf{F5} key collapse when merging on (region, plot, tree number) without the area field;
-\textbf{F6} CF replaced by 0.50 without a provenance entry.
-For the 15 disputed records, a hypothetical reassignment applies the diameter rule:
+\textbf{Step 1, tree.} Aboveground biomass of a tree with diameter $D$ (cm), height $H$ (m), and wood density $\rho$ (g\,cm$^{-3}$) follows Chave~2014 Eq.~4~\cite{chave2014improved},
 \begin{equation}
-a^{*}_{ij}=\begin{cases}0.01, & 5\leq D_{ij}<15,\\ 0.05, & D_{ij}\geq 15,\end{cases}\qquad
-\Chat^{A}_j=\sum_{i\in j}\frac{\chat_{ij}}{a^{*}_{ij}}.
+\mathrm{AGB}_i=0.0673\,(\rho_i D_i^2 H_i)^{0.976}\ \text{[kg]},\qquad \sigma_{\ln}=0.357,
+\label{eq:chave4}
+\end{equation}
+where $\sigma_{\ln}$ is the residual standard error on the log scale. Where height is not measured, a local model $\ln H=a+b\ln D$ with Duan correction replaces it (SAFE: $a=0.549$, $b=0.656$, residual SD 0.348); Chave Eq.~7 with the environmental stress term $E$ is the fallback where no local heights exist. Wood density is the mean of the Global Wood Density Database~\cite{zanne2009gwdd,chave2009wood} at the finest level available, species, then genus, then family, preferring South-East Asian records. As a check on model choice we also apply the East-Kalimantan equation of Basuki \textit{et al.}~\cite{basuki2009allometric}, $\ln\mathrm{AGB}=-0.744+2.188\ln D+0.832\ln\rho$ (correction factor 1.047). Palms are excluded: Chave's equations are for dicotyledonous trees, and palm allometry depends on stem height, not diameter~\cite{goodman2013palm,lewis2020oilpalm}.
+
+\textbf{Step 2, plot.} Tree biomass is expanded by the area in which a stem of its size is counted. For the HCSA nested design~\cite{rosoman2017hcsa},
+\begin{equation}
+\mathrm{AGB}_j=\sum_{i\in j}\frac{\mathrm{AGB}_i}{1000\,a(D_i)},\quad a(D)=\begin{cases}0.01,&5\le D<15\\0.05,&D\ge 15\end{cases}
+\label{eq:expand}
+\end{equation}
+in Mg\,ha$^{-1}$; SNI 7724 uses the same form, $C_n=C_x/1000\times10{,}000/l_\text{plot}$, with its own subplot areas~\cite{sni7724}.
+
+\textbf{Step 3, pools and carbon.} The plot carbon density is
+\begin{equation}
+\begin{aligned}
+C_j&=\mathrm{CF}\,(1+R)\,\mathrm{AGB}_j + C_{\mathrm{DW},j}+C_{\mathrm{L},j}+C_{\mathrm{SOC},j},\\
+\mathrm{CO_2e}_j&=\tfrac{44}{12}\,C_j,
+\end{aligned}
+\label{eq:pools}
+\end{equation}
+with CF $=0.47$ (IPCC 2006 Table~4.3, unchanged in 2019; SNI 7724; Verra) or 0.475 (Gold Standard). For the root-to-shoot ratio $R$ the frameworks disagree: SNI 7724 Lampiran~A adopts the IPCC 2006 tropical-rainforest value $R=0.37$, while the 2019 Refinement gives 0.207 (SD 0.072) below 125\,Mg\,ha$^{-1}$ and 0.212 (SD 0.077) above for natural Asian tropical rainforest~\cite{ipcc2006v4,ipcc2019v4}. Dead wood, litter, and soil carbon are not in the public records; omitting a pool can only lower a stock claim, which is the conservative direction. All comparisons with the left grid use AGB, which removes the $R$ and CF choices from the benchmark; we report their effect separately.
+
+\textbf{Step 4, stratum and project.} Following AR-TOOL14 Eqs.~14--17~\cite{artool14}, plots are grouped into strata $h$ (the HCS classes) with weights $w_h$, and the project mean and its relative uncertainty at 90\% are
+\begin{equation}
+\bar b=\sum_h w_h \bar b_h,\qquad u=\frac{t_{0.95,\,n-M}\sqrt{\sum_h w_h^2 s_h^2/n_h}}{\bar b},
+\label{eq:strat}
+\end{equation}
+with $s_h^2$ the within-stratum variance, $n_h$ plots in stratum $h$, $n$ plots in total, and $M$ strata. The mapped stratum areas are not public, so the plot shares stand in for $w_h$. The number of plots needed for a margin $E$ (AR-TOOL03 Eq.~2, Neyman allocation, iterated on $t$ when $n<30$)~\cite{artool03} is
+\begin{equation}
+n=\left(\frac{t_{0.95}}{E}\right)^2\Big(\sum_h w_h s_h\Big)^2,\qquad n_h=n\,\frac{w_h s_h}{\sum_h w_h s_h}.
+\label{eq:nplots}
 \end{equation}
 
-\subsection{Analytical Sensitivity Proofs}
-Let plot $j$ have sampling classes $k$ with areas $a_k$ and class carbon sums $S_{jk}$, so $\Chat^{R}_j=\sum_k S_{jk}/a_k$. With class share $f_{jk}=(S_{jk}/a_k)/\Chat^{R}_j$ and $\sum_k f_{jk}=1$, overwriting every area with $a^{\dagger}$ gives $\Chat^{\dagger}_j=\Chat^{R}_j\sum_k f_{jk}a_k/a^{\dagger}$, hence
+\textbf{Step 5, uncertainty.} AR-TOOL14 counts sampling error only. The IPCC asks for all sources, combined by Approach~1, $U=\sqrt{\sum_k U_k^2}$ for products and $U=\sqrt{\sum_k(U_kx_k)^2}/|\sum_k x_k|$ for sums, or by Monte Carlo (Approach~2)~\cite{ipcc2006v1}. We use Approach~2 with 2{,}000 draws per tree and the error models of the BIOMASS package~\cite{rejou2017biomass}: diameter error with SD $0.0062D+0.0904$\,cm for 95\% of stems and 4.64\,cm for a random 5\%~\cite{chave2004error}; height error of 10\%~\cite{chave2004error}; wood-density SD of 0.0708, 0.0941, and 0.1234\,g\,cm$^{-3}$ at species, genus, and family level; the allometric residual $\varepsilon_i\sim\mathcal N(0,\sigma_{\ln}^2)$; CF $\sim\mathcal N(0.4713,0.0206^2)$~\cite{thomas2012carbon}; and $R$ with its 2019 SD. The project error budget splits the variance of $\bar b$ into a sampling part (Eq.~\ref{eq:strat}) and a measurement-plus-allometry part (the Monte Carlo variance of the same weighted mean).
+
+\textbf{Step 6, change and deduction.} Sequestration uses the IPCC stock-difference method, $\Delta C=(C_{t_2}-C_{t_1})/(t_2-t_1)$ (Vol.~4 Eq.~2.5), on the same plots at both dates~\cite{ipcc2006v4}. Its uncertainty follows VM0047 v1.1 Eq.~28~\cite{verra2025vm0047},
 \begin{equation}
-\delta^{\dagger}_j=100\Big(\sum_k f_{jk}a_k/a^{\dagger}-1\Big).
+\begin{aligned}
+U&=\frac{T\sqrt{SE_0^2+SE_1^2-2\rho\,SE_0SE_1}}{\Delta C},\\
+\mathrm{UNC}&=\min\big(1,\max(0,\ U-0.10)\big),
+\end{aligned}
+\label{eq:vm0047}
 \end{equation}
-With $f_j$ the share of reference carbon from 0.01\,ha records, $a^{\dagger}=0.05$ gives
+where $SE_0$ and $SE_1$ are the standard errors of the mean stock at the two dates, $\rho$ is their correlation on permanent plots, and $T$ is the two-tailed $t$ value at $\alpha=0.1$. Credits are multiplied by $1-\mathrm{UNC}$. For stocks, we report the deductions of VM0047 ($u-10\%$), AR-TOOL14 (a stepped share of $u$: 0 up to 10\%, then 25, 50, 75, 100\% of $u$ at 15, 20, 30\%), Gold Standard ($u-20\%$), and VMD0017 (95\% uncertainty minus 15\%)~\cite{artool14,gs2024ar,vmd0017}. In the Monte Carlo for change, a tree keeps the same allometric and height residual at both censuses, because the same stem is measured with the same equation; we also run the case in which they are redrawn.
+
+\textbf{Data screening.} For HCSA, Step~1 is recomputed for every tree. Sixty-two records stated an area that contradicts Eq.~\ref{eq:expand} and were expanded by the protocol area. Whole plots were excluded, never imputed, if any record had a missing input, $H<1.3$\,m, conflicting coordinates, or $D>200$\,cm. The last rule caught plot RU09 (Riau), where a \textit{Gluta renghas} was recorded at $D=480$\,cm, which matches a circumference typed into the diameter column ($480/\pi\approx153$\,cm); left in place it would have produced 4{,}426\,Mg\,ha$^{-1}$. Of 185 plots, 148 were retained; the 15 records labelled as oil palm all fell in excluded plots. GEO-TREES publishes plot AGB from forest networks~\cite{geotrees2024}; 154 plots with withheld AGB were dropped. Labri\`ere \textit{et al.} publish 1\,ha units with AGB from Chave Eq.~4 and local height-diameter models, plus 95\% credible intervals~\cite{labriere2018insitu}; we use the 1\,ha units only.
+
+The outcome table is written to a sealed file. Only a manifest of plot id, region block, coordinates, date, date precision, and extraction radius is released to the left grid.
+
+\subsection{Temporal Matching}
+Field inventories record a date or, more often, a year; no public inventory records the minute of measurement, and optical satellites revisit every 5--16 days with frequent cloud. We therefore match by window: for a plot measured at $t_j$, the left grid uses only clear observations in $[t_j-W,\,t_j+W]$, records the offset in days of the closest one, and takes the median of up to three clear scenes. The default is $W=90$\,days; RQ1 varies $W\in\{30,90,180,365\}$ on the Indonesian plots. Each record also carries its timestamp precision (\emph{day}, \emph{year}, or \emph{campaign year}) so that the analysis can separate sensor noise from date uncertainty.
+
+\subsection{Left Grid: Satellite Features}
+For each plot the left grid reads, inside a square window around the plot centre: Sentinel-2 L2A reflectance in ten bands with scene-classification cloud masking and seven indices (NDVI, EVI, NDRE, NDMI, NBR, IRECI, SAVI); Landsat 5--9 Collection~2 surface reflectance with QA cloud masking; Sentinel-1 RTC backscatter (VV, VH, ratio); the ALOS PALSAR annual L-band mosaic (HH, HV); and Copernicus 30\,m elevation and slope. Two global products are read as zero-shot baselines: Chloris annual AGB (2003--2019)~\cite{chloris2022} and the 2010 harmonized map~\cite{spawn2020harmonized}. GEDI L4A footprint biomass and L2A relative height~\cite{duncanson2022gedi} are read through Earth Engine. That path is implemented, but a project-permission error on the Earth Engine account blocked it during this study, so no reported result uses GEDI.
+
+\subsection{Clouds}
+Southeast Asia is cloudy on at least 80\% of days, with no reliable clear season~\cite{wilson2016cloud}, and Sentinel-2 metadata for 2017 showed at most one cloud-free scene over much of tropical Indonesia~\cite{sudmanns2020eocompass}. We found no published clear-observation statistic for Kalimantan at plot scale, so we measured one, then designed the estimator so that clouds cost as little as possible.
+
+\textbf{C1, plot-level climatology.} For 97 locations (one per 0.1$^\circ$ cell holding a plot), we read the Sentinel-2 scene classification (SCL) of every acquisition from 2021 to 2023 in a 5$\times$5 window of 20\,m pixels around the plot: 22{,}697 acquisitions after duplicates of the same date were merged. An acquisition is \emph{clear} if every pixel is vegetation, bare soil, water, or unclassified. From this we estimate the per-acquisition clear probability $p$, its monthly cycle, the gaps between clear looks, and the probability of at least one clear look within $\pm W$ days of a random date, which we compare with the independence model $1-(1-p)^m$ for $m$ acquisitions in the window; the difference measures how much clouds cluster in time. We also test the scene-level filter used by many Earth Engine pipelines, including our own platform (\texttt{CLOUDY\_PIXEL\_PERCENTAGE}~$<30$ or $<40$), against the plot condition.
+
+\textbf{C2, missing optical data.} When clouds hide a plot, the optical block (Sentinel-2 and Landsat features) is missing. For a fraction $q\in\{0,0.25,0.5,0.75,1\}$ of each target region's plots we remove it and compare four strategies, all leave-one-region-out: \emph{naive} (the full model, missing values routed down LightGBM's default branches); \emph{dropout}, one model trained on the real rows plus copies with the optical block removed, the modality-dropout idea of Neverova \textit{et al.}~\cite{neverova2016moddrop}; \emph{switch}, a cloud-aware ensemble that uses a radar-and-terrain model when optical data are missing; and \emph{impute}, optical features regressed from radar, a simple form of SAR-to-optical gap filling~\cite{meraner2020cloud}.
+
+\textbf{Cloud-aware conformal intervals.} A prediction interval is only honest if it is calibrated on cases like the one being predicted. When clouds are rare in the calibration data, a group-conditional (Mondrian) calibration~\cite{bostrom2020mondrian} of the cloud-hit group has too few scores. We therefore calibrate on \emph{synthetic cloud}: every inner out-of-fold calibration plot is scored twice, as observed and with its optical block removed, with quantile models trained under modality dropout. The cloud-hit group then has as many calibration scores as the clear group. We call this cloud-aware conformalized quantile regression and test it on every target plot, both as observed and fully clouded.
+
+\subsection{Estimator Ladder}
+\textbf{E0 (off the shelf).} Global products read at the plot, no fitting. \textbf{E1 (no field data).} LightGBM trained only on GEDI footprint biomass labels sampled around each region, using the same satellite predictors; no field plot enters training (implemented, not yet evaluated). \textbf{E2 (transfer).} LightGBM on $\ln\mathrm{AGB}$, trained on all region blocks except the target block and predicting it blind (leave-one-region-out), with Duan smearing~\cite{duan1983smearing}. \textbf{E3 ($k$-shot).} E2 followed by a ratio calibration on $k$ randomly drawn plots of the target block, scored on its remaining plots, repeated 200 times per $k$. Split-conformal intervals for E2 are calibrated on inner leave-one-region-out residuals of the training blocks only~\cite{vovk2005algorithmic}.
+
+\subsection{Confidence: Plot and Project Intervals}
+\textbf{Plot intervals.} All intervals target 90\% and are calibrated on inner leave-one-region-out residuals of the training regions only. With calibration scores $s_1,\dots,s_n$, the conformal threshold is the $\lceil(n+1)(1-\alpha)\rceil$-th smallest score, which guarantees marginal coverage between $1-\alpha$ and $1-\alpha+1/(n+1)$ under exchangeability~\cite{lei2018distribution}. We compare four scores on $y=\ln\mathrm{AGB}$:
+\begin{align}
+\text{split:}\quad & s=|y-\hat y|, \qquad \hat C=\hat y\pm q,\\
+\text{Mondrian:}\quad & \text{split, one } q_g \text{ per availability group } g,\\
+\text{normalized:}\quad & s=|y-\hat y|/\hat\sigma(x), \qquad \hat C=\hat y\pm q\,\hat\sigma(x),\\
+\text{CQR:}\quad & s=\max\{\hat q_{\mathrm{lo}}(x)-y,\ y-\hat q_{\mathrm{hi}}(x)\},\\
+& \hat C=[\hat q_{\mathrm{lo}}(x)-q,\ \hat q_{\mathrm{hi}}(x)+q],
+\end{align}
+following Papadopoulos \textit{et al.}~\cite{papadopoulos2008normalized} for the normalized score, with $\hat\sigma(x)$ a second LightGBM fitted to the inner residuals, and Romano \textit{et al.}~\cite{romano2019cqr} for conformalized quantile regression (CQR), with LightGBM quantile models at 5\% and 95\%. We report coverage, the median ratio of the upper to the lower bound, and the Winkler interval score on the log scale, $(\hat u-\hat l)+\tfrac{2}{\alpha}\big[(\hat l-y)_+ + (y-\hat u)_+\big]$. As Araza \textit{et al.} note, an interval calibrated on plots covers the plot value, which includes field error, not the true stock~\cite{araza2022comprehensive}.
+
+\textbf{Is a metadata ``confidence score'' a confidence?} Monitoring platforms often grade their output with a score built from cloud cover, data completeness, and temporal offset. Ours did: 40 points for cloud cover, plus weights for completeness and stability. We rebuild such a score from the same inputs (40 points for clear optical scenes, 30 for the share of sensor groups present, 30 for temporal closeness) and test whether it ranks plots by their actual error, using Spearman's $\rho$ against $|\ln y-\ln\hat y|$, next to the learned $\hat\sigma(x)$.
+
+\textbf{Project intervals.} Every region block with at least eight plots plays a project, whose true stock is the mean field AGB of its plots. For satellite-only estimates of the mean, a naive interval treats plot errors as independent, $SE=s_w/\sqrt n$. Map errors, however, are spatially correlated over 50--100\,km~\cite{araza2022comprehensive}, so a project shares one regional bias. The two-component interval adds the between-region variance of the region-mean log residual,
 \begin{equation}
-\delta^{U}_j=-80\,f_j,\qquad 0\leq f_j\leq 1.
+SE^2=\frac{s_w^2}{n}+s_b^2,
+\label{eq:twocomp}
 \end{equation}
-On rule-consistent plots, omission removes exactly the small-area share, so
+with $s_w$ and $s_b$ estimated from the other regions only. When $k$ field plots are available, the satellite becomes auxiliary information for a model-assisted estimator~\cite{cochran1977sampling,sarndal1992model}. The ratio estimator is
 \begin{equation}
-\delta^{O}_j=-100\,f_j\;\Rightarrow\;\delta^{U}_j=0.8\,\delta^{O}_j,
-\label{eq:dO}
+\hat{\bar Y}_R=\frac{\sum_{i\in s}y_i}{\sum_{i\in s}\hat y_i}\,\bar{\hat y},\qquad \widehat{V}=\Big(1-\frac kn\Big)\frac{1}{k}\,s_e^2,\quad e_i=y_i-\hat R\hat y_i,
+\label{eq:ratio}
 \end{equation}
-and $a^{\dagger}=0.06$ gives
+where $\bar{\hat y}$ is the satellite mean over the whole project. The regression (GREG) estimator is $\bar y_s+\hat\beta(\bar{\hat y}-\bar{\hat y}_s)$. Both are compared with the field-only mean of the same $k$ plots over 500 random draws. The relative efficiency $\mathrm{MSE}_\text{field}/\mathrm{MSE}_\text{estimator}$ says how many field plots one satellite-assisted plot is worth. We use the empirical MSE over draws, because the GREG variance formula underestimates at small $k$. A conservative estimate $\hat Y(1-\mathrm{UNC})$ with the VM0047 rule exceeds the truth whenever the project is over-credited; we report how often.
+
+\subsection{Scoring}
+We report RMSE, relative RMSE, bias, $R^2$, and Lin's concordance~\cite{lin1989concordance} per dataset and overall, interval coverage for E2, error by field-AGB range, error versus window $W$, and the error of the mean of $n$ plots as $n$ grows, which approximates estimating a larger area.
+
+\subsection{Sequestration}
+Credits are issued on change, not stock. The only public tropical dataset we found that gives repeated per-stem measurements with \emph{day-precision} dates is the SAFE Project tree census in Sabah, Malaysian Borneo~\cite{svatek2025safe,ewers2011safe}: 25\,m$\times$25\,m plots across old-growth, logged, riparian, and oil-palm land, censused from 2010 to 2020, with every stem's measurement date recorded. It is also the closest field site to Kalimantan in our benchmark.
+
+The right grid applies the same chain to every census: Chave Eq.~4 on stems with $D\geq10$\,cm; height from a local $\ln H=a+b\ln D$ model fitted to the heights SAFE measured, with Duan correction; wood density from the Global Wood Density Database~\cite{zanne2009gwdd,chave2009wood} by species, then genus, then family, then plot mean, preferring South-East Asian records. For each plot with censuses at least three years apart, sequestration is
 \begin{equation}
-\delta^{F3}_j=-\tfrac{50}{3}\left(1+4f_j\right).
+\Delta\mathrm{AGB}_j=\frac{\mathrm{AGB}_j(t_1)-\mathrm{AGB}_j(t_0)}{t_1-t_0}\ \ [\mathrm{Mg\,ha^{-1}\,yr^{-1}}],
 \end{equation}
-For F6, $\delta^{F6}=100(0.50/0.47-1)=+6.38\%$ on every plot. Prediction (\ref{eq:dO}) is falsifiable: South Sumatera's regional means show a larger U than O reduction, which will be examined plot by plot. Taking logarithms of (\ref{eq:chave}) gives the local elasticities
-\begin{equation}
-\begin{split}
-d\ln q={}&1.952\,d\ln D+0.976\,d\ln H\\&+0.976\,d\ln\rho+d\ln\mathrm{CF}-d\ln a
-\end{split}
-\end{equation}
-for a contribution $q=\mathrm{CF}\,\Bhat/(1000a)$: a 1\% diameter error moves $q$ about twice as much as a 1\% height error, and an area error moves it one-for-one. Fig.~\ref{fig:sens} plots the three identities; each is linear in $f_j$, so an auditor can bound a plot's exposure from one statistic.
+where $t_0$ and $t_1$ are the median stem dates of the first and last census. This gives 223 plots in 18 blocks, with $t_0$ between 2010 and 2015 and $t_1$ between 2016 and 2020. The manifest released to the left grid holds only plot id, block, coordinates, and the two dates.
+
+The left grid estimates $\Delta\mathrm{AGB}$ three ways: \emph{no change} ($\Delta=0$, the baseline any estimator must beat); \emph{S0}, the difference of the Chloris annual maps between the census years; and \emph{S2}, the difference of two E2 stock predictions at $t_0$ and $t_1$, with E2 trained on the 476 stock plots only. Sentinel-2 did not exist at most $t_0$ dates, so S2 uses Landsat, Sentinel-1, PALSAR, and terrain. No SAFE label is released to any estimator; the same E2 model also predicts SAFE stock at $t_0$, which is an out-of-region test on Borneo.
+
+\subsection{Blindness Ledger}
+Every protocol step is an entry in an append-only log whose entries carry the SHA-256 of the previous entry~\cite{haber1991timestamp}. An evaluation epoch is: \texttt{seal} (digest of the sealed outcomes and of the public manifest), \texttt{commit} (digest of each estimator's prediction file), \texttt{release} (for E2, the digest and size of each fold's training labels, with a flag stating whether any target-block label was included), and \texttt{reveal} (accepted only if the sealed file still matches its digest). Commits after a reveal are refused. Editing any entry breaks every later hash, so a third party can verify the order of events from the log alone~\cite{blum1983coin}.
+
+\subsection{Distributed Extraction}
+One task is one (plot, date, window, sensor) request. Its result is stored under the SHA-256 of the canonical task, which makes re-execution idempotent and turns the cache into a checkpoint: a restarted run skips every finished task. Writes are atomic (write then rename). Transient errors are retried with capped exponential backoff and jitter. Tasks are grouped into spatial tiles so a worker reuses scenes for neighbouring plots, but field plots cluster (one site holds 89 plots), so a tile holding more than the per-worker mean is split into sub-buckets by plot id, keeping all sensors of a plot together. Buckets are then placed either by consistent hashing~\cite{karger1997consistent} or by the longest-processing-time rule~\cite{graham1969bounds}. On the 2{,}052 tasks of this study with 24 workers, the worst-worker load factor $\lambda=\max_w L_w/\bar L$ was 6.75 for tile-only placement, 2.18 for split tiles with consistent hashing, and 1.40 for split tiles with LPT.
+
+%=====================================================================
+\section{Results}
+
+\subsection{How Certain Is the Right Grid?}
+Before scoring the satellites we score the field answer.
+
+\textbf{Plot level.} On the 148 HCSA plots, the Monte Carlo 95\% interval of plot AGB has a median half-width of 31\% (IQR 25--45\%). Of the stems, 45\% have a species-level wood density, 42\% genus-level, 7\% family-level, and 5\% none. The Monte Carlo median is 5\% above the deterministic value, because the allometric error is log-normal; the deterministic value is the one the standards use.
+
+\textbf{Equation choice.} The regional equation of Basuki \textit{et al.} gives almost the same total over all plots (ratio 1.01). By region, however, the stock moves from $-40$\% (Central Kalimantan) to $+121$\% (South Sumatra), because it ignores height where HCSA measured short trees.
+
+\textbf{Pool choice.} The root-to-shoot ratio of SNI 7724 (IPCC 2006) gives 13\% more total carbon than the 2019 Refinement. Two standards, both valid, differ by more than the precision target of most methodologies.
+
+\textbf{Project level.} Table~\ref{tab:gtproj} applies AR-TOOL14 to each province. The sampling uncertainty at 90\% is 9--34\%, and five of six provinces meet SNI 7724's 20\% limit. But measurement and allometric error, which AR-TOOL14 does not count, carry 10--64\% of the variance of the project mean. Their share is largest where the plots vary least between each other (Riau, 64\%). The deductions differ by standard for the same data (Jambi: 24\% under VM0047, 34\% under AR-TOOL14, 14\% under Gold Standard). Reaching $\pm$10\% at 90\% would take 8 to 71 plots per province.
+
+\begin{table}[t]
+\centering
+\caption{Right-Grid Uncertainty per Province (HCSA, AGB)}
+\label{tab:gtproj}
+\footnotesize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{@{}l r r r r r r r@{}}
+\toprule
+ & & & \multicolumn{2}{c}{$u_{90}$ (\%)} & \textbf{Meas.} & \textbf{VM0047} & \textbf{Plots for}\\
+\cmidrule(lr){4-5}
+\textbf{Province} & $n$ & $\bar b$ & \textbf{Sampl.} & \textbf{Total} & \textbf{share} & \textbf{deduct.} & $\pm$\textbf{10\%}\\
+\midrule
+C.\ Kalimantan & 33 & 250 & 13.8 & 14.0 & 10\% & 3.8\% & 36\\
+Jambi & 20 & 171 & 33.9 & 34.5 & 16\% & 23.9\% & 71\\
+Riau & 19 & 126 & 12.7 & 19.8 & 64\% & 2.7\% & 19\\
+S.\ Sumatra & 22 & 80 & 9.2 & 12.3 & 51\% & 0.0\% & 14\\
+W.\ Kalimantan & 36 & 165 & 14.4 & 15.1 & 15\% & 4.4\% & 23\\
+W.\ Papua & 18 & 116 & 8.8 & 12.4 & 57\% & 0.0\% & 8\\
+\bottomrule
+\multicolumn{8}{@{}l}{\scriptsize $\bar b$: stratified mean AGB (Mg\,ha$^{-1}$). Meas.\ share: measurement and}\\
+\multicolumn{8}{@{}l}{\scriptsize allometry share of the variance of $\bar b$.}
+\end{tabular}
+\end{table}
+
+\textbf{Change.} Growth is far harder than stock. On SAFE, the Monte Carlo SD of a plot's $\Delta$AGB is 2.0\,Mg\,ha$^{-1}$\,yr$^{-1}$ when a tree keeps its allometric residual across censuses, against 4.3 when it is redrawn. The signal itself is 1.9. Remeasuring the same stems with the same equation cancels half the error. At block level, Eq.~\ref{eq:vm0047} gives 90\% uncertainties of 101--901\% when the correlation of the two stock means is ignored ($\rho=0$), which is a 100\% deduction for 13 of 15 blocks and over 90\% for the other two. With the measured $\rho$ (0.45--0.99), the uncertainty falls to 28--469\%, and seven blocks keep some credit, the best at an 18\% deduction. With 9--16 plots of 0.06\,ha per block, even the field standard cannot certify growth of 2\,Mg\,ha$^{-1}$\,yr$^{-1}$, unless it uses the correlation that permanent plots provide.
+
+\subsection{Blind Accuracy of Carbon Stock (RQ1)}
+Table~\ref{tab:stock} gives the blind scores. All three estimators were committed to the ledger before the reveal. Over all 476 plots the best blind estimate, E2, misses the field value by a relative RMSE of 48.5\% and explains 31\% of its variance; the Chloris product, which was never fitted to any of our plots, is almost as close (49.3\%). The 2010 harmonized map is worse (57.5\%, $R^2=0.03$), partly because it describes 2010 while most plots were measured years later. Because carbon is a fixed multiple of AGB on both grids, every relative figure applies unchanged to t\,C\,ha$^{-1}$ and t\,CO$_2$e\,ha$^{-1}$.
+
+The dataset matters more than the estimator. On the 1\,ha Labri\`ere units E2 is within 28.6\% (CCC 0.55); on GEO-TREES within 41.9\%; on the Indonesian HCSA plots every estimator misses by more than 100\% and none beats predicting the mean ($R^2<0$).
+
+\begin{table}[t]
+\centering
+\caption{Blind Stock Accuracy (Mg AGB ha$^{-1}$; Committed Before Reveal)}
+\label{tab:stock}
+\footnotesize
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{@{}l l r r r r r@{}}
+\toprule
+\textbf{Subset} & \textbf{Estimator} & \textbf{RMSE} & \textbf{rRMSE} & \textbf{Bias} & $\mathbf{R^2}$ & \textbf{CCC}\\
+\midrule
+All (476) & E0 Chloris & 128.1 & 49.3\% & $-4.6$\% & 0.29 & 0.43\\
+ & E0 HGB 2010 & 149.4 & 57.5\% & $-8.4$\% & 0.03 & 0.27\\
+ & E2 LORO & 126.1 & 48.5\% & $-9.5$\% & 0.31 & 0.59\\
+\midrule
+GEO-T.\ (142) & E0 Chloris & 102.8 & 37.5\% & $-10.3$\% & 0.37 & 0.56\\
+ & E2 LORO & 114.9 & 41.9\% & $0.0$\% & 0.21 & 0.55\\
+\midrule
+HCSA (148) & E0 Chloris & 172.4 & 107.1\% & $+19.0$\% & $-0.12$ & 0.02\\
+ & E2 LORO & 165.6 & 102.9\% & $-29.1$\% & $-0.03$ & 0.22\\
+\midrule
+Labr.\ (186) & E0 Chloris & 101.2 & 31.0\% & $-10.3$\% & 0.18 & 0.37\\
+ & E2 LORO & 93.7 & 28.6\% & $-7.9$\% & 0.30 & 0.55\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Where the Error Comes From}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_scatter}
+\caption{Blind E2 prediction against the field value for 476 plots (log axes). Above about 300\,Mg\,ha$^{-1}$ predictions flatten; small HCSA plots scatter widely in both directions.}
+\label{fig:scatter}
+\end{figure}
+
+\textbf{Saturation.} Fig.~\ref{fig:scatter} shows the pattern. Binned by field AGB, both E0 and E2 regress toward $\sim$300\,Mg\,ha$^{-1}$. For plots above 400\,Mg\,ha$^{-1}$ (mean 480) the E2 mean prediction is 293 and the Chloris mean is 295, a median under-estimate of about one third. Below 50\,Mg\,ha$^{-1}$ (mean 21) E2 predicts 60 and Chloris 178. Between 100 and 300\,Mg\,ha$^{-1}$ the median error of E2 is only $+5$ to $+12$\%. The satellite signal therefore carries useful information in the middle of the range and little at either end, which is the behaviour reported for optical and L-band signals~\cite{mitchard2009using,mermoz2015decrease}.
+
+\textbf{Scale.} The HCSA plots are nested 0.01/0.05\,ha plots with a median of 15 stems, so one large tree more or less moves the plot by hundreds of Mg\,ha$^{-1}$. Their field values span 2 to 876\,Mg\,ha$^{-1}$ within one province. A 30\,m pixel window cannot resolve that, and the 4.6\,km Chloris pixel averages open land and forest together, which explains its large over-estimate on HCSA open-land and scrub plots. The HCSA land-cover labels would separate these plots well (within-class standard deviations of 10--40\,Mg\,ha$^{-1}$ for all classes except high-density forest), but they are released with the field records, so they belong to the right grid and are never shown to the left grid. A satellite classifier that reproduced the HCS stratification is a promising left-grid estimator for future work.
+
+\textbf{Field truth is not the bottleneck.} Labri\`ere publish a 95\% credible interval for every unit; the implied standard error of the field value is 5.0\% (RMS), against a 28.6\% satellite error on the same units. The right grid is far more precise than the left grid, so the gap is a satellite gap, not a ground-truth gap.
+
+\textbf{Time.} Re-extracting the Indonesian plots' optical and C-band features with $W=30$, 90, 180, and 365 days changed their blind error by less than three points (rRMSE 102.5, 104.8, 102.7, 102.0\%), while the share of plots with at least one clear Sentinel-2 scene rose from 74\% at 30 days to 92\% at 90 and 100\% at 180. A tighter window costs coverage in the tropics and buys no accuracy when the field date is only known to the year, and when plot-scale noise dwarfs seasonal change. Temporal matching matters where the forest changes between the two dates, which is the sequestration case below.
+
+\subsection{Closing the Gap (RQ2)}
+\textbf{Better models.} Table~\ref{tab:ladder} adds one information source at a time, always leave-one-region-out. These variants were run after the reveal, so they are exploratory; every variant we tried is reported. Radar alone is ahead of optical alone (54.5\% vs 56.9\% overall; 33.7\% vs 42.0\% on the 1\,ha units), the two together beat either, terrain helps further, and feeding the Chloris product to the model as one more feature helps again. Of these steps, only the last one is clearly outside sampling noise (Section~\ref{sec:reliability}): the simple average of E2 and Chloris is the best blind estimator overall (45.4\%, $R^2=0.39$), 3.7 points better than E2 with a region-bootstrap 95\% interval of $-7.2$ to $-0.6$. None of these steps rescues the HCSA plots.
+
+\begin{table}[t]
+\centering
+\caption{Improvement Ladder, Blind rRMSE (\%)}
+\label{tab:ladder}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+\textbf{Left-grid inputs} & \textbf{All} & \textbf{GEO-T.} & \textbf{HCSA} & \textbf{Labr.}\\
+\midrule
+Optical (S2 + Landsat) & 56.9 & 51.2 & 103.0 & 42.0\\
+Radar (S1 + PALSAR) & 54.5 & 45.9 & 114.7 & 33.7\\
+Optical + radar & 52.1 & 46.4 & 103.7 & 33.9\\
+\quad + terrain (= E2) & 49.1 & 42.0 & 104.8 & 28.8\\
+\quad + Chloris as feature & 47.9 & 38.1 & 105.7 & 27.9\\
+\quad + plot footprint & 47.6 & 38.6 & 103.5 & 28.1\\
+Mean of E2 and Chloris & \textbf{45.4} & \textbf{35.0} & \textbf{98.8} & 28.0\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{A few local plots.} The largest gain comes not from the model but from field data in the target region. Fig.~\ref{fig:gap}(b) shows E3: with $k$ plots of the target block used for a ratio correction, the error of the block total falls from 29\% (GEO-TREES) and 11\% (Labri\`ere) at $k=0$ to 9--10\% and 6\% at $k=10$--20 (median over blocks and 200 draws). On HCSA, calibration hurts until $k=20$ (27\% at $k=0$, 53\% at $k=2$, 24\% at $k=20$): a small plot is so noisy that a handful of them is a worse calibrator than none. How many local plots are needed depends on plot size as much as on the satellite.
+
+\textbf{Aggregation.} Credits are issued for project areas, not single plots. The error of the mean of $n$ plots shrinks with $n$ until only systematic bias remains (Fig.~\ref{fig:gap}(a)). For the 1\,ha units the median absolute error falls from 27\% for one plot to 12\% for ten and 11\% for twenty; for HCSA from 188\% to 27--30\%. The floor of roughly 10\% outside Indonesia and 25--30\% in Indonesia is the regional bias that only local calibration removes.
 
 \begin{figure}[t]
 \centering
-\begin{tikzpicture}
-\begin{axis}[width=0.95\columnwidth,height=4.6cm,xmin=0,xmax=1,ymin=-100,ymax=0,
-  xlabel={$f_j$ (share of plot carbon from 0.01\,ha records)},ylabel={$\delta_j$ (\%)},
-  label style={font=\scriptsize},tick label style={font=\scriptsize},
-  legend style={font=\scriptsize,at={(0.02,0.03)},anchor=south west,draw=none,fill=white,fill opacity=0.85},
-  grid=major,grid style={gray!20}]
-\addplot[thick,color={rgb,255:red,217;green,130;blue,43},domain=0:1] {-80*x};
-\addplot[thick,color={rgb,255:red,62;green,142;blue,94},dashed,domain=0:1] {-100*x};
-\addplot[thick,color={rgb,255:red,31;green,58;blue,104},dotted,domain=0:1] {-50/3*(1+4*x)};
-\legend{U: $-80f_j$,O: $-100f_j$ (consistent plots),F3: $-\frac{50}{3}(1+4f_j)$}
-\end{axis}
-\end{tikzpicture}
-\caption{Closed-form plot-level change under three metadata faults as a function of the small-area carbon share $f_j$. These are analytical identities, to be verified plot by plot (target residual $<10^{-9}$ points).}
-\label{fig:sens}
+\includegraphics[width=\columnwidth]{fig_closing_gap}
+\caption{Closing the gap. (a) Error of the mean of $n$ plots against its field mean; (b) error of the block total after a ratio calibration on $k$ local plots. Median over blocks and 200--300 random draws; log axes.}
+\label{fig:gap}
 \end{figure}
 
-\subsection{AI Module: ML Metadata Auditor (RQ3)}
-\paragraph*{Feature design} Each record is represented by point features ($\ln D$, $\ln H$, $\ln\rho$, area class, $D-15$) and contextual features computed within its plot and region: the residual of $\ln H$ from a regional log-log height-diameter fit, within-plot $z$-scores of $D$ and $H$, the record's carbon share $(\chat_{ij}/a_{ij})/\Chat^{R}_j$, and the count of duplicate composite keys. The explicit diameter-to-area rule flag is \emph{withheld} from the ML features so that the models must learn the pattern, which makes the comparison with the rule validator meaningful.
 
-\paragraph*{Unsupervised detector} An Isolation Forest \cite{liu2008isolation} assigns each record an anomaly score
-\begin{equation}
-s(x,n)=2^{-\mathbb{E}[h(x)]/c(n)},\qquad c(n)=2H_{n-1}-\tfrac{2(n-1)}{n},
-\end{equation}
-where $h(x)$ is the path length to isolate $x$, $H_{n-1}$ the harmonic number, and scores near 1 indicate anomalies. It needs no labels and therefore also runs on the real 39-plot data, where we report the rank of the 15 disputed records.
+\textbf{Intervals} are analysed together with clouds in Section~\ref{sec:rq3}.
 
-\paragraph*{Supervised detector} A gradient-boosted decision tree classifier \cite{chen2016xgboost} is trained on labels produced by fault injection: unit mismatches ($H\times 100$ for centimetres, $H\times 3.281$ for feet, $D\times 10$ for millimetres), area-class swaps (F4), duplicate-key collapses (F5), and diameter-to-area inconsistencies modelled on the 15 real cases. Validation uses five-fold GroupKFold by plot, so no plot appears in both training and test folds, and leave-one-region-out (LORO) evaluation, so each regional shard is tested on a model trained on the other five. LORO tests whether a model deployed to one regional node generalises to another.
+\subsection{Clouds and Confidence (RQ3)}
+\label{sec:rq3}
+\textbf{How often is a plot clear?} Table~\ref{tab:cloud} gives the plot-level climatology. On a median Indonesian HCSA location, only 21.5\% of Sentinel-2 acquisitions see the plot completely clear (Sabah 26\%, Gabon and Congo 17\%, the Americas 39\%). The year is not flat (Fig.~\ref{fig:cloudmonth}): in Indonesia the clear share falls to 7.6\% in January and 14--15\% in December and February, and peaks at 33.5\% in May, a factor of 4.4. Revisit compensates for cloudiness. With two Sentinel-2 satellites, the median gap between clear looks is 10 days and the 90th percentile 40 days, so 81\% of random dates have a clear look within $\pm$15 days and 96\% within $\pm$30. Clouds cluster in time: the measured probability falls below the independence model in every region, most in Africa ($\pm$30 days: 79\% against 89\%).
 
-\paragraph*{Hybrid auditor and explainability} The deployed auditor is the union of explicit rules (layer L2) and the GBDT. Each ML flag carries per-feature SHAP attributions \cite{lundberg2017shap} so a reviewer can see why a record was flagged. Flagged records are quarantined for human review and never auto-corrected.
-
-\subsection{Distributed System Design: NestMRV Architecture (RQ4)}
-All services run as containers on Kubernetes \cite{burns2016borg}.
-
-\paragraph*{Partitioning and the plot co-location invariant} Records are routed by the key $(\text{region},\text{plot})$. The core invariant is
-\begin{equation}
-\forall\,i,i'\in j:\quad \mathrm{shard}(i)=\mathrm{shard}(i'),
-\label{eq:coloc}
-\end{equation}
-so (\ref{eq:ref}) is computed locally and the expansion step needs no cross-shard shuffle. Under random record-level partitioning across $p$ workers, the probability that a plot with $n_j$ records stays on one worker is $p^{\,1-n_j}$. With the sample mean of 18.3 records per plot, even $p=2$ splits a plot with probability $1-2^{-17.3}>0.9999$, so nearly every plot would require a network shuffle in which $a_{ij}$ could be dropped or misjoined.
-
-\paragraph*{Load balancing} Region-only sharding is skewed. With shard loads $L_k$ in records, the imbalance factor
-\begin{equation}
-\lambda=\frac{\max_k L_k}{\tfrac{1}{K}\sum_k L_k}=\frac{267}{119}=2.24
-\end{equation}
-means WK would take 2.24 times the mean load and bound the makespan. NestMRV therefore keeps geographic routing for data governance but splits large regions into virtual partitions by consistent hashing of plot identifiers \cite{karger1997consistent}, preserving (\ref{eq:coloc}) while targeting $\lambda\leq 1.2$.
-
-\paragraph*{Parallel execution} Per-record allometry, carbon conversion, and ML scoring form a map stage; per-plot, per-class sums form a combiner; plot densities form the reduce stage. Two interchangeable back ends are implemented: Ray tasks and actors \cite{moritz2018ray} and Spark RDD or DataFrame operations \cite{zaharia2012rdd}. Model inference is batched per shard so the auditor scales with the same partitioning.
-
-\paragraph*{Exactly-once effect and denominator integrity} Ingestion uses a partitioned, replicated log with at-least-once delivery. Shard writes are idempotent upserts keyed by $K=(\text{region},\text{plot},a,\text{tree})$, so redelivery cannot double-count. Because $a$ is part of $K$, a record that loses its area cannot form a valid key and is rejected at layer L1 rather than silently defaulted. Each record's leaf hash $h_i=\mathrm{SHA256}(K\,\|\,D\,\|\,H\,\|\,\rho\,\|\,\text{eq\_id})$ feeds a per-plot Merkle tree \cite{merkle1988signature}; any change to $a_{ij}$ in transit changes the root and is detected with probability $1-2^{-256}$ against random corruption.
-
-\paragraph*{Checkpointing and recovery} Each shard periodically persists \{log offset, partial class sums, Merkle roots\} as an aligned snapshot in the spirit of Chandy and Lamport \cite{chandy1985snapshots}. After a crash, Kubernetes restarts the pod, which restores the last checkpoint and replays the log from the stored offset; idempotent keys make replay safe. Young's approximation \cite{young1974checkpoint} sets the interval
-\begin{equation}
-T_{\mathrm{opt}}\approx\sqrt{2\,C\,M},
-\end{equation}
-for checkpoint cost $C$ and mean time between failures $M$. For illustration, $C=5$\,s and $M=24$\,h give $T_{\mathrm{opt}}\approx 15.5$\,min; measured $C$ will replace this assumption.
-
-\paragraph*{Deterministic reduction} Floating-point addition is not associative, so a parallel sum can differ in its last bits depending on worker count and arrival order, breaking digest-based verification. NestMRV sorts records by $K$ within each plot before reduction and performs the per-plot sum in a single task with compensated summation, making outputs bit-identical regardless of $p$ or failure schedule.
-
-\paragraph*{Raft configuration store} The sampling-design specification, rule versions, model versions, and dataset digests live in a five-node Raft cluster \cite{ongaro2014raft} (CP under CAP). A write commits when a majority $q=\lfloor n/2\rfloor+1=3$ acknowledges, so the store tolerates $f=\lfloor (n-1)/2\rfloor=2$ crash failures; any two majorities intersect, so a committed configuration cannot be lost by a leader change. Per entry, the leader exchanges $2(n-1)=8$ messages. With independent node availability $A=0.99$, store availability is
-\begin{equation}
-A_{\mathrm{Raft}}=\sum_{k=3}^{5}\binom{5}{k}A^{k}(1-A)^{5-k}\approx 0.99999.
-\end{equation}
-
-\paragraph*{PBFT verifier ledger} Developers, VVBs, registries, and buyers do not fully trust one another, so crash tolerance is insufficient. At the end of each run, the aggregator proposes the tuple (dataset digest, configuration version, output Merkle root) to a four-node PBFT group \cite{castro1999pbft}, one replica per stakeholder type. With $n=3f+1=4$, the ledger tolerates $f=1$ Byzantine verifier and commits with quorum $2f+1=3$. The normal case costs
-\begin{equation}
-M_{\mathrm{PBFT}}=(n-1)+(n-1)^2+n(n-1)=2n(n-1)=24
-\end{equation}
-messages per committed run, which is negligible because the ledger commits one digest per run rather than per record. The ledger stores hashes only, never raw measurements or coordinates.
-
-\section{Results and Discussion}
-
-Retained diameters range from 5.0 to 100.5\,cm, heights from 1.7 to 47.4\,m, and wood densities from 0.2700 to 0.9945\,g\,cm$^{-3}$; 283 records use 0.01\,ha and 431 use 0.05\,ha (Table~\ref{tab:prelim}).
-
-\begin{table*}[t]
+\begin{table}[t]
 \centering
-\caption{Preliminary Feasibility Benchmark and Regional Shard Sizes}
-\label{tab:prelim}
-\renewcommand{\arraystretch}{1.12}
-\small
-\begin{tabular}{@{}l l r r r r r r r r@{}}
+\caption{Plot-Level Sentinel-2 Clear-Sky Climatology, 2021--2023 (Median over Locations)}
+\label{tab:cloud}
+\footnotesize
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}l r r r r r r@{}}
 \toprule
-\textbf{Shard} & \textbf{Region} & \textbf{Plots} & \textbf{Records} & \textbf{Load share} & \textbf{Reproduced} & \textbf{Mean R} & \textbf{Mean U} & \textbf{Mean O} & \textbf{Mean $\delta^{U}$ (\%)}\\
+ & & & \multicolumn{2}{c}{\textbf{Gap (d)}} & \multicolumn{2}{c}{\textbf{P(clear in $\pm W$)}}\\
+\cmidrule(lr){4-5}\cmidrule(l){6-7}
+\textbf{Region} & \textbf{Loc.} & $p$ & \textbf{Med.} & \textbf{P90} & $\pm$15\,d & $\pm$30\,d\\
 \midrule
-CK & Central Kalimantan & 6 & 118 & 16.5\% & 118 & 55.02 & 37.42 & 35.51 & $-36.05$\\
-JA & Jambi & 3 & 51 & 7.1\% & 51 & 44.85 & 35.27 & 34.52 & $-21.03$\\
-RI & Riau & 7 & 81 & 11.3\% & 53 & 39.63 & 36.41 & 35.61 & $-8.67$\\
-SS & South Sumatera & 5 & 91 & 12.7\% & 91 & 51.78 & 42.75 & 45.57 & $-17.89$\\
-WK & West Kalimantan & 12 & 267 & 37.4\% & 84 & 52.16 & 42.21 & 39.63 & $-21.69$\\
-WP & West Papua & 6 & 106 & 14.8\% & 104 & 49.77 & 45.11 & 43.58 & $-8.92$\\
-\midrule
-\textbf{All} & Retained sample & \textbf{39} & \textbf{714} & 100\% & \textbf{501} & \textbf{49.37} & \textbf{40.41} & \textbf{39.25} & $\bm{-19.06}$\\
+Indonesia (HCSA) & 24 & 0.215 & 10 & 40 & 0.81 & 0.96\\
+Sabah (SAFE) & 10 & 0.262 & 15 & 41 & 0.84 & 0.99\\
+Africa & 22 & 0.166 & 18 & 62 & 0.61 & 0.79\\
+Americas & 40 & 0.394 & 10 & 25 & 0.82 & 0.94\\
 \bottomrule
-\multicolumn{10}{@{}p{0.96\textwidth}@{}}{\footnotesize Carbon densities in t\,C\,ha$^{-1}$. R: recorded areas; U: uniform 0.05\,ha; O: omit $D<15$\,cm. Reproduced: within relative tolerance $10^{-6}$. The last column averages paired plot percentages. Load share is the fraction of records each regional shard would hold under region-only partitioning.}
+\multicolumn{7}{@{}l}{\scriptsize $p$: share of acquisitions with every plot pixel clear. Independence model at $\pm$30\,d:}\\
+\multicolumn{7}{@{}l}{\scriptsize Indonesia 0.98, Sabah 0.98, Africa 0.89, Americas 1.00.}
 \end{tabular}
-\end{table*}
+\end{table}
 
-\begin{callout}[title={Documented evidence (preliminary analysis, completed 16 Oct 2026).}]{evid}
-\small
-\begin{itemize}\setlength\itemsep{1pt}
-\item 213 of 714 archived biomass values (29.83\%) are \emph{not} reproducible at relative tolerance $10^{-6}$; the largest record-level discrepancy is 9.80\% and the largest plot-level discrepancy 8.70\%. The archive holds no calculation-version history.
-\item Replacing nested areas with a uniform 0.05\,ha lowers mean density by 18.14\% (paired plot mean 19.06\%, maximum 64.52\%); omitting stems below 15\,cm lowers it by 20.49\% (paired mean 21.39\%, maximum 75.25\%).
-\item 15 records in 8 plots violate the published diameter-to-area rule; hypothetical reassignment moves plot estimates from $-44.23\%$ to $+16.05\%$.
-\item On the 31 plots without disputed records, the uniform-area reduction persists (mean 16.68\%, range 0 to 60.20\%).
-\item Records per region range from 51 (JA) to 267 (WK); region-only sharding has load-imbalance factor $\lambda=2.24$.
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_cloud_month}
+\caption{Share of Sentinel-2 acquisitions in which the whole plot is clear, by month, 2021--2023.}
+\label{fig:cloudmonth}
+\end{figure}
+
+\textbf{The scene filter is the real problem.} Scene-level cloud percentage agrees only loosely with the plot (Spearman $-0.67$). In Indonesia, the rule \texttt{CLOUDY\_PIXEL\_PERCENTAGE}~$<30$ keeps 11.5\% of acquisitions, but 34\% of the scenes it keeps are cloudy over the plot, and it throws away 65\% of the acquisitions in which the plot is clear. At $<40$, the threshold our own platform uses for segmentation, 40\% of the kept scenes are cloudy over the plot. Masking at the plot instead of filtering scenes gives 2.8 times as many usable clear looks (21.5\% against 7.6\% of acquisitions) and removes the cloudy ones that pass the filter.
+
+\textbf{What clouds cost the estimate.} Table~\ref{tab:cloudrob} removes the optical block from a growing share of target plots. Because the model leans on radar, terrain, and the annual product, losing every optical feature raises the blind error from 48.0\% to 50.0\% rRMSE. Modality dropout and the cloud-aware switch both handle partial cloud well; the switch is best on the cloud-hit plots at low $q$ (37.7\% against 43.3\% for the naive model at $q=0$, on the 23 plots that really had no clear scene). Imputing optical features from radar is harmful: the bias grows to $-61$\% at full cloud, a warning for SAR-to-optical gap filling used as a model input.
+
+\begin{table}[t]
+\centering
+\caption{Blind rRMSE (\%) When Clouds Remove the Optical Block from a Share $q$ of Target Plots}
+\label{tab:cloudrob}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}r r r r r@{}}
+\toprule
+$q$ & \textbf{Naive} & \textbf{Dropout} & \textbf{Switch} & \textbf{Impute}\\
+\midrule
+0 & 48.0 & 48.0 & \textbf{47.7} & 51.5\\
+0.25 & 48.5 & 48.6 & \textbf{47.9} & 61.2\\
+0.5 & 49.6 & 49.1 & \textbf{49.1} & 67.9\\
+0.75 & 49.3 & 49.4 & \textbf{49.1} & 77.5\\
+1 & \textbf{50.0} & \textbf{50.0} & 50.4 & 84.6\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Which intervals are honest?} Table~\ref{tab:intervals} compares the four interval methods. Split conformal, the method of the confirmatory run, reaches 88\% coverage but is wide (upper bound 16 times the lower) and fails on HCSA (68\%). Normalized conformal is narrow but under-covers (79\%), because a difficulty model fitted on other regions does not transfer. CQR is the only method that reaches the target overall (89.9\%), with intervals three times narrower than split (ratio 5.3) and the best Winkler score. Mondrian calibration by optical availability adds nothing: only 23 plots lack optical data, too few to calibrate a group. HCSA remains under-covered by every method (68--81\%): its plots are noisier than any training block, a shift that marginal conformal guarantees do not cover.
+
+\begin{table}[t]
+\centering
+\caption{90\% Interval Methods, Leave-One-Region-Out (Coverage; Median Upper/Lower Ratio; Winkler Score)}
+\label{tab:intervals}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r r r r r r@{}}
+\toprule
+\textbf{Method} & \textbf{All} & \textbf{GEO-T.} & \textbf{HCSA} & \textbf{Labr.} & \textbf{Ratio} & \textbf{Winkler}\\
+\midrule
+Split & 0.884 & 0.958 & 0.682 & 0.989 & 16.3 & 4.21\\
+Mondrian & 0.882 & 0.958 & 0.676 & 0.989 & 16.3 & 4.42\\
+Normalized & 0.794 & 0.782 & 0.723 & 0.859 & 3.3 & 3.53\\
+CQR & \textbf{0.899} & 0.937 & \textbf{0.811} & 0.941 & 5.3 & \textbf{3.05}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Intervals under cloud.} Fig.~\ref{fig:cloudint} shows the effect. When every target plot is clouded, plain CQR, calibrated on plots as observed, falls to 86.5\% coverage (HCSA 70\%). The cloud-aware CQR, calibrated on synthetic cloud, keeps 90.5\% (HCSA 77\%, GEO-TREES 95\%, Labri\`ere 98\%). It does this by widening the interval honestly, to a ratio of 7.8 against 5.4. On plots as observed, it covers 90.5\% at ratio 5.7. A cloudy plot gets a wider interval, which is what an honest confidence statement should do.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_cloud_intervals}
+\caption{Coverage of 90\% intervals on target plots as observed and with every optical feature removed. Cloud-aware calibration keeps the target overall; plain CQR falls to 86.5\%.}
+\label{fig:cloudint}
+\end{figure}
+
+\textbf{A metadata score is not a confidence.} The rebuilt platform-style confidence score correlates with the actual error in the \emph{wrong} direction over all plots (Spearman $+0.39$): plots scored as most reliable were the least accurate. The reason is that the recent, cloud-checked HCSA plots score high and are the hardest to predict. Within datasets the correlation is weak ($+0.06$, $-0.18$, $+0.17$). The learned difficulty $\hat\sigma(x)$ ranks errors correctly ($+0.41$ overall; $+0.29$, $+0.12$, $+0.08$ within datasets). Image quality is a property of the input. Confidence is a property of the error, and it has to be calibrated against field data.
+
+\textbf{Project-level confidence and over-crediting.} For 19 projects (blocks with at least 8 plots), the blind satellite mean missed the field mean by a median of 23\%. The naive interval, with plot errors assumed independent, had a median half-width of 28\% but covered only 74\% of projects (HCSA 33\%), and two projects would have been over-credited even after the VM0047 deduction. The two-component interval of Eq.~\ref{eq:twocomp} covered all 19, at an honest half-width of 71--86\%, which under VM0047 means 61--76\% of the credits are deducted. A satellite-only project estimate is therefore either over-confident or almost uncreditable.
+
+Field plots change this (Fig.~\ref{fig:modelassist}, Table~\ref{tab:modelassist}). With the satellite as auxiliary data, the ratio estimator is 1.4 to 2.3 times as efficient as the field-only mean on GEO-TREES ($k=3$ to 20) and about 2 times on Labri\`ere ($k=3$ to 10); at $k=20$ the small Labri\`ere regions are nearly fully sampled and the advantage disappears. Equivalently, the satellite replaces roughly half of the field plots needed for a given precision: summed over regions, the plots needed for $\pm$10\% at 90\% fall from 408 to 216 (GEO-TREES) and from 381 to 162 (Labri\`ere). On HCSA, where the satellite cannot rank small plots (within-region correlation 0.2), the ratio estimator is less efficient than field-only at every $k$ (0.54--0.96), only GREG gains at $k=20$ (1.25), and the plots needed rise from 1{,}483 to 1{,}877. GREG under-states its own variance at small $k$ (coverage 66--73\% at $k=3$), so the ratio estimator is the safer choice. Finally, the VM0047 deduction does not make an estimate conservative: with $k=10$ plots, the deducted estimate still exceeded the true stock in 32--43\% of draws on the large-plot datasets, for all three estimators, because the deduction only starts above 10\% uncertainty. The lower end of a 90\% interval, by construction, exceeds the truth in about 5\% of draws.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_model_assisted}
+\caption{Efficiency of the ratio estimator (satellite + $k$ field plots) relative to the field-only mean, by empirical MSE over 500 draws. Above 1, the satellite saves field plots.}
+\label{fig:modelassist}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Satellite as Auxiliary Data: Coverage of 90\% CI and Efficiency vs Field-Only (500 Draws)}
+\label{tab:modelassist}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r r r r r r@{}}
+\toprule
+ & & \multicolumn{2}{c}{\textbf{Field only}} & \multicolumn{3}{c}{\textbf{Ratio (satellite + $k$)}}\\
+\cmidrule(lr){3-4}\cmidrule(l){5-7}
+\textbf{Dataset} & $k$ & \textbf{Cov.} & \textbf{RMSE} & \textbf{Cov.} & \textbf{RMSE} & \textbf{Eff.}\\
+\midrule
+GEO-TREES & 5 & 0.91 & 16.3 & 0.90 & 12.2 & 1.78\\
+ & 10 & 0.88 & 10.4 & 0.89 & 7.0 & 2.20\\
+ & 20 & 0.90 & 5.7 & 0.90 & 3.8 & 2.25\\
+HCSA & 5 & 0.85 & 36.7 & 0.80 & 47.6 & 0.60\\
+ & 10 & 0.86 & 22.4 & 0.86 & 27.1 & 0.69\\
+ & 20 & 0.89 & 11.1 & 0.87 & 11.3 & 0.96\\
+Labri\`ere & 5 & 0.89 & 17.9 & 0.86 & 12.3 & 2.09\\
+ & 10 & 0.88 & 10.1 & 0.88 & 7.2 & 1.97\\
+ & 20 & 0.88 & 3.1 & 0.89 & 3.5 & 0.81\\
+\bottomrule
+\multicolumn{7}{@{}l}{\scriptsize RMSE in \% of the project mean. Eff.: MSE(field)/MSE(ratio); $>1$ saves plots.}
+\end{tabular}
+\end{table}
+
+\subsection{Sequestration (RQ4)}
+\textbf{A right-grid failure first.} After the reveal, the 27 oil-palm plots showed a mean field stock of 505\,Mg\,ha$^{-1}$, more than old-growth forest. Every stem in those plots is an oil palm whose recorded ``diameter'' (median 76\,cm) includes the frond bases, and Chave Eq.~4 is a model for dicotyledonous trees. The standard formula is therefore not valid there. The evaluation script had fixed an ``excluding oil palm'' subset before the reveal, and we report it as the primary result: 196 plots in 15 blocks, mean field $\Delta\mathrm{AGB}=1.87$\,Mg\,ha$^{-1}$\,yr$^{-1}$ (0.88\,t\,C\,ha$^{-1}$\,yr$^{-1}$), median census gap 8.4 years.
+
+\textbf{Blind satellite change estimates do not beat ``no change''.} Table~\ref{tab:seq} gives the scores. At plot level the Chloris difference (S0) has almost the same error as predicting zero (RMSE 8.06 vs 8.12\,Mg\,ha$^{-1}$\,yr$^{-1}$, $r=0.07$). The E2 stock difference (S2) is twice as bad and has the wrong sign: it predicts a loss of 4\,Mg\,ha$^{-1}$\,yr$^{-1}$ where the forest gained 1.9. The cause is a sensor artefact: Sentinel-1 existed for only 13\% of the plots at $t_0$ but for all of them at $t_1$, and no L-band mosaic before 2015 is available in the catalogue, so the two stock predictions are made from different inputs. Restricting the stock model to sensors present at both dates (S2c: Landsat and terrain) halves the bias but not the noise.
+
+\textbf{Why.} The blind E2 stock error on these plots has a standard deviation of 146\,Mg\,ha$^{-1}$. If the errors at $t_0$ and $t_1$ were independent, differencing them over 8.4 years would add noise of about 25\,Mg\,ha$^{-1}$\,yr$^{-1}$, thirteen times the signal. The errors are partly correlated, because the same place is seen twice, which is why the observed S2c error (14\,Mg\,ha$^{-1}$\,yr$^{-1}$) is lower, but it is still seven times the signal. A stock estimator with plot-scale error of 30--100\% cannot resolve growth of 1\% per year.
+
+\textbf{What does work is not a satellite.} Two estimators trained on the other SAFE blocks' measured change (leave-one-block-out, run after the reveal and therefore exploratory) were added: a LightGBM on Landsat and Chloris change features (S3), and the plain mean rate of the other blocks with no satellite input at all. The regional default rate is the most accurate estimator at both scales (block-mean MAE 0.98 vs 2.05 for no change), and S3 learns little more than that rate. At this plot size and with these sensors, the information about growth comes from nearby field remeasurements, not from the pixels.
+
+\begin{table}[t]
+\centering
+\caption{Blind Sequestration, SAFE Excluding Oil Palm (Mg AGB ha$^{-1}$ yr$^{-1}$; Field Mean 1.87)}
+\label{tab:seq}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r r r r r@{}}
+\toprule
+ & \multicolumn{3}{c}{\textbf{Plot} (196)} & \multicolumn{2}{c}{\textbf{Block mean} (15)}\\
+\cmidrule(lr){2-4}\cmidrule(l){5-6}
+\textbf{Estimator} & \textbf{RMSE} & \textbf{Bias} & $r$ & \textbf{MAE} & \textbf{Bias}\\
+\midrule
+No change & 8.12 & $-1.87$ & -- & 2.05 & $-1.92$\\
+S0 Chloris difference & 8.06 & $-1.01$ & 0.07 & 1.61 & $-1.20$\\
+S2 E2 stock difference & 16.36 & $-5.90$ & $-0.02$ & 7.40 & $-7.08$\\
+S2c consistent sensors$^\dagger$ & 13.96 & $-3.50$ & 0.09 & 4.48 & $-3.77$\\
+S3 change model, LOBO$^\dagger$ & 8.39 & $-0.50$ & $-0.07$ & 1.33 & $-0.27$\\
+Regional default rate$^\dagger$ & \textbf{7.91} & \textbf{0.00} & -- & \textbf{0.98} & \textbf{$-0.05$}\\
+\bottomrule
+\multicolumn{6}{@{}l}{\scriptsize $^\dagger$Exploratory, defined after the reveal.}
+\end{tabular}
+\end{table}
+
+\textbf{Out-of-region stock on Borneo.} The same E2 model, trained without any Bornean plot, misses SAFE stock at $t_0$ by 132\% rRMSE with a $+80$\% bias (excluding oil palm). It over-predicts the 0.06\,ha logged and riparian plots (field mean 99, predicted 217\,Mg\,ha$^{-1}$), a second instance of the small-plot problem seen on HCSA.
+
+\subsection{How Reliable Are These Numbers?}
+\label{sec:reliability}
+Every score above comes from 27 region blocks, and errors are correlated within a block. We therefore resampled whole blocks with replacement (2{,}000 draws) and refitted E2 with five LightGBM seeds (Table~\ref{tab:reliab}). Seed noise is small: the overall rRMSE moved by 0.36 points (SD). Region sampling is not: the 95\% interval of the overall rRMSE runs from 35\% to 69\%. Three kinds of claim survive this test. The first is the differences between datasets and plot sizes, whose intervals do not overlap. The second is the gain of the E2--Chloris average over E2 ($-3.7$ points, interval $-7.2$ to $-0.6$). The third is the coverage gain of cloud-aware calibration under full cloud ($+4.0$ points, $+1.9$ to $+6.6$). Two claims do not survive. The difference between E2 and Chloris ($-0.8$ points, $-8.3$ to $+5.3$) and between radar and optical inputs ($-2.3$, $-11.1$ to $+5.1$) are within noise. We report them as tendencies, not findings.
+
+\begin{table}[t]
+\centering
+\caption{Reliability: Region-Block Bootstrap 95\% Intervals (2{,}000 Draws) and Seed Spread}
+\label{tab:reliab}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r r@{}}
+\toprule
+\textbf{Quantity} & \textbf{Value} & \textbf{95\% interval}\\
+\midrule
+rRMSE E2, all plots & 48.5\% & 34.9--68.7\\
+rRMSE E2, Labri\`ere (1\,ha) & 28.6\% & 22.8--38.4\\
+rRMSE E2, GEO-TREES & 41.9\% & 35.9--51.8\\
+rRMSE E2, HCSA & 102.9\% & 88.1--121.7\\
+E2 $-$ Chloris (points) & $-0.8$ & $-8.3$ to $+5.3$\\
+E2--Chloris average $-$ E2 (points) & $-3.7$ & $-7.2$ to $-0.6$\\
+Radar only $-$ optical only (points) & $-2.3$ & $-11.1$ to $+5.1$\\
+CQR coverage, as observed & 89.9\% & 83.9--94.4\\
+Cloud-aware CQR coverage, fully clouded & 90.5\% & 84.7--95.2\\
+Cloud-aware $-$ plain, fully clouded (points) & $+4.0$ & $+1.9$ to $+6.6$\\
+\midrule
+E2 rRMSE over 5 seeds (mean $\pm$ SD) & 48.8 & $\pm$0.36\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Systems (RQ5)}
+\textbf{Production runs.} The stock extraction ran 2{,}052 tasks on 24 workers in 2.1\,h (0.26 tasks\,s$^{-1}$) with a measured load factor of 1.47, close to the 1.40 predicted from task counts; 85 transient errors were absorbed by retries. We stopped the first attempt, which used tile-only placement, to switch policies; the restart skipped the 92 tasks already in the content-addressed cache. Seventeen tasks (0.8\%) failed permanently: 13 hit two Landsat scenes whose files could not be read from the catalogue, and four hit unreadable Sentinel-2 files. Retrying cannot repair a permanently broken input; the runner records such tasks and the model treats their features as missing, and a scene-level fallback is the obvious next step. The SAFE extraction ran 2{,}006 tasks on 16 workers in 2.3\,h with no permanent failures, 36 retries, and a load factor of 1.44.
+
+\textbf{Scaling, faults, and resume.} A random sample of 48 tasks (Landsat, Sentinel-1, PALSAR, terrain) was run on 1 to 32 workers, each time on an empty cache (Table~\ref{tab:sys}). Throughput rose 5.1-fold up to 8 workers and then flattened (5.5-fold at 32). Two limits explain this. With 48 tasks, 32 workers hold one or two buckets each, so the load factor rose to 2.67. And the makespan cannot fall below the slowest single task, a multi-scene read, however many workers wait beside it. The extraction is bound by remote reads, not by local compute. Every run was compared with the single-worker run task by task: all 47 finished results were bit-identical at every worker count. With transient faults injected at rates 0.1, 0.2, and 0.3 per attempt, the runner absorbed 13, 18, and 28 retries, and again all 47 results matched. The one task that never finished, in any run, is the one whose Landsat file is unreadable, which is a permanent fault. In the resume test, a run stopped after 23 tasks; the restart skipped those 23 from the cache, ran the remaining 24, and produced output identical to the uninterrupted run.
+
+\begin{table}[t]
+\centering
+\caption{Strong Scaling and Fault Injection (48 Tasks, Empty Cache)}
+\label{tab:sys}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}r r r r r r@{}}
+\toprule
+\textbf{Workers} & \textbf{Fault $p$} & \textbf{Wall (s)} & \textbf{Speed-up} & $\lambda$ & \textbf{Identical}\\
+\midrule
+1 & 0 & 498.5 & 1.00 & 1.00 & 47/47\\
+2 & 0 & 207.8 & 2.40 & 1.00 & 47/47\\
+4 & 0 & 144.8 & 3.44 & 1.00 & 47/47\\
+8 & 0 & 98.4 & 5.06 & 1.00 & 47/47\\
+16 & 0 & 93.3 & 5.34 & 1.33 & 47/47\\
+32 & 0 & 91.4 & 5.45 & 2.67 & 47/47\\
+\midrule
+8 & 0.1 & 106.7 & 4.67 & 1.00 & 47/47\\
+8 & 0.2 & 105.0 & 4.75 & 1.00 & 47/47\\
+8 & 0.3 & 105.7 & 4.72 & 1.00 & 47/47\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The super-linear step from one to two workers reflects variable latency of the remote service between runs; each configuration was run once, so differences of a few seconds are within noise.
+
+\textbf{Ledger.} The final log holds 37 entries : four seals (one per right-grid build and one per evaluation run), three commits, two reveals, and 28 label releases, none of which included a label from its target block. The chain verifies end to end. In unit tests, editing any entry broke verification, a commit after a reveal was refused, and a reveal with a modified outcome file was refused.
+
+%=====================================================================
+\section{Discussion}
+
+\subsection{Can Satellites Replace the Field Plot?}
+Not at the scale of a plot, and not for growth. Tested blind, open satellite data put a 1\,ha plot's carbon stock within roughly 30--40\% of the field-formula value, and a 0.05\,ha plot within about 100\%; the best honest interval (CQR) is a factor of five wide. For sequestration, the quantity on which credits are paid, no satellite estimator we built beat assuming no change, and a regional average of measured growth beat all of them. A platform that issues plot-level or annual growth numbers from these sensors alone is reporting a default constant, whether or not it says so.
+
+What satellites do well is replace part of the inventory. Used as auxiliary data in a ratio estimator, they halved the number of field plots needed for a given precision on large-plot datasets (Table~\ref{tab:modelassist}). The useful framing is not ``satellites instead of field plots'' but ``satellites plus a small, well-designed set of field plots instead of a full inventory''. Even that only holds where the satellite can rank plots within a project. On the small Indonesian plots it cannot (within-region correlation 0.2), and there it does not save a single plot.
+
+\subsection{Our Numbers Against the Literature}
+Table~\ref{tab:bench} places our blind results next to published validations. Our 1\,ha error (29\%) is close to the 31--38\% reported for Sentinel-1 and PALSAR in Kalimantan~\cite{berninger2018sar}. That study was validated against a lidar-upscaled reference layer, not blind against field plots, and it reports the same underestimation above 200\,Mg\,ha$^{-1}$. Our saturation near 300\,Mg\,ha$^{-1}$ matches the flattening near 250\,Mg\,ha$^{-1}$ in the global map of Santoro \textit{et al.}~\cite{santoro2021global} and the steep rise of map error above 300\,Mg\,ha$^{-1}$ found by Araza \textit{et al.}~\cite{araza2022comprehensive}. Airborne lidar in Sabah, the best remote sensing can do, still errs by 25\% at 0.1\,ha and 13\% at 1\,ha~\cite{jucker2018estimating}. Plot size dominates every comparison. Local variation of AGB alone has a coefficient of variation of 46\% at 0.1\,ha and 17\% at 1\,ha~\cite{rejou2014local}, and Duncanson \textit{et al.} recommend plots of at least 1\,ha for validation~\cite{duncanson2019importance}. If we remove that expected representativeness noise in quadrature, the blind satellite error is about 23\% on the 1\,ha units and still about 90\% on HCSA. Plot size alone does not explain the Indonesian result. The mosaic of open land, scrub, and forest around HCSA plots, and a GPS error comparable to the 12.6\,m plot radius~\cite{duncanson2019importance}, are the likely remainder.
+
+\begin{table}[t]
+\centering
+\caption{Blind Results of This Study Against Published Benchmarks}
+\label{tab:bench}
+\footnotesize
+\setlength{\tabcolsep}{2pt}
+\scriptsize
+\begin{tabularx}{\columnwidth}{@{}X l l r@{}}
+\toprule
+\textbf{Study} & \textbf{Sensor} & \textbf{Reference} & \textbf{Error}\\
+\midrule
+This study, Labri\`ere (blind) & multi-sensor & 1\,ha plots & 28.6\%\\
+This study, GEO-TREES (blind) & same & network & 41.9\%\\
+This study, HCSA (blind) & same & 0.05\,ha plots & 102.9\%\\
+Berninger 2018, Kalimantan~\cite{berninger2018sar} & S1 + PALSAR & lidar layer & 31--38\%\\
+Jucker 2018, Sabah~\cite{jucker2018estimating} & airborne lidar & 0.1 / 1\,ha & 25 / 13\%\\
+Araza 2022, CCI~\cite{araza2022comprehensive} & CCI map & 0.1$^\circ$ cells & 29--61$^\ast$\\
+Santoro 2021~\cite{santoro2021global} & GlobBiomass & 110\,k plots & SD $\approx$50\%\\
+\bottomrule
+\end{tabularx}
+
+\vspace{2pt}
+{\scriptsize $^\ast$RMSD in Mg\,ha$^{-1}$ for AGB below 300; 107 at 300--400. Other errors are rRMSE.\par}
+\end{table}
+
+\subsection{Clouds: What Actually Matters}
+Three findings change how clouds should be handled. First, \emph{how often} a plot is clear matters less than \emph{how} clearness is decided. A clear look within $\pm$30 days exists for 96\% of dates in Indonesia, because revisit compensates for an 80\% cloud frequency~\cite{wilson2016cloud,li2017revisit}. The scene-level filter that most pipelines apply, by contrast, discards two thirds of the clear looks and keeps a third of cloudy ones. Pixel-level masking at the plot, with SCL, Fmask, or Cloud Score+~\cite{zhu2012fmask,skakun2022cmix,pasquarella2023cloudscore}, nearly triples the usable data. Second, \emph{season matters}: in Indonesia the clear share in May is 4.4 times that in January, so field campaigns and their satellite windows should be planned for the dry months. Third, a model led by radar and an annual product loses only two points of accuracy without any optical data, so clouds are an availability problem for optical indices but not for a well-designed multi-sensor stock estimate. That is the practical form of the SAR--optical fusion argued for by Reiche \textit{et al.}~\cite{reiche2016combining}. Filling optical gaps from radar and feeding them to the model, however, was the worst option we tested. Reconstructed reflectance is a model output whose error does not disappear because the image looks complete.
+
+\subsection{Confidence That Means Something}
+Honest confidence has three layers, and each failed in a characteristic way. At \emph{plot} level, conformal intervals were honest overall, but only CQR was both honest and usable, and the cloud-aware calibration kept it honest when optical data were missing. The guarantee is marginal: under the shift from large to small plots (HCSA), coverage fell to 68--81\% for every method. Spatially weighted conformal prediction~\cite{tibshirani2019conformal,mao2024spatial} is the next step. At \emph{project} level, independence is the dangerous assumption. Map errors are correlated over tens of kilometres~\cite{araza2022comprehensive}, a project shares one regional bias, and an interval that ignores it covered only 74\% of projects. The two-component interval is honest, and it shows that a satellite-only project estimate would lose most of its credits under VM0047. At the level of the \emph{standard}, a deduction of $U-10\%$ is not a lower confidence bound. With ten field plots, the deducted estimate still exceeded the true stock in a third of draws. Crediting the lower bound of a calibrated interval instead would make the over-crediting rate a design parameter rather than an accident.
+
+A metadata quality score answers a different question from a confidence interval. Ours rewarded recent, cloud-checked imagery, and the plots it trusted most were the plots the model got most wrong. Confidence has to be learned from errors against field data and reported in the units of the claim, as an interval in t\,C\,ha$^{-1}$, not as a grade.
+
+\subsection{The Ground Truth Is a Model Too}
+The right grid is fixed by the standards, but the standards leave real choices, and those choices are as large as the precision targets they enforce. Switching the root-to-shoot ratio from the SNI 7724 value (IPCC 2006) to the 2019 Refinement changes total carbon by 13\%. Switching from the pantropical Chave equation to the East-Kalimantan equation of Basuki \textit{et al.} leaves the national total unchanged but moves provincial stocks from $-40$\% to $+121$\%. AR-TOOL14 counts sampling error only, yet measurement and allometry carried up to 64\% of the variance of a provincial mean. The same data receive deductions from 0 to 34\% depending on which standard is applied. For growth the field answer itself is fragile. With 9--16 plots of 0.06\,ha, VM0047 Eq.~28 deducts most or all of the credit unless the correlation of permanent plots is used, and the plot-level measurement error of the change halves only when the same stem is assessed with the same equation at both dates. The target ``100\% accuracy'' therefore has no meaning. The meaningful target is to fall within the uncertainty of a field estimate made to a stated standard, and that uncertainty must itself be computed in full.
+
+\subsection{The Path Toward the Field Answer}
+The experiments rank the levers. (i) \emph{Report at project scale}: aggregation removes most random error. (ii) \emph{Add local plots and use the satellite as auxiliary data}, which is the most effective step, provided the plots are large enough to be ranked by the satellite. (iii) \emph{Mask clouds at the plot, not the scene}, and match the window to the season. (iv) \emph{Lead with structure-sensitive sensors}. Radar was ahead of optical on both large-plot datasets, though within sampling noise, and it is what keeps the estimate alive under cloud; spaceborne lidar (GEDI) and the 2025 L- and P-band missions NISAR and ESA BIOMASS are the next steps; our GEDI-only estimator E1 is implemented but was blocked by an access-permission issue during this study. (v) \emph{Keep sensors consistent through time}: half of the sequestration error came from Sentinel-1 appearing between the two censuses. (vi) \emph{Combine rather than choose}: averaging the transfer model with an independent global product was the best blind stock estimate. (vii) \emph{Calibrate confidence}: CQR with cloud-aware calibration at plot level, the two-component variance at project level, and credit the lower bound.
+
+\subsection{Implications for NusaCarbon}
+Our audit found default constants where measurements were expected, a scene-level cloud filter, and a confidence grade computed from image metadata. The evidence suggests a concrete redesign:
+\begin{itemize}
+\item Mask clouds per pixel at the plot (SCL or Cloud Score+) instead of \texttt{CLOUDY\_PIXEL\_PERCENTAGE}, and widen the window in the wet season.
+\item Estimate stock with a radar-led multi-sensor model trained with modality dropout, and attach a cloud-aware CQR interval instead of the letter grade.
+\item Report projects with the two-component interval, and calibrate each project with ten to twenty large field plots through a ratio estimator.
+\item Credit the lower confidence bound.
+\item Credit sequestration from field remeasurement of permanent plots, and use satellites to detect loss and disturbance.
+\item Log every estimate through the commit-reveal ledger.
+\item Fix the GEDI band that is read as canopy height.
 \end{itemize}
-\textit{Status: magnitudes measured in one public dataset under simulated processing faults; not observed errors in any registered carbon project.}
-\end{callout}
 
-\section{Conclusion and Future Work}
-\emph{Internal:} the archive is not ground truth; CF is fixed; ML regression targets are model outputs. \emph{Construct:} injected faults may not span all real failures; they are derived from issues observed in the data. \emph{External:} one dataset of young-regrowth plots; synthetic replication tests systems scaling, not ecological generality. \emph{Conclusion:} inventory statistics are descriptive; systems and ML results report variation across seeds and runs.
-
-\begin{callout}[title={Anticipated benefits (to be tested).}]{antic}
-\small
-\begin{itemize}\setlength\itemsep{1pt}
-\item Provenance records attribute non-reproducible archive values to specific causes (RO1).
-\item Closed-form identities predict plot-level effects of area faults from one statistic, $f_j$ (RO2).
-\item A hybrid rule-plus-ML auditor detects injected metadata faults, including height-unit mismatches, with recall at least 0.95 (RO3).
-\item The distributed pipeline scales with parallel efficiency at least 0.70 on eight workers and returns bit-identical outputs with zero $a_{ij}$ loss under node crashes, leader failure, and one Byzantine verifier (RO4).
+\subsection{Threats to Validity}
+\emph{Internal.}
+\begin{itemize}
+\item The right grid is itself a model: Chave allometry carries its own error, and GEO-TREES and Labri\`ere AGB were computed by their authors, not by us.
+\item HCSA is released as a 2023 dataset without per-plot dates, and Labri\`ere plots have campaign-year dates only, so temporal matching for those plots is at year precision.
+\item The standard formula failed on SAFE oil palm. Those plots are excluded by a subset fixed before the reveal, and 45 palm stems remain in forest plots.
+\item The improvement ladder, the change models, the cloud and interval experiments, and the project-level analysis were defined after the reveals and are exploratory. Only the E0, E2, S0, and S2 scores are confirmatory, and we report every variant we ran; Section~\ref{sec:reliability} states which differences exceed sampling noise.
+\item Provincial stratum weights are plot shares, because mapped stratum areas are not public.
+\item The cloud climatology uses SCL, whose own overall accuracy is about 80--90\%~\cite{skakun2022cmix}.
 \end{itemize}
-\textit{Status: not yet demonstrated.}
-\end{callout}
+\emph{Construct.}
+\begin{itemize}
+\item Plot-scale truth (0.05--1\,ha) is compared with 10\,m to 4.6\,km pixels, and GPS error on small plots adds noise that no estimator can remove.
+\item Conformal intervals calibrated on plots cover plot values, not true stocks.
+\item GEDI biomass models were calibrated on field plots elsewhere, so E1 is free of our field data but not of field data altogether.
+\end{itemize}
+\emph{External.} Indonesian plots come from one programme, collected by trained non-foresters; results may not transfer to other forest types or survey teams. Projects in the project-level analysis are region blocks, not registered projects.
+
+\section{Conclusion}
+We asked whether open satellite data can replace the field plot in forest carbon MRV, and tested it blind. A sealed right grid was computed step by step to SNI 7724, IPCC, CDM, Verra, and Gold Standard rules with a full uncertainty budget. A left grid saw only coordinates and dates. A hash-chained ledger proves that every prediction was committed before the answer was opened.
+
+Across 476 stock plots, the best blind estimate missed by 45--49\% relative RMSE overall: about 30\% on 1\,ha plots and about 100\% on small Indonesian plots. In Indonesia only 21.5\% of Sentinel-2 acquisitions see a plot clear. Masking at the plot instead of filtering scenes nearly triples the usable data, and a radar-led model loses only two points without optical data. Cloud-aware conformal calibration kept 90\% intervals honest under full cloud, while a metadata confidence score ranked errors in the wrong direction. At project scale, an interval that ignores spatially correlated error covered only 74\% of projects; with field plots as calibration, the satellite halved the plots needed on large-plot datasets. For annual sequestration, no satellite estimator beat ``no change'', and even the field answer was too uncertain to credit without the correlation of permanent plots.
+
+Satellites are a stock-mapping, disturbance, and plot-saving tool, not a replacement for the field plot, and their confidence must be calibrated, not graded. The protocol, the ledger, the cloud-aware intervals, and the extraction runner are reusable. Together they turn a platform's accuracy claim into something a third party can check.
 
 \section*{Data and Code Availability}
-Python with NumPy 2.3.5, pandas 2.2.3, Matplotlib 3.10.8, and scikit-learn \cite{pedregosa2011scikit} implements the analysis and ML; Ray and PySpark provide the parallel back ends; Docker images run on Kubernetes (kind for development, up to 16 worker pods for scaling runs); etcd or a team-built Raft module provides the configuration store; and a minimal PBFT module in Python implements the verifier ledger. Every experiment is driven by a seeded configuration file committed to the Git repository, and the package includes the source CSV and licence, pinned digests, injected datasets, trained model files, and scripts regenerating every table and figure.
+All field sources are public: HCSA Indonesia (CC BY-SA 4.0)~\cite{hcsa2023data}, GEO-TREES~\cite{geotrees2024}, Labri\`ere \textit{et al.} (CC0)~\cite{labriere2018insitu}, and the SAFE tree census~\cite{svatek2025safe}. Satellite data were read from the Microsoft Planetary Computer~\cite{mpc2022} and Google Earth Engine. The pipeline (Python; pandas, LightGBM, rasterio, pystac) is in the project repository, including the ledger, the runner, the right-grid builder, and the evaluation scripts. Every reported number is regenerated by the modules \texttt{right\_grid}, \texttt{right\_grid\_seq}, \texttt{right\_grid\_uncertainty}, \texttt{extract\_left}, \texttt{evaluate}, \texttt{evaluate\_seq}, \texttt{improve}, \texttt{improve\_seq}, \texttt{window\_sensitivity}, \texttt{cloud\_climatology}, \texttt{cloud\_analysis}, \texttt{robust}, \texttt{project\_uncertainty}, and \texttt{systems\_experiments} of the \texttt{estimation} package. Wood density is from the GWDD copy shipped with BIOMASS v2.1.11~\cite{rejou2017biomass}.
 
-\begin{thebibliography}{29}
-
-\bibitem{hcsa2026data}
-High Carbon Stock Approach, ``Forest field plot data for indicative HCS mapping, Indonesia,'' Fair Forward/GIZ, HCSA Foundation, and JKPP, CC BY-SA 4.0. Accessed: Oct. 16, 2026. [Online]. Available: \url{https://huggingface.co/datasets/fair-forward/hcsa_indonesia}
-
-\bibitem{rosoman2017hcsa}
-G. Rosoman, S. S. Sheun, C. Opal, P. Anderson, and R. Trapshah, Eds., \textit{The HCS Approach Toolkit}, ver. 2.0, Module 4, Sec. C, ``Using field plots to estimate carbon stock and finalise delineation of land cover classes.'' Singapore: HCS Approach Steering Group, May 2017, pp. 26-40. [Online]. Available: \url{https://highcarbonstock.org/wp-content/uploads/2017/09/HCSA-Toolkit-v2.0-Module-4-Forest-and-vegetation-stratification-190917-web.pdf}
-
-\bibitem{verra2025vm0047}
-Verra, \textit{VM0047 Afforestation, Reforestation, and Revegetation}, ver. 1.1, May 14, 2025. Accessed: Oct. 16, 2026. [Online]. Available: \url{https://verra.org/wp-content/uploads/2025/05/VM0047-v1.1_Final.pdf}
+\begin{thebibliography}{99}
 
 \bibitem{chave2014improved}
-J. Chave \textit{et al.}, ``Improved allometric models to estimate the aboveground biomass of tropical trees,'' \textit{Global Change Biol.}, vol. 20, no. 10, pp. 3177-3190, 2014, doi: 10.1111/gcb.12629.
+J. Chave \textit{et al.}, ``Improved allometric models to estimate the aboveground biomass of tropical trees,'' \textit{Global Change Biol.}, vol. 20, no. 10, pp. 3177--3190, 2014, doi: 10.1111/gcb.12629.
 
-\bibitem{hunter2013height}
-M. O. Hunter, M. Keller, D. Victoria, and D. C. Morton, ``Tree height and tropical forest biomass estimation,'' \textit{Biogeosciences}, vol. 10, pp. 8385-8399, 2013, doi: 10.5194/bg-10-8385-2013.
+\bibitem{verra2025vm0047}
+Verra, \textit{VM0047 Afforestation, Reforestation, and Revegetation}, ver. 1.1, May 2025. [Online]. Available: \url{https://verra.org/wp-content/uploads/2025/05/VM0047-v1.1_Final.pdf}
 
-\bibitem{phillips2019species}
-O. L. Phillips \textit{et al.}, ``Species matter: Wood density influences tropical forest biomass at multiple scales,'' \textit{Surv. Geophys.}, vol. 40, pp. 913-935, 2019, doi: 10.1007/s10712-019-09540-0.
+\bibitem{rosoman2017hcsa}
+G. Rosoman, S. S. Sheun, C. Opal, P. Anderson, and R. Trapshah, Eds., \textit{The HCS Approach Toolkit}, ver. 2.0, Module 4. Singapore: HCS Approach Steering Group, 2017.
 
-\bibitem{chave2004error}
-J. Chave, R. Condit, S. Aguilar, A. Hern\'andez, S. Lao, and R. P\'erez, ``Error propagation and scaling for tropical forest biomass estimates,'' \textit{Philos. Trans. R. Soc. B}, vol. 359, pp. 409-420, 2004, doi: 10.1098/rstb.2003.1425.
+\bibitem{hcsa2023data}
+High Carbon Stock Approach, ``Forest field plot data for indicative HCS mapping, Indonesia,'' Fair Forward/GIZ and JKPP, 2023, CC BY-SA 4.0. [Online]. Available: \url{https://huggingface.co/datasets/fair-forward/hcsa_indonesia}
 
-\bibitem{molto2013error}
-Q. Molto, V. Rossi, and L. Blanc, ``Error propagation in biomass estimation in tropical forests,'' \textit{Methods Ecol. Evol.}, vol. 4, pp. 175-183, 2013, doi: 10.1111/j.2041-210x.2012.00266.x.
+\bibitem{geotrees2024}
+GEO-TREES, ``Biomass reference plot data,'' IIASA, accessed Oct. 2026. [Online]. Available: \url{https://geo-trees.nodes.iiasa.ac.at/page/data}
+
+\bibitem{labriere2018insitu}
+N. Labri\`ere \textit{et al.}, ``In situ reference datasets from the TropiSAR and AfriSAR campaigns in support of upcoming spaceborne biomass missions,'' \textit{IEEE J. Sel. Topics Appl. Earth Observ. Remote Sens.}, vol. 11, no. 10, pp. 3617--3627, 2018, doi: 10.1109/JSTARS.2018.2851606.
+
+\bibitem{ewers2011safe}
+R. M. Ewers \textit{et al.}, ``A large-scale forest fragmentation experiment: The Stability of Altered Forest Ecosystems Project,'' \textit{Philos. Trans. R. Soc. B}, vol. 366, pp. 3292--3302, 2011, doi: 10.1098/rstb.2011.0049.
+
+\bibitem{svatek2025safe}
+M. Sv\'atek \textit{et al.}, ``Tree census data from the SAFE Project 2011--2020,'' Zenodo, 2025, doi: 10.5281/zenodo.14882506.
+
+\bibitem{zanne2009gwdd}
+A. E. Zanne \textit{et al.}, ``Data from: Towards a worldwide wood economics spectrum,'' Dryad, 2009, doi: 10.5061/dryad.234.
+
+\bibitem{chave2009wood}
+J. Chave, D. Coomes, S. Jansen, S. L. Lewis, N. G. Swenson, and A. E. Zanne, ``Towards a worldwide wood economics spectrum,'' \textit{Ecol. Lett.}, vol. 12, no. 4, pp. 351--366, 2009, doi: 10.1111/j.1461-0248.2009.01285.x.
 
 \bibitem{rejou2017biomass}
-M. R\'ejou-M\'echain, A. Tanguy, C. Piponiot, J. Chave, and B. H\'erault, ``BIOMASS: An R package for estimating above-ground biomass and its uncertainty in tropical forests,'' \textit{Methods Ecol. Evol.}, vol. 8, no. 9, pp. 1163-1167, 2017, doi: 10.1111/2041-210X.12753.
-
-\bibitem{vorster2020variability}
-A. G. Vorster, P. H. Evangelista, A. E. L. Stovall, and S. Ex, ``Variability and uncertainty in forest biomass estimates from the tree to landscape scale: The role of allometric equations,'' \textit{Carbon Balance Manage.}, vol. 15, Art. no. 8, 2020, doi: 10.1186/s13021-020-00143-6.
-
-\bibitem{tomppo2026plot}
-E. O. Tomppo, B. C. Foster, L. S. Kenefic, and M. J. Ducey, ``Costs and precisions of alternative plot configurations for estimating aboveground tree biomass in tropical forests,'' \textit{Forestry}, vol. 99, no. 1, Art. no. cpaf034, 2026, first published 2025, doi: 10.1093/forestry/cpaf034.
-
-\bibitem{fararoda2024plot}
-R. Fararoda \textit{et al.}, ``Improving plot-level above ground biomass estimation in tropical Indian forests,'' \textit{Ecol. Informatics}, vol. 81, Art. no. 102621, 2024, doi: 10.1016/j.ecoinf.2024.102621.
-
-\bibitem{araza2022framework}
-A. Araza \textit{et al.}, ``A comprehensive framework for assessing the accuracy and uncertainty of global above-ground biomass maps,'' \textit{Remote Sens. Environ.}, vol. 272, Art. no. 112917, 2022, doi: 10.1016/j.rse.2022.112917.
-
-\bibitem{martin2011reassessment}
-A. R. Martin and S. C. Thomas, ``A reassessment of carbon content in tropical trees,'' \textit{PLoS ONE}, vol. 6, Art. no. e23533, 2011, doi: 10.1371/journal.pone.0023533.
+M. R\'ejou-M\'echain, A. Tanguy, C. Piponiot, J. Chave, and B. H\'erault, ``BIOMASS: An R package for estimating above-ground biomass and its uncertainty in tropical forests,'' \textit{Methods Ecol. Evol.}, vol. 8, no. 9, pp. 1163--1167, 2017.
 
 \bibitem{west2023redd}
-T. A. P. West \textit{et al.}, ``Action needed to make carbon offsets from forest conservation work for climate change mitigation,'' \textit{Science}, vol. 381, no. 6660, pp. 873-877, 2023, doi: 10.1126/science.ade3535.
+T. A. P. West \textit{et al.}, ``Action needed to make carbon offsets from forest conservation work for climate change mitigation,'' \textit{Science}, vol. 381, no. 6660, pp. 873--877, 2023.
 
-\bibitem{liu2008isolation}
-F. T. Liu, K. M. Ting, and Z.-H. Zhou, ``Isolation forest,'' in \textit{Proc. 8th IEEE Int. Conf. Data Mining (ICDM)}, 2008, pp. 413-422, doi: 10.1109/ICDM.2008.17.
+\bibitem{dubayah2020gedi}
+R. Dubayah \textit{et al.}, ``The Global Ecosystem Dynamics Investigation: High-resolution laser ranging of the Earth's forests and topography,'' \textit{Sci. Remote Sens.}, vol. 1, Art. no. 100002, 2020.
 
-\bibitem{chandola2009anomaly}
-V. Chandola, A. Banerjee, and V. Kumar, ``Anomaly detection: A survey,'' \textit{ACM Comput. Surv.}, vol. 41, no. 3, Art. no. 15, 2009, doi: 10.1145/1541880.1541882.
+\bibitem{duncanson2022gedi}
+L. Duncanson \textit{et al.}, ``Aboveground biomass density models for NASA's Global Ecosystem Dynamics Investigation (GEDI) lidar mission,'' \textit{Remote Sens. Environ.}, vol. 270, Art. no. 112845, 2022.
 
-\bibitem{chen2016xgboost}
-T. Chen and C. Guestrin, ``XGBoost: A scalable tree boosting system,'' in \textit{Proc. 22nd ACM SIGKDD Int. Conf. Knowl. Discov. Data Min.}, 2016, pp. 785-794, doi: 10.1145/2939672.2939785.
+\bibitem{santoro2021global}
+M. Santoro \textit{et al.}, ``The global forest above-ground biomass pool for 2010 estimated from high-resolution satellite observations,'' \textit{Earth Syst. Sci. Data}, vol. 13, pp. 3927--3950, 2021.
 
-\bibitem{lundberg2017shap}
-S. M. Lundberg and S.-I. Lee, ``A unified approach to interpreting model predictions,'' in \textit{Adv. Neural Inf. Process. Syst. 30 (NeurIPS)}, 2017, pp. 4765-4774.
+\bibitem{spawn2020harmonized}
+S. A. Spawn, C. C. Sullivan, T. J. Lark, and H. K. Gibbs, ``Harmonized global maps of above and belowground biomass carbon density in the year 2010,'' \textit{Sci. Data}, vol. 7, Art. no. 112, 2020.
 
-\bibitem{pedregosa2011scikit}
-F. Pedregosa \textit{et al.}, ``Scikit-learn: Machine learning in Python,'' \textit{J. Mach. Learn. Res.}, vol. 12, pp. 2825-2830, 2011.
+\bibitem{chloris2022}
+Chloris Geospatial, ``Global aboveground biomass stock and change, 2003--2019,'' distributed by the Microsoft Planetary Computer. [Online]. Available: \url{https://planetarycomputer.microsoft.com/dataset/chloris-biomass}
 
-\bibitem{zaharia2012rdd}
-M. Zaharia \textit{et al.}, ``Resilient distributed datasets: A fault-tolerant abstraction for in-memory cluster computing,'' in \textit{Proc. 9th USENIX Symp. Netw. Syst. Design Implement. (NSDI)}, 2012, pp. 15-28.
+\bibitem{mitchard2009using}
+E. T. A. Mitchard \textit{et al.}, ``Using satellite radar backscatter to predict above-ground woody biomass: A consistent relationship across four different African landscapes,'' \textit{Geophys. Res. Lett.}, vol. 36, Art. no. L23401, 2009.
 
-\bibitem{moritz2018ray}
-P. Moritz \textit{et al.}, ``Ray: A distributed framework for emerging AI applications,'' in \textit{Proc. 13th USENIX Symp. Oper. Syst. Design Implement. (OSDI)}, 2018, pp. 561-577.
+\bibitem{mermoz2015decrease}
+S. Mermoz, M. R\'ejou-M\'echain, L. Villard, T. Le Toan, V. Rossi, and S. Gourlet-Fleury, ``Decrease of L-band SAR backscatter with biomass of dense forests,'' \textit{Remote Sens. Environ.}, vol. 159, pp. 307--317, 2015.
 
-\bibitem{burns2016borg}
-B. Burns, B. Grant, D. Oppenheimer, E. Brewer, and J. Wilkes, ``Borg, Omega, and Kubernetes,'' \textit{Commun. ACM}, vol. 59, no. 5, pp. 50-57, 2016, doi: 10.1145/2890784.
+\bibitem{asner2014mapping}
+G. P. Asner and J. Mascaro, ``Mapping tropical forest carbon: Calibrating plot estimates to a simple LiDAR metric,'' \textit{Remote Sens. Environ.}, vol. 140, pp. 614--624, 2014.
 
-\bibitem{ongaro2014raft}
-D. Ongaro and J. Ousterhout, ``In search of an understandable consensus algorithm,'' in \textit{Proc. USENIX Annu. Tech. Conf. (ATC)}, 2014, pp. 305-319.
+\bibitem{ke2017lightgbm}
+G. Ke \textit{et al.}, ``LightGBM: A highly efficient gradient boosting decision tree,'' in \textit{Adv. Neural Inf. Process. Syst. 30}, 2017, pp. 3146--3154.
 
-\bibitem{castro1999pbft}
-M. Castro and B. Liskov, ``Practical Byzantine fault tolerance,'' in \textit{Proc. 3rd USENIX Symp. Oper. Syst. Design Implement. (OSDI)}, 1999, pp. 173-186.
+\bibitem{duan1983smearing}
+N. Duan, ``Smearing estimate: A nonparametric retransformation method,'' \textit{J. Amer. Statist. Assoc.}, vol. 78, no. 383, pp. 605--610, 1983.
 
-\bibitem{chandy1985snapshots}
-K. M. Chandy and L. Lamport, ``Distributed snapshots: Determining global states of distributed systems,'' \textit{ACM Trans. Comput. Syst.}, vol. 3, no. 1, pp. 63-75, 1985, doi: 10.1145/214451.214456.
+\bibitem{roberts2017cv}
+D. R. Roberts \textit{et al.}, ``Cross-validation strategies for data with temporal, spatial, hierarchical, or phylogenetic structure,'' \textit{Ecography}, vol. 40, pp. 913--929, 2017.
 
-\bibitem{young1974checkpoint}
-J. W. Young, ``A first order approximation to the optimum checkpoint interval,'' \textit{Commun. ACM}, vol. 17, no. 9, pp. 530-531, 1974, doi: 10.1145/361147.361115.
+\bibitem{ploton2020spatial}
+P. Ploton \textit{et al.}, ``Spatial validation reveals poor predictive performance of large-scale ecological mapping models,'' \textit{Nat. Commun.}, vol. 11, Art. no. 4540, 2020.
+
+\bibitem{vovk2005algorithmic}
+V. Vovk, A. Gammerman, and G. Shafer, \textit{Algorithmic Learning in a Random World}. New York, NY, USA: Springer, 2005.
+
+\bibitem{lin1989concordance}
+L. I.-K. Lin, ``A concordance correlation coefficient to evaluate reproducibility,'' \textit{Biometrics}, vol. 45, no. 1, pp. 255--268, 1989.
+
+\bibitem{haber1991timestamp}
+S. Haber and W. S. Stornetta, ``How to time-stamp a digital document,'' \textit{J. Cryptology}, vol. 3, no. 2, pp. 99--111, 1991.
+
+\bibitem{blum1983coin}
+M. Blum, ``Coin flipping by telephone: A protocol for solving impossible problems,'' \textit{ACM SIGACT News}, vol. 15, no. 1, pp. 23--27, 1983.
+
+\bibitem{dean2008mapreduce}
+J. Dean and S. Ghemawat, ``MapReduce: Simplified data processing on large clusters,'' \textit{Commun. ACM}, vol. 51, no. 1, pp. 107--113, 2008.
 
 \bibitem{karger1997consistent}
-D. Karger, E. Lehman, T. Leighton, R. Panigrahy, M. Levine, and D. Lewin, ``Consistent hashing and random trees: Distributed caching protocols for relieving hot spots on the World Wide Web,'' in \textit{Proc. 29th ACM Symp. Theory Comput. (STOC)}, 1997, pp. 654-663, doi: 10.1145/258533.258660.
+D. Karger, E. Lehman, T. Leighton, R. Panigrahy, M. Levine, and D. Lewin, ``Consistent hashing and random trees,'' in \textit{Proc. 29th ACM Symp. Theory Comput.}, 1997, pp. 654--663.
 
-\bibitem{merkle1988signature}
-R. C. Merkle, ``A digital signature based on a conventional encryption function,'' in \textit{Advances in Cryptology (CRYPTO '87)}, LNCS vol. 293, 1988, pp. 369-378.
+\bibitem{graham1969bounds}
+R. L. Graham, ``Bounds on multiprocessing timing anomalies,'' \textit{SIAM J. Appl. Math.}, vol. 17, no. 2, pp. 416--429, 1969.
+
+\bibitem{mpc2022}
+Microsoft Open Source, M. McFarland, R. Emanuele, D. Morris, and T. Augspurger, ``microsoft/PlanetaryComputer: October 2022,'' Zenodo, 2022, doi: 10.5281/zenodo.7261897.
+
+\bibitem{ipcc2006v4}
+IPCC, \textit{2006 IPCC Guidelines for National Greenhouse Gas Inventories, Vol.~4: Agriculture, Forestry and Other Land Use}, Ch.~2 and~4, H.~S. Eggleston \textit{et al.}, Eds. Hayama, Japan: IGES, 2006.
+
+\bibitem{ipcc2019v4}
+IPCC, \textit{2019 Refinement to the 2006 IPCC Guidelines for National Greenhouse Gas Inventories, Vol.~4}, Ch.~4 Forest Land, Table~4.4 (Updated). Geneva: IPCC, 2019.
+
+\bibitem{ipcc2006v1}
+IPCC, \textit{2006 IPCC Guidelines for National Greenhouse Gas Inventories, Vol.~1}, Ch.~3 Uncertainties. Hayama, Japan: IGES, 2006.
+
+\bibitem{sni7724}
+Badan Standardisasi Nasional, \textit{SNI 7724:2011 Pengukuran dan penghitungan cadangan karbon -- Pengukuran lapangan untuk penaksiran cadangan karbon hutan (ground based forest carbon accounting)}. Jakarta: BSN, 2011.
+
+\bibitem{klhk2022frl}
+Ministry of Environment and Forestry, Republic of Indonesia, \textit{National Forest Reference Level for Deforestation, Forest Degradation and Enhancement of Forest Carbon Stock}, submission to the UNFCCC, 2022. [Online]. Available: \url{https://redd.unfccc.int/files/2nd_frl_indonesia_final_submit.pdf}
+
+\bibitem{artool14}
+UNFCCC CDM Executive Board, \textit{A/R Methodological Tool 14: Estimation of Carbon Stocks and Change in Carbon Stocks of Trees and Shrubs in A/R CDM Project Activities}, ver.~04.2.
+
+\bibitem{artool03}
+UNFCCC CDM Executive Board, \textit{A/R Methodological Tool 03: Calculation of the Number of Sample Plots for Measurements within A/R CDM Project Activities}, ver.~2.1.0, EB~58, Annex~15.
+
+\bibitem{gs2024ar}
+Gold Standard, \textit{Afforestation/Reforestation GHG Emissions Reduction \& Sequestration Methodology}, ver.~2.1, May 2024.
+
+\bibitem{vmd0017}
+Verra, \textit{VMD0017 Estimation of Uncertainty for REDD+ Project Activities}, ver.~2.2, Sep. 2020.
+
+\bibitem{chave2004error}
+J.~Chave, R.~Condit, S.~Aguilar, A.~Hernandez, S.~Lao, and R.~Perez, ``Error propagation and scaling for tropical forest biomass estimates,'' \textit{Phil. Trans. R. Soc. B}, vol.~359, pp.~409--420, 2004, doi: 10.1098/rstb.2003.1425.
+
+\bibitem{basuki2009allometric}
+T.~M. Basuki, P.~E. van Laake, A.~K. Skidmore, and Y.~A. Hussin, ``Allometric equations for estimating the above-ground biomass in tropical lowland Dipterocarp forests,'' \textit{Forest Ecol. Manag.}, vol.~257, pp.~1684--1694, 2009, doi: 10.1016/j.foreco.2009.01.027.
+
+\bibitem{goodman2013palm}
+R.~C. Goodman \textit{et al.}, ``Amazon palm biomass and allometry,'' \textit{Forest Ecol. Manag.}, vol.~310, pp.~994--1004, 2013, doi: 10.1016/j.foreco.2013.09.045.
+
+\bibitem{lewis2020oilpalm}
+K.~Lewis \textit{et al.}, ``An assessment of oil palm plantation aboveground biomass stocks on tropical peat using destructive and non-destructive methods,'' \textit{Sci. Rep.}, vol.~10, art.~2230, 2020, doi: 10.1038/s41598-020-58982-9.
+
+\bibitem{thomas2012carbon}
+S.~C. Thomas and A.~R. Martin, ``Carbon content of tree tissues: A synthesis,'' \textit{Forests}, vol.~3, no.~2, pp.~332--352, 2012, doi: 10.3390/f3020332.
+
+\bibitem{rejou2014local}
+M.~R\'ejou-M\'echain \textit{et al.}, ``Local spatial structure of forest biomass and its consequences for remote sensing of carbon stocks,'' \textit{Biogeosciences}, vol.~11, pp.~6827--6840, 2014, doi: 10.5194/bg-11-6827-2014.
+
+\bibitem{wilson2016cloud}
+A.~M. Wilson and W.~Jetz, ``Remotely sensed high-resolution global cloud dynamics for predicting ecosystem and biodiversity distributions,'' \textit{PLoS Biol.}, vol.~14, no.~3, e1002415, 2016, doi: 10.1371/journal.pbio.1002415.
+
+\bibitem{sudmanns2020eocompass}
+M.~Sudmanns, D.~Tiede, H.~Augustin, and S.~Lang, ``Assessing global Sentinel-2 coverage dynamics and data availability for operational Earth observation (EO) applications using the EO-Compass,'' \textit{Int. J. Digit. Earth}, vol.~13, no.~7, pp.~768--784, 2020, doi: 10.1080/17538947.2019.1572799.
+
+\bibitem{li2017revisit}
+J.~Li and D.~P. Roy, ``A global analysis of Sentinel-2A, Sentinel-2B and Landsat-8 data revisit intervals and implications for terrestrial monitoring,'' \textit{Remote Sens.}, vol.~9, no.~9, art.~902, 2017, doi: 10.3390/rs9090902.
+
+\bibitem{zhu2012fmask}
+Z.~Zhu and C.~E. Woodcock, ``Object-based cloud and cloud shadow detection in Landsat imagery,'' \textit{Remote Sens. Environ.}, vol.~118, pp.~83--94, 2012, doi: 10.1016/j.rse.2011.10.028.
+
+\bibitem{skakun2022cmix}
+S.~Skakun \textit{et al.}, ``Cloud Mask Intercomparison eXercise (CMIX): An evaluation of cloud masking algorithms for Landsat 8 and Sentinel-2,'' \textit{Remote Sens. Environ.}, vol.~274, art.~112990, 2022, doi: 10.1016/j.rse.2022.112990.
+
+\bibitem{pasquarella2023cloudscore}
+V.~J. Pasquarella, C.~F. Brown, W.~Czerwinski, and W.~J. Rucklidge, ``Comprehensive quality assessment of optical satellite imagery using weakly supervised video learning,'' in \textit{Proc. IEEE/CVF CVPR Workshops}, 2023, pp.~2125--2135, doi: 10.1109/CVPRW59228.2023.00206.
+
+\bibitem{white2014pixel}
+J.~C. White \textit{et al.}, ``Pixel-based image compositing for large-area dense time series applications and science,'' \textit{Can. J. Remote Sens.}, vol.~40, no.~3, pp.~192--212, 2014, doi: 10.1080/07038992.2014.945827.
+
+\bibitem{claverie2018hls}
+M.~Claverie \textit{et al.}, ``The Harmonized Landsat and Sentinel-2 surface reflectance data set,'' \textit{Remote Sens. Environ.}, vol.~219, pp.~145--161, 2018, doi: 10.1016/j.rse.2018.09.002.
+
+\bibitem{reiche2016combining}
+J.~Reiche \textit{et al.}, ``Combining satellite data for better tropical forest monitoring,'' \textit{Nature Clim. Change}, vol.~6, pp.~120--122, 2016, doi: 10.1038/nclimate2919.
+
+\bibitem{meraner2020cloud}
+A.~Meraner, P.~Ebel, X.~X. Zhu, and M.~Schmitt, ``Cloud removal in Sentinel-2 imagery using a deep residual neural network and SAR-optical data fusion,'' \textit{ISPRS J. Photogramm. Remote Sens.}, vol.~166, pp.~333--346, 2020, doi: 10.1016/j.isprsjprs.2020.05.013.
+
+\bibitem{neverova2016moddrop}
+N.~Neverova, C.~Wolf, G.~Taylor, and F.~Nebout, ``ModDrop: Adaptive multi-modal gesture recognition,'' \textit{IEEE Trans. Pattern Anal. Mach. Intell.}, 2016, doi: 10.1109/TPAMI.2015.2461544.
+
+\bibitem{lei2018distribution}
+J.~Lei, M.~G'Sell, A.~Rinaldo, R.~J. Tibshirani, and L.~Wasserman, ``Distribution-free predictive inference for regression,'' \textit{J. Amer. Statist. Assoc.}, vol.~113, no.~523, pp.~1094--1111, 2018, doi: 10.1080/01621459.2017.1307116.
+
+\bibitem{romano2019cqr}
+Y.~Romano, E.~Patterson, and E.~Cand\`es, ``Conformalized quantile regression,'' in \textit{Adv. Neural Inf. Process. Syst. 32}, 2019, pp.~3543--3553.
+
+\bibitem{papadopoulos2008normalized}
+H.~Papadopoulos, A.~Gammerman, and V.~Vovk, ``Normalized nonconformity measures for regression conformal prediction,'' in \textit{Proc. IASTED Int. Conf. Artificial Intelligence and Applications}, 2008, pp.~64--69.
+
+\bibitem{bostrom2020mondrian}
+H.~Bostr\"om and U.~Johansson, ``Mondrian conformal regressors,'' in \textit{Proc. COPA}, PMLR vol.~128, 2020, pp.~114--133.
+
+\bibitem{tibshirani2019conformal}
+R.~J. Tibshirani, R.~F. Barber, E.~Cand\`es, and A.~Ramdas, ``Conformal prediction under covariate shift,'' in \textit{Adv. Neural Inf. Process. Syst. 32}, 2019, pp.~2530--2540.
+
+\bibitem{mao2024spatial}
+H.~Mao, R.~Martin, and B.~J. Reich, ``Valid model-free spatial prediction,'' \textit{J. Amer. Statist. Assoc.}, vol.~119, no.~546, pp.~904--914, 2024, doi: 10.1080/01621459.2022.2147531.
+
+\bibitem{duncanson2021ceos}
+L.~Duncanson, M.~Disney, J.~Armston, J.~Nickeson, D.~Minor, and F.~Camacho, Eds., \textit{Aboveground Woody Biomass Product Validation Good Practices Protocol}, ver.~1.0, CEOS WGCV Land Product Validation Subgroup, 2021, doi: 10.5067/doc/ceoswgcv/lpv/agb.001.
+
+\bibitem{duncanson2019importance}
+L.~Duncanson \textit{et al.}, ``The importance of consistent global forest aboveground biomass product validation,'' \textit{Surv. Geophys.}, vol.~40, no.~4, pp.~979--999, 2019, doi: 10.1007/s10712-019-09538-8.
+
+\bibitem{araza2022comprehensive}
+A.~Araza \textit{et al.}, ``A comprehensive framework for assessing the accuracy and uncertainty of global above-ground biomass maps,'' \textit{Remote Sens. Environ.}, vol.~272, art.~112917, 2022, doi: 10.1016/j.rse.2022.112917.
+
+\bibitem{berninger2018sar}
+A.~Berninger, S.~Lohberger, M.~St\"angel, and F.~Siegert, ``SAR-based estimation of above-ground biomass and its changes in tropical forests of Kalimantan using L- and C-band,'' \textit{Remote Sens.}, vol.~10, no.~6, art.~831, 2018, doi: 10.3390/rs10060831.
+
+\bibitem{jucker2018estimating}
+T.~Jucker \textit{et al.}, ``Estimating aboveground carbon density and its uncertainty in Borneo's structurally complex tropical forests using airborne laser scanning,'' \textit{Biogeosciences}, vol.~15, pp.~3811--3830, 2018, doi: 10.5194/bg-15-3811-2018.
+
+\bibitem{cochran1977sampling}
+W.~G. Cochran, \textit{Sampling Techniques}, 3rd~ed. New York: Wiley, 1977.
+
+\bibitem{sarndal1992model}
+C.-E. S\"arndal, B.~Swensson, and J.~Wretman, \textit{Model Assisted Survey Sampling}. New York: Springer, 1992.
 
 \end{thebibliography}
 
 \end{document}
-

@@ -1,0 +1,195 @@
+{
+ "n_tasks": 48,
+ "scaling": [
+  {
+   "workers": 1,
+   "n_tasks": 48,
+   "n_cached": 0,
+   "n_done": 47,
+   "n_failed": 1,
+   "n_retries": 4,
+   "wall_s": 498.51,
+   "throughput_tasks_per_s": 0.094,
+   "load_imbalance": 1.0,
+   "vs_w1": {
+    "n_common": 47,
+    "n_mismatch": 0,
+    "only_here": 0,
+    "only_in_ref": 0,
+    "identical": true
+   }
+  },
+  {
+   "workers": 2,
+   "n_tasks": 48,
+   "n_cached": 0,
+   "n_done": 47,
+   "n_failed": 1,
+   "n_retries": 4,
+   "wall_s": 207.81,
+   "throughput_tasks_per_s": 0.226,
+   "load_imbalance": 1.0,
+   "vs_w1": {
+    "n_common": 47,
+    "n_mismatch": 0,
+    "only_here": 0,
+    "only_in_ref": 0,
+    "identical": true
+   }
+  },
+  {
+   "workers": 4,
+   "n_tasks": 48,
+   "n_cached": 0,
+   "n_done": 47,
+   "n_failed": 1,
+   "n_retries": 4,
+   "wall_s": 144.75,
+   "throughput_tasks_per_s": 0.325,
+   "load_imbalance": 1.0,
+   "vs_w1": {
+    "n_common": 47,
+    "n_mismatch": 0,
+    "only_here": 0,
+    "only_in_ref": 0,
+    "identical": true
+   }
+  },
+  {
+   "workers": 8,
+   "n_tasks": 48,
+   "n_cached": 0,
+   "n_done": 47,
+   "n_failed": 1,
+   "n_retries": 4,
+   "wall_s": 98.44,
+   "throughput_tasks_per_s": 0.477,
+   "load_imbalance": 1.0,
+   "vs_w1": {
+    "n_common": 47,
+    "n_mismatch": 0,
+    "only_here": 0,
+    "only_in_ref": 0,
+    "identical": true
+   }
+  },
+  {
+   "workers": 16,
+   "n_tasks": 48,
+   "n_cached": 0,
+   "n_done": 47,
+   "n_failed": 1,
+   "n_retries": 4,
+   "wall_s": 93.3,
+   "throughput_tasks_per_s": 0.504,
+   "load_imbalance": 1.333,
+   "vs_w1": {
+    "n_common": 47,
+    "n_mismatch": 0,
+    "only_here": 0,
+    "only_in_ref": 0,
+    "identical": true
+   }
+  },
+  {
+   "workers": 32,
+   "n_tasks": 48,
+   "n_cached": 0,
+   "n_done": 47,
+   "n_failed": 1,
+   "n_retries": 4,
+   "wall_s": 91.36,
+   "throughput_tasks_per_s": 0.514,
+   "load_imbalance": 2.667,
+   "vs_w1": {
+    "n_common": 47,
+    "n_mismatch": 0,
+    "only_here": 0,
+    "only_in_ref": 0,
+    "identical": true
+   }
+  }
+ ],
+ "faults": [
+  {
+   "workers": 8,
+   "fault_rate": 0.1,
+   "n_tasks": 48,
+   "n_cached": 0,
+   "n_done": 47,
+   "n_failed": 1,
+   "n_retries": 13,
+   "wall_s": 106.73,
+   "throughput_tasks_per_s": 0.44,
+   "load_imbalance": 1.0,
+   "vs_fault_free": {
+    "n_common": 47,
+    "n_mismatch": 0,
+    "only_here": 0,
+    "only_in_ref": 0,
+    "identical": true
+   },
+   "failed_errors": [
+    "'/vsicurl/https://landsateuwest.blob.core.windows.net/landsat-c2/level-2/standar"
+   ]
+  },
+  {
+   "workers": 8,
+   "fault_rate": 0.2,
+   "n_tasks": 48,
+   "n_cached": 0,
+   "n_done": 47,
+   "n_failed": 1,
+   "n_retries": 18,
+   "wall_s": 105.02,
+   "throughput_tasks_per_s": 0.448,
+   "load_imbalance": 1.0,
+   "vs_fault_free": {
+    "n_common": 47,
+    "n_mismatch": 0,
+    "only_here": 0,
+    "only_in_ref": 0,
+    "identical": true
+   },
+   "failed_errors": [
+    "injected transient fault"
+   ]
+  },
+  {
+   "workers": 8,
+   "fault_rate": 0.3,
+   "n_tasks": 48,
+   "n_cached": 0,
+   "n_done": 47,
+   "n_failed": 1,
+   "n_retries": 28,
+   "wall_s": 105.66,
+   "throughput_tasks_per_s": 0.445,
+   "load_imbalance": 1.0,
+   "vs_fault_free": {
+    "n_common": 47,
+    "n_mismatch": 0,
+    "only_here": 0,
+    "only_in_ref": 0,
+    "identical": true
+   },
+   "failed_errors": [
+    "injected transient fault"
+   ]
+  }
+ ],
+ "resume": {
+  "first_run_done": 23,
+  "restart_cached_skipped": 23,
+  "restart_done": 24,
+  "wall_first_s": 60.77,
+  "wall_restart_s": 62.22,
+  "vs_fault_free": {
+   "n_common": 47,
+   "n_mismatch": 0,
+   "only_here": 0,
+   "only_in_ref": 0,
+   "identical": true
+  }
+ }
+}

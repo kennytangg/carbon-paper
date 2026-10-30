@@ -1,0 +1,13 @@
+model_name,n,mean_true,mean_pred,rmse,mae,bias,pearson_r,level
+S_zero,196,1.869,0.0,8.122,4.523,-1.869,,plot
+S_regional_default,196,1.869,1.87,7.912,4.025,0.002,-0.118,plot
+S0_chloris,196,1.869,0.856,8.055,4.419,-1.013,0.073,plot
+S2_lgbm,196,1.869,-4.026,16.358,12.603,-5.895,-0.017,plot
+S2c_consistent,196,1.869,-1.636,13.963,10.364,-3.504,0.091,plot
+S3_change_lobo,196,1.869,1.369,8.387,4.684,-0.5,-0.072,plot
+S_zero,15,1.919,0.0,2.298,2.054,-1.919,,block mean
+S_regional_default,15,1.919,1.869,1.324,0.982,-0.05,-0.934,block mean
+S0_chloris,15,1.919,0.724,1.841,1.613,-1.195,0.214,block mean
+S2_lgbm,15,1.919,-5.163,8.979,7.397,-7.082,0.075,block mean
+S2c_consistent,15,1.919,-1.854,5.649,4.48,-3.773,0.0,block mean
+S3_change_lobo,15,1.919,1.645,2.031,1.325,-0.274,-0.37,block mean

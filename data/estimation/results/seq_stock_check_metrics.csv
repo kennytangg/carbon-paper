@@ -1,0 +1,5 @@
+model_name,subset,n_samples,unit,mean_ground_truth,mean_predicted,rmse,rrmse_pct,mae,mape_pct,bias,relative_bias_pct,r2_score,pearson_r,lins_ccc
+"E2 stock (out-of-region, Borneo)",All SAFE,223,Mg AGB/ha,175.1533,215.3207,249.1583,142.25,183.0347,594.42,40.1675,22.93,-0.4038,-0.1049,-0.0825
+E0 Chloris stock,All SAFE,223,Mg AGB/ha,175.1533,247.291,233.5209,133.32,187.731,874.18,72.1378,41.19,-0.2331,-0.1722,-0.0619
+"E2 stock (out-of-region, Borneo)",SAFE excl. oil palm,196,Mg AGB/ha,129.6775,233.7433,170.7251,131.65,144.6738,658.28,104.0658,80.25,-0.6228,0.3473,0.2361
+E0 Chloris stock,SAFE excl. oil palm,196,Mg AGB/ha,129.6775,256.9249,179.4249,138.36,162.4138,981.52,127.2474,98.13,-0.7924,0.3346,0.095

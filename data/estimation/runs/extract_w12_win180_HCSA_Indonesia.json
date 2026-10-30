@@ -1,0 +1,99 @@
+{
+ "summary": {
+  "n_tasks": 444,
+  "n_cached": 0,
+  "n_done": 437,
+  "n_failed": 7,
+  "n_retries": 31,
+  "wall_s": 3234.27,
+  "throughput_tasks_per_s": 0.135,
+  "load_imbalance": 1.216
+ },
+ "failures": [
+  {
+   "task": {
+    "plot_id": "HCSA_Jambi_JB27",
+    "lat": -2.53589,
+    "lon": 101.8924,
+    "date": "2023-01-01",
+    "radius_m": 10.0,
+    "window_days": 180,
+    "sensor": "landsat"
+   },
+   "error": "'/vsicurl/https://landsateuwest.blob.core.windows.net/landsat-c2/level-2/standard/oli-tirs/2022/126/062/LC08_L2SP_126062_20221102_20221114_02_T1/LC08_L2SP_126062_20221102_20221114_02_T1_SR_B5.TIF?st=2026-10-28T15%3A44%3A14Z&se=2026-10-29T16%3A29%3A14Z&sp=rl&sv=2025-07-05&sr=c&skoid=9c8ff44a-6a2c-4df"
+  },
+  {
+   "task": {
+    "plot_id": "HCSA_Jambi_JB18",
+    "lat": -2.18322,
+    "lon": 101.44991,
+    "date": "2023-01-01",
+    "radius_m": 10.0,
+    "window_days": 180,
+    "sensor": "landsat"
+   },
+   "error": "'/vsicurl/https://landsateuwest.blob.core.windows.net/landsat-c2/level-2/standard/oli-tirs/2022/126/062/LC08_L2SP_126062_20221102_20221114_02_T1/LC08_L2SP_126062_20221102_20221114_02_T1_SR_B5.TIF?st=2026-10-28T15%3A44%3A14Z&se=2026-10-29T16%3A29%3A14Z&sp=rl&sv=2025-07-05&sr=c&skoid=9c8ff44a-6a2c-4df"
+  },
+  {
+   "task": {
+    "plot_id": "HCSA_Jambi_JB07",
+    "lat": -2.10574,
+    "lon": 101.57239,
+    "date": "2023-01-01",
+    "radius_m": 10.0,
+    "window_days": 180,
+    "sensor": "landsat"
+   },
+   "error": "'/vsicurl/https://landsateuwest.blob.core.windows.net/landsat-c2/level-2/standard/oli-tirs/2022/126/062/LC08_L2SP_126062_20221102_20221114_02_T1/LC08_L2SP_126062_20221102_20221114_02_T1_SR_B5.TIF?st=2026-10-28T15%3A00%3A06Z&se=2026-10-29T15%3A45%3A06Z&sp=rl&sv=2025-07-05&sr=c&skoid=9c8ff44a-6a2c-4df"
+  },
+  {
+   "task": {
+    "plot_id": "HCSA_Jambi_JB08",
+    "lat": -2.10548,
+    "lon": 101.57048,
+    "date": "2023-01-01",
+    "radius_m": 10.0,
+    "window_days": 180,
+    "sensor": "landsat"
+   },
+   "error": "'/vsicurl/https://landsateuwest.blob.core.windows.net/landsat-c2/level-2/standard/oli-tirs/2022/126/062/LC08_L2SP_126062_20221102_20221114_02_T1/LC08_L2SP_126062_20221102_20221114_02_T1_SR_B5.TIF?st=2026-10-28T15%3A44%3A14Z&se=2026-10-29T16%3A29%3A14Z&sp=rl&sv=2025-07-05&sr=c&skoid=9c8ff44a-6a2c-4df"
+  },
+  {
+   "task": {
+    "plot_id": "HCSA_Jambi_JB09",
+    "lat": -2.10558,
+    "lon": 101.56845,
+    "date": "2023-01-01",
+    "radius_m": 10.0,
+    "window_days": 180,
+    "sensor": "landsat"
+   },
+   "error": "'/vsicurl/https://landsateuwest.blob.core.windows.net/landsat-c2/level-2/standard/oli-tirs/2022/126/062/LC08_L2SP_126062_20221102_20221114_02_T1/LC08_L2SP_126062_20221102_20221114_02_T1_SR_B5.TIF?st=2026-10-28T15%3A44%3A14Z&se=2026-10-29T16%3A29%3A14Z&sp=rl&sv=2025-07-05&sr=c&skoid=9c8ff44a-6a2c-4df"
+  },
+  {
+   "task": {
+    "plot_id": "HCSA_Jambi_JB10",
+    "lat": -2.10397,
+    "lon": 101.56605,
+    "date": "2023-01-01",
+    "radius_m": 10.0,
+    "window_days": 180,
+    "sensor": "landsat"
+   },
+   "error": "'/vsicurl/https://landsateuwest.blob.core.windows.net/landsat-c2/level-2/standard/oli-tirs/2022/126/062/LC08_L2SP_126062_20221102_20221114_02_T1/LC08_L2SP_126062_20221102_20221114_02_T1_SR_B5.TIF?st=2026-10-28T15%3A44%3A14Z&se=2026-10-29T16%3A29%3A14Z&sp=rl&sv=2025-07-05&sr=c&skoid=9c8ff44a-6a2c-4df"
+  },
+  {
+   "task": {
+    "plot_id": "HCSA_Jambi_JB12",
+    "lat": -2.10202,
+    "lon": 101.56612,
+    "date": "2023-01-01",
+    "radius_m": 10.0,
+    "window_days": 180,
+    "sensor": "landsat"
+   },
+   "error": "'/vsicurl/https://landsateuwest.blob.core.windows.net/landsat-c2/level-2/standard/oli-tirs/2022/126/062/LC08_L2SP_126062_20221102_20221114_02_T1/LC08_L2SP_126062_20221102_20221114_02_T1_SR_B5.TIF?st=2026-10-28T15%3A44%3A14Z&se=2026-10-29T16%3A29%3A14Z&sp=rl&sv=2025-07-05&sr=c&skoid=9c8ff44a-6a2c-4df"
+  }
+ ],
+ "n_failures": 7
+}

@@ -1,0 +1,9 @@
+score,spearman_vs_abs_ln_error
+metadata confidence (higher = more confident),0.3895171379827377
+normalized-conformal sigma(x) (higher = less confident),0.41132922092998125
+metadata confidence [GEO-TREES],0.062311335690310526
+sigma(x) [GEO-TREES],0.29263963486318895
+metadata confidence [HCSA_Indonesia],-0.18446889939016495
+sigma(x) [HCSA_Indonesia],0.1238707098080316
+metadata confidence [Labriere2018],0.17075818862989206
+sigma(x) [Labriere2018],0.07641673931996514

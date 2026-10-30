@@ -1,0 +1,28 @@
+subset,metric,value,ci_lo,ci_hi
+All,rRMSE E2 LORO,48.54,34.92,68.66
+All,rRMSE E0 Chloris,49.31,36.18,68.99
+All,rRMSE E2 - Chloris,-0.77,-8.28,5.25
+All,split-conformal coverage %,88.03,78.67,94.9
+GEO-TREES,rRMSE E2 LORO,41.88,35.92,51.84
+GEO-TREES,rRMSE E0 Chloris,37.45,29.44,43.72
+GEO-TREES,rRMSE E2 - Chloris,4.43,-4.46,19.96
+GEO-TREES,split-conformal coverage %,95.07,89.33,98.54
+HCSA_Indonesia,rRMSE E2 LORO,102.86,88.07,121.65
+HCSA_Indonesia,rRMSE E0 Chloris,107.14,90.52,141.71
+HCSA_Indonesia,rRMSE E2 - Chloris,-4.27,-36.55,10.12
+HCSA_Indonesia,split-conformal coverage %,67.57,56.93,76.8
+Labriere2018,rRMSE E2 LORO,28.63,22.76,38.39
+Labriere2018,rRMSE E0 Chloris,30.95,25.76,50.26
+Labriere2018,rRMSE E2 - Chloris,-2.31,-13.62,4.81
+Labriere2018,split-conformal coverage %,98.92,95.6,100.0
+All,CQR coverage %,89.89,83.94,94.38
+All,rRMSE ensemble - E2,-3.7,-7.15,-0.61
+GEO-TREES,rRMSE ensemble - E2,-6.95,-17.21,-1.27
+HCSA_Indonesia,rRMSE ensemble - E2,-5.98,-11.12,4.87
+Labriere2018,rRMSE ensemble - E2,-0.74,-3.73,3.36
+All,rRMSE radar only - optical only,-2.32,-11.08,5.1
+GEO-TREES,rRMSE radar only - optical only,-5.3,-17.84,12.71
+HCSA_Indonesia,rRMSE radar only - optical only,11.74,-3.52,21.16
+Labriere2018,rRMSE radar only - optical only,-8.33,-28.95,0.03
+All,"coverage cloud-aware - plain, fully clouded (points)",4.0,1.93,6.6
+All,"cloud-aware CQR coverage %, fully clouded",90.53,84.66,95.22

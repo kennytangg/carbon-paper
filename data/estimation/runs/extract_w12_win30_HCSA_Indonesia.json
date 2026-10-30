@@ -1,0 +1,14 @@
+{
+ "summary": {
+  "n_tasks": 444,
+  "n_cached": 0,
+  "n_done": 444,
+  "n_failed": 0,
+  "n_retries": 4,
+  "wall_s": 5288.85,
+  "throughput_tasks_per_s": 0.084,
+  "load_imbalance": 1.216
+ },
+ "failures": [],
+ "n_failures": 0
+}
