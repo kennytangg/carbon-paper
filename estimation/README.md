@@ -38,6 +38,8 @@ Satellite reads use the Microsoft Planetary Computer (anonymous). `backends/gee.
 | 11. Cloud robustness and intervals | `python -m estimation.robust`, then `python -m estimation.robust --only-u4` | `results/cloud_robustness.csv`, `results/interval_methods.csv`, `results/cloud_aware_cqr.csv` |
 | 12. Project-level uncertainty | `python -m estimation.project_uncertainty` | `results/project_*` |
 | 13. Reliability | `python -m estimation.reliability` | `results/bootstrap_ci.csv`, `results/seed_stability.csv` |
+| 13b. Conformal crediting | `python -m estimation.conformal_crediting`, `python -m estimation.crediting_frontier`, `python -m estimation.crediting_robustness` | `results/conformal_crediting.csv`, `results/crediting_frontier.csv`, `results/crediting_robustness.csv` |
+| 13c. Gain-loss test (SAFE) | `python -m estimation.gain_loss` | `results/gain_loss.csv` |
 | 14. Systems experiments | `python -m estimation.systems_experiments --n-tasks 48` | `results/systems_experiments.json` |
 | 15. Figures | `python -m estimation.figures` | `docs/figures/*.pdf` |
 

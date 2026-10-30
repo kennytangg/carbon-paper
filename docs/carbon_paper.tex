@@ -40,7 +40,7 @@
 
 \begin{document}
 
-\title{Can Satellites Replace the Field Plot? A Blind, Time-Matched Benchmark of Satellite-Only Forest Carbon Estimation Against Standard-Formula Ground Truth}
+\title{Can Satellites Replace the Field Plot? A Blind Benchmark of Satellite Forest Carbon Against Standard-Formula Ground Truth, and Conformal Crediting with Calibrated Over-Crediting Risk}
 
 \author{
 \IEEEauthorblockN{Kenny Tang}
@@ -90,7 +90,7 @@ jmartinez@binus.edu}
 \maketitle
 
 \begin{abstract}
-Satellite platforms promise to replace field inventories in forest carbon crediting, but their estimates are rarely tested blind against the standard-formula answer, and two practical problems, clouds and confidence, are rarely quantified. We separate the question into two isolated grids. The right grid computes field ground truth step by step to SNI 7724, IPCC, CDM, and Verra rules, with a Monte Carlo uncertainty budget, and is sealed; the left grid sees only plot coordinates and dates, reads time-matched Sentinel-1/2, Landsat, PALSAR, and terrain data, and estimates carbon blind. A hash-chained commit-reveal ledger makes any change to predictions after the reveal detectable. On 476 stock plots, blind error was 45--49\% relative RMSE: about 30\% on 1\,ha plots, over 100\% on small Indonesian plots, with saturation near 300\,Mg\,ha$^{-1}$. A plot-level climatology of 22{,}697 Sentinel-2 acquisitions shows that only 21.5\% see an Indonesian plot clear, yet a common scene-level filter discards 65\% of those; a radar-led model lost two points without optical data. Conformalized quantile regression calibrated on synthetically clouded copies of its calibration plots (missing-data augmentation) kept 90\% coverage under full cloud; a metadata confidence score carried no information about error beyond dataset differences. Project intervals that ignore correlated map error covered 74\% of projects; as auxiliary data for field plots, the satellite was 1.4--2.3 times as efficient as field plots alone on large-plot datasets. For annual growth on 196 Bornean plots, no satellite estimate beat assuming no change. Satellites can map stock and save field plots; growth still needs remeasurement, and confidence must be calibrated, not graded.
+Satellite platforms promise to replace field inventories in forest carbon crediting, but their estimates are rarely tested blind against the standard-formula answer, and credits are issued with deductions whose risk is unknown. We separate the question into two isolated grids. The right grid computes field ground truth to SNI 7724, IPCC, CDM, and Verra rules with a Monte Carlo uncertainty budget and is sealed. The left grid sees only plot coordinates and dates and estimates carbon from time-matched Sentinel-1/2, Landsat, PALSAR, and terrain data. A hash-chained ledger makes changes after the reveal detectable. On 476 stock plots, blind error was about 30\% on 1\,ha plots and over 100\% on small Indonesian plots. Only 21.5\% of Sentinel-2 acquisitions see an Indonesian plot clear, and a common scene-level filter discards 65\% of those. Missing-data-augmented conformal regression kept 90\% plot intervals under full cloud. We then propose conformal crediting: a project is credited a lower bound calibrated on other projects with field truth. Under cross-region transfer it met a 10\% over-crediting target for each of five maps, within 2.9 points. It was invariant to map inflation, and credited 72\% of the true stock without a field plot. The VM0047 deduction over-credited 23--29\% of projects with field plots and sits below the integrity-yield frontier. For annual growth on 196 Bornean plots, no satellite estimate beat assuming no change. Satellites can map stock and support calibrated crediting; growth still needs remeasurement.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -142,12 +142,14 @@ We separate the problem into two grids (Fig.~\ref{fig:grids}). The \textbf{right
 
 \textbf{RQ4 (sequestration).} Can the annual change in carbon stock, the quantity credits are issued on, be estimated blind from satellites, and how certain is the field answer itself?
 
-\textbf{RQ5 (distributed systems).} Can time-matched extraction for hundreds of plots and sensors be sharded, balanced, and made fault tolerant with bit-identical outputs, and can a hash-chained ledger make the order of prediction and reveal verifiable?
+\textbf{RQ5 (integrity; AI and methodology).} Can a credit be issued from a satellite estimate with a stated, verified risk of over-crediting, whatever map it comes from, and how many credits does that leave compared with the registry deduction and with field plots?
+
+\textbf{RQ6 (distributed systems).} Can time-matched extraction for hundreds of plots and sensors be sharded, balanced, and made fault tolerant with bit-identical outputs, and can a hash-chained ledger make the order of prediction and reveal verifiable?
 
 \subsection{Contributions}
-(i) A blind, time-matched evaluation protocol with a commit-reveal ledger, reusable for any MRV estimator. (ii) A right grid built step by step to SNI 7724, IPCC, CDM, Verra, and Gold Standard rules, with a Monte Carlo uncertainty budget, on 476 stock plots (148 Indonesian plots recomputed tree by tree) and 223 day-dated repeat-census plots in Borneo. (iii) An estimator ladder from zero field data to $k$ local plots, with spatially blocked validation. (iv) A plot-level Sentinel-2 clear-sky climatology for Indonesian forest plots and a measured error rate of the scene-level cloud filter. (v) A test of missing-data-augmented conformal intervals~\cite{zaffran2023conformal} under cloud-driven, non-random loss of the optical block with out-of-region calibration. (vi) An empirical coverage test of project-level intervals under spatial transfer, and a simulation of how often the VM0047 uncertainty deduction still over-credits. (vii) A sharded, idempotent extraction runner with measured scaling and fault tolerance.
+(i) A blind, time-matched evaluation protocol with a commit-reveal ledger, reusable for any MRV estimator. (ii) A right grid built step by step to SNI 7724, IPCC, CDM, Verra, and Gold Standard rules, with a Monte Carlo uncertainty budget, on 476 stock plots (148 Indonesian plots recomputed tree by tree) and 223 day-dated repeat-census plots in Borneo. (iii) An estimator ladder from zero field data to $k$ local plots, with spatially blocked validation. (iv) A plot-level Sentinel-2 clear-sky climatology for Indonesian forest plots and a measured error rate of the scene-level cloud filter. (v) A test of missing-data-augmented conformal intervals~\cite{zaffran2023conformal} under cloud-driven, non-random loss of the optical block with out-of-region calibration. (vi) An empirical coverage test of project-level intervals under spatial transfer, and a simulation of how often the VM0047 uncertainty deduction still over-credits. (vii) \emph{Conformal crediting}: a crediting rule calibrated across projects against field truth. It meets its over-crediting target under spatial transfer and for biased maps, it is invariant to uniform map inflation, and it comes with an integrity-yield frontier that prices a field plot in credits. (viii) A sharded, idempotent extraction runner with measured scaling and fault tolerance.
 
-\textbf{What is not new.} We propose no new estimator or interval method. Conformalized quantile regression~\cite{romano2019cqr}, its missing-data augmentation~\cite{zaffran2023conformal}, modality dropout~\cite{neverova2016moddrop}, model-assisted estimation~\cite{sarndal1992model,stahl2016models}, and the effects of plot size, saturation, allometric choice, and root-to-shoot choice~\cite{rejou2014local,araza2022comprehensive,rutishauser2013generic,mokany2006critical} are established. Hash chains, sealed test sets, and commit-reveal are decades old~\cite{haber1991timestamp,blum1983coin,blum2015ladder}. The contribution is a blind, standards-anchored evaluation that tests these tools together on Indonesian and Bornean plots, under the failure modes an MRV platform meets: clouds, small plots, spatial transfer, and the deduction rules of the registries.
+\textbf{What is not new.} We propose no new estimator or interval method; the one methodological proposal, conformal crediting, reuses standard conformal machinery for a new decision. Conformalized quantile regression~\cite{romano2019cqr}, its missing-data augmentation~\cite{zaffran2023conformal}, modality dropout~\cite{neverova2016moddrop}, model-assisted estimation~\cite{sarndal1992model,stahl2016models}, and the effects of plot size, saturation, allometric choice, and root-to-shoot choice~\cite{rejou2014local,araza2022comprehensive,rutishauser2013generic,mokany2006critical} are established. Hash chains, sealed test sets, and commit-reveal are decades old~\cite{haber1991timestamp,blum1983coin,blum2015ladder}. The contribution is a blind, standards-anchored evaluation that tests these tools together on Indonesian and Bornean plots, under the failure modes an MRV platform meets: clouds, small plots, spatial transfer, and the deduction rules of the registries.
 
 %=====================================================================
 \section{Related Work}
@@ -307,6 +309,27 @@ with $s_w$ and $s_b$ estimated from the other regions only. When $k$ field plots
 \label{eq:ratio}
 \end{equation}
 where $\bar{\hat y}$ is the satellite mean over the whole project. The regression (GREG) estimator is $\bar y_s+\hat\beta(\bar{\hat y}-\bar{\hat y}_s)$. Both are compared with the field-only mean of the same $k$ plots over 500 random draws. The relative efficiency $\mathrm{MSE}_\text{field}/\mathrm{MSE}_\text{estimator}$ says how many field plots one satellite-assisted plot is worth. We use the empirical MSE over draws, because the GREG variance formula underestimates at small $k$. A conservative estimate $\hat Y(1-\mathrm{UNC})$ with the VM0047 rule exceeds the truth whenever the project is over-credited; we report how often.
+
+\subsection{Conformal Crediting}
+\label{sec:ccmethod}
+A registry does not issue an interval; it issues a number. The number should be a lower bound that exceeds the true stock in at most a stated share $\delta$ of projects. This is the conservativeness principle of Grassi \textit{et al.}~\cite{grassi2008applying}, which Neeff writes as $P\{\hat Y(1-d)\le Y\}\ge1-\delta$ and solves parametrically with $d=t\,SE/\hat Y$~\cite{neeff2021risk}. A parametric bound is only as good as its standard error. For a satellite map no design-based standard error exists, and the model-based one rests on an error model we have shown to be fragile. We therefore calibrate the bound on other projects whose field truth is known, as Singh \textit{et al.} suggested in passing for registry intervals~\cite{singh2024uncertainty}.
+
+\textbf{Rule.} Let project $j$ have an estimate $\hat Y_j$ of its mean stock, true mean $Y_j$, and a relative standard error $r_j$ ($r_j=1$ when none exists). Its score is $z_j=\ln(\hat Y_j/Y_j)/r_j$. For a new project, with scores $z_1,\dots,z_m$ from $m$ calibration projects, the credited stock is
+\begin{equation}
+C=\hat Y\exp(-q\,r),\qquad q=z_{(\lceil (m+1)(1-\delta)\rceil)},
+\label{eq:cc}
+\end{equation}
+the $\lceil (m+1)(1-\delta)\rceil$-th smallest score, or $C=0$ if that rank exceeds $m$.
+
+\textbf{Guarantee.} If the new project and the calibration projects are exchangeable, then $P(C>Y)\le\delta$, and it is at least $\delta-1/(m+1)$ when scores have no ties. This is split conformal prediction~\cite{lei2018distribution} with projects as the units. Plots inside a project may be correlated in any way, because each project contributes one score~\cite{dunn2023distribution}. The bound needs $m\ge 1/\delta-1$ calibration projects: 9 for $\delta=0.1$ and 19 for $\delta=0.05$.
+
+\textbf{Invariance to map inflation.} If every satellite estimate is multiplied by $c>0$, every plain score ($r=1$) shifts by $\ln c$, so $q$ shifts by $\ln c$, and $C=c\hat Y\exp(-q-\ln c)=\hat Y\exp(-q)$ is unchanged. A developer who inflates a map uniformly gains no credit. A parametric bound $\hat Y\exp(-z_{1-\delta}SE)$ with $SE$ from residual spread grows by the full factor $c$.
+
+\textbf{Variants and baselines.} The \emph{studentized} variant uses the design-based relative standard error of the project estimate as $r_j$. With $k$ field plots this is the ratio estimator of Eq.~\ref{eq:ratio}, so the variant recalibrates the registry variance formula across projects. Breidenbach \textit{et al.} found that such formulas under-cover~\cite{breidenbach2016empirical}. The \emph{Mondrian} variant calibrates within the plot-size class, small (radius $\le$15\,m) or large, which is a public field of the manifest. Baselines are no deduction; the VM0047 deduction $\hat Y(1-\max(0,U-0.1))$; the design lower bound $\hat Y(1-t_{1-\delta,k-1}r)$ of Neeff~\cite{neeff2021risk}; and the parametric satellite-only bounds with independent or two-component errors (Eq.~\ref{eq:twocomp}).
+
+\textbf{Integrity-constrained yield.} We score a rule by its realised over-crediting rate and by its \emph{yield}, the mean of $C_j/Y_j$: the share of the true stock that is credited. Comparing designs by yield at a fixed realised risk gives the value of a field plot in credits.
+
+\textbf{Experiment.} Projects are region blocks with at least 8 plots. Regions of 16 or more plots are split into spatial sub-projects of about 10 plots by $k$-means on coordinates, which gives 31 projects in 19 regions. A project is calibrated only on projects from other regions, so the guarantee is tested under transfer. With $k$ field plots, each project is drawn 200 times. Each draw is calibrated on one random draw per calibration project (the subsampling scheme for two-layer data~\cite{dunn2023distribution}). Every run comes after the stock reveal, so the results are exploratory.
 
 \subsection{Scoring}
 We report RMSE, relative RMSE, bias, $R^2$, and Lin's concordance~\cite{lin1989concordance} per dataset and overall, interval coverage for E2, error by field-AGB range, error versus window $W$, and the error of the mean of $n$ plots as $n$ grows, which approximates estimating a larger area.
@@ -611,6 +634,86 @@ Regional default rate$^\dagger$ & \textbf{7.91} & \textbf{0.00} & -- & \textbf{0
 
 \textbf{Out-of-region stock on Borneo.} The same E2 model, trained without any Bornean plot, misses SAFE stock at $t_0$ by 132\% rRMSE with a $+80$\% bias (excluding oil palm). It over-predicts the 0.06\,ha logged and riparian plots (field mean 99, predicted 217\,Mg\,ha$^{-1}$), a second instance of the small-plot problem seen on HCSA.
 
+\subsection{From Intervals to Credits (RQ5)}
+\label{sec:ccresults}
+Table~\ref{tab:cc} credits the 31 projects under each rule at $\delta=0.10$.
+
+\textbf{Satellite only.} Crediting the raw map over-credits 35\% of projects. The VM0047 deduction applied to the honest two-component uncertainty never over-credits, but it credits only 48\% of the true stock. Conformal crediting meets its target: 9.7\% of projects are over-credited (exact 95\% interval 2--26\% with 31 projects), and 72\% of the true stock is credited without a single field plot in the project.
+
+\textbf{With field plots.} The VM0047 deduction over-credits 23\% of projects with 5 plots and 29\% with 10, up to 42\% of the large-plot projects. The design lower bound at the same $\delta$ realises 8.5--9.9\% and gives up only 1.5--4 points of yield. Plain conformal calibration meets the target on average, but not by plot size: with 5 plots, it over-credits 25\% of small-plot projects and 4\% of large-plot ones. Studentization repairs this (10.6\% and 9.2\%), matching the design bound, whose validity comes from random sampling. Once plots are drawn at random, the classical design bound is the efficient choice, and conformal calibration adds a check, not credits.
+
+\begin{table}[t]
+\centering
+\caption{Crediting Rules at Target $\delta=0.10$: Realised Over-Crediting and Yield (31 Projects, Cross-Region Calibration)}
+\label{tab:cc}
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+ & \multicolumn{3}{c}{\textbf{Over-credited}} & \\
+\cmidrule(lr){2-4}
+\textbf{Rule} & \textbf{All} & \textbf{Large} & \textbf{Small} & \textbf{Yield}\\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Satellite only (no plot in the project)}}\\
+No deduction & 35.5\% & 39.1 & 25.0 & 94.4\%\\
+VM0047, two-component $U$ & 0.0\% & 0.0 & 0.0 & 47.8\%\\
+Parametric, two-component & 0.0\% & 0.0 & 0.0 & 59.5\%\\
+Parametric, independent & 9.7\% & -- & -- & 72.6\%\\
+Conformal (Eq.~\ref{eq:cc}) & 9.7\% & 13.0 & 0.0 & 72.2\%\\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Satellite + 5 random field plots (ratio estimator)}}\\
+VM0047 ($U-10\%$) & 22.6\% & 27.6 & 8.1 & 82.2\%\\
+Design lower bound & 9.9\% & 10.2 & 9.2 & 80.7\%\\
+Conformal, plain & 9.4\% & 3.8 & 25.3 & 80.8\%\\
+Conformal, studentized & 9.6\% & 9.2 & 10.6 & 80.7\%\\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Satellite + 10 random field plots (16 projects)}}\\
+VM0047 ($U-10\%$) & 29.3\% & 42.1 & 12.9 & 90.0\%\\
+Design lower bound & 8.5\% & 9.4 & 7.4 & 86.1\%\\
+Conformal, studentized & 6.5\% & 6.1 & 7.0 & 82.1\%\\
+\bottomrule
+\multicolumn{5}{@{}l}{\scriptsize Large: 1\,ha and network plots (23 projects); small: 0.05\,ha}\\
+\multicolumn{5}{@{}l}{\scriptsize HCSA plots (8). With field plots: mean over 200 draws.}
+\end{tabular}
+\end{table}
+
+\textbf{Is the bound calibrated whatever map it is given?} The satellite-only result above could be luck, because E2 under-predicts by about 9\% on average and so rarely over-credits. Table~\ref{tab:ccrobust} applies the same rules to five maps: E2, the Chloris product, their average, and E2 inflated by 10\% and 20\%, as an optimistic vendor map might be. Over the five maps, the conformal bound's realised over-crediting stays within 2.9 points of the target at $\delta=0.10$, and within 2.6 points at $\delta=0.20$. The independent parametric bound overshoots by up to 9.4 and 15.5 points. The two-component bound is conservative on E2 and drifts upward as the map is inflated. Inflation also shows the incentive. Under the parametric bound, a map inflated by 20\% earns 87\% of the true stock instead of 73\%, and doubles the over-crediting rate. Under conformal crediting it earns exactly the same 72.2\%, as the invariance property predicts.
+
+\begin{table}[t]
+\centering
+\caption{Satellite-Only Bounds Applied to Five Maps ($\delta=0.10$): Realised Over-Crediting / Yield}
+\label{tab:ccrobust}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+\textbf{Map} & \textbf{Param., indep.} & \textbf{Param., two-comp.} & \textbf{Conformal}\\
+\midrule
+E2 (blind LightGBM) & 9.7 / 72.6 & 0.0 / 59.5 & 9.7 / 72.2\\
+Chloris product & 19.4 / 77.6 & 3.2 / 53.7 & 12.9 / 66.2\\
+E2--Chloris average & 6.5 / 75.5 & 0.0 / 60.8 & 9.7 / 79.3\\
+E2 $\times$ 1.1 & 16.1 / 79.8 & 3.2 / 65.4 & 9.7 / 72.2\\
+E2 $\times$ 1.2 & 19.4 / 87.1 & 6.5 / 71.3 & 9.7 / 72.2\\
+\midrule
+Worst excess over $\delta$ & +9.4 & $-3.5$ & +2.9\\
+\bottomrule
+\multicolumn{4}{@{}l}{\scriptsize Percent of projects over-credited / percent of true stock credited.}
+\end{tabular}
+\end{table}
+
+\textbf{Integrity-yield frontier.} Fig.~\ref{fig:frontier} traces each rule as $\delta$ varies. Both VM0047 points lie below the frontier. With 10 plots, VM0047 takes 29\% risk for 90\% yield, where the design bound gives 92\% at 19\%. Satellite-only, it credits 48\% at no realised risk, where the other bounds give 60--72\% at 0--10\%. The frontier also prices a field plot. At about 10\% realised risk, the satellite alone earns 72\% of the true stock, 5 random plots raise it to 81\%, and 10 plots to 86\%. The parametric two-component bound lies slightly above the conformal curve at low risk. It is not better calibrated: its realised risk sits far from its nominal one, in a direction that changes with the map (Table~\ref{tab:ccrobust}). A user of the parametric bound cannot know beforehand what risk is being taken.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_frontier}
+\caption{Integrity-yield frontier: realised over-crediting against credit yield as the target $\delta$ varies from 0.05 to 0.30. Crosses mark the VM0047 deduction.}
+\label{fig:frontier}
+\end{figure}
+
+\textbf{What the guarantee needs.} The guarantee is marginal over the population of projects in the calibration bank, and it is only as good as that bank. With a mixed bank, network-plot projects were over-credited in 33\% of cases at $\delta=0.10$, against 0\% for the 1\,ha and HCSA projects. Calibrating only on projects from other datasets raised this to 44\%. Calibrating only on the same dataset brought it to 0--14\%, but with 6--8 calibration projects the quantile reached the largest score, and the mean yield fell to 18\%. A conditional guarantee for a project type therefore needs at least 9 field-verified projects of that type for $\delta=0.10$, and 19 for $\delta=0.05$. Two further limits apply. The truth in the bank is itself a field estimate, so the guarantee is relative to that reference. And projects with field truth may not be selected like the projects being credited, which is the main threat to exchangeability.
+
+\textbf{Position.} The conservativeness target is that of Grassi \textit{et al.} and Neeff~\cite{grassi2008applying,neeff2021risk}, and the machinery is split and normalized conformal prediction~\cite{lei2018distribution,papadopoulos2008normalized}. Conformal intervals for area-level parameters have been proposed for small-area estimation~\cite{zhang2026conformal}, and for the true effect of a new trial in meta-analysis~\cite{kaul2024meta}. What we have not found before is the following: a crediting rule calibrated across projects against field truth, its empirical test under spatial transfer and biased maps, its invariance to map inflation, and a measured integrity-yield trade-off for the registry deduction.
+
 \subsection{How Reliable Are These Numbers?}
 \label{sec:reliability}
 Every score above comes from 27 region blocks, and errors are correlated within a block. We therefore resampled whole blocks with replacement (2{,}000 draws) and refitted E2 with five LightGBM seeds (Table~\ref{tab:reliab}). Seed noise is small: the overall rRMSE moved by 0.36 points (SD). Region sampling is not: the 95\% interval of the overall rRMSE runs from 35\% to 69\%. Three kinds of claim survive this test. The first is the differences between datasets and plot sizes, whose intervals do not overlap. The second is the gain of the E2--Chloris average over E2 ($-3.7$ points, interval $-7.2$ to $-0.6$). The third is the coverage gain of cloud-aware calibration under full cloud ($+4.0$ points, $+1.9$ to $+6.6$). Two claims do not survive. The difference between E2 and Chloris ($-0.8$ points, $-8.3$ to $+5.3$) and between radar and optical inputs ($-2.3$, $-11.1$ to $+5.1$) are within noise. We report them as tendencies, not findings.
@@ -641,7 +744,7 @@ E2 rRMSE over 5 seeds (mean $\pm$ SD) & 48.8 & $\pm$0.36\\
 \end{tabular}
 \end{table}
 
-\subsection{Systems (RQ5)}
+\subsection{Systems (RQ6)}
 \textbf{Production runs.} The stock extraction ran 2{,}052 tasks on 24 workers in 2.1\,h (0.26 tasks\,s$^{-1}$) with a measured load factor of 1.47, close to the 1.40 predicted from task counts; 85 transient errors were absorbed by retries. We stopped the first attempt, which used tile-only placement, to switch policies; the restart skipped the 92 tasks already in the content-addressed cache. Seventeen tasks (0.8\%) failed permanently: 13 hit two Landsat scenes whose files could not be read from the catalogue, and four hit unreadable Sentinel-2 files. Retrying cannot repair a permanently broken input; the runner records such tasks and the model treats their features as missing, and a scene-level fallback is the obvious next step. The SAFE extraction ran 2{,}006 tasks on 16 workers in 2.3\,h with no permanent failures, 36 retries, and a load factor of 1.44.
 
 \textbf{Scaling, faults, and resume.} A random sample of 48 tasks (Landsat, Sentinel-1, PALSAR, terrain) was run on 1 to 32 workers, each time on an empty cache (Table~\ref{tab:sys}). Throughput rose 5.1-fold up to 8 workers and then flattened (5.5-fold at 32). Two limits explain this. With 48 tasks, 32 workers hold one or two buckets each, so the load factor rose to 2.67. And the makespan cannot fall below the slowest single task, a multi-scene read, however many workers wait beside it. The extraction is bound by remote reads, not by local compute. Every run was compared with the single-worker run task by task: all 47 finished results were bit-identical at every worker count. With transient faults injected at rates 0.1, 0.2, and 0.3 per attempt, the runner absorbed 13, 18, and 28 retries, and again all 47 results matched. The one task that never finished, in any run, is the one whose Landsat file is unreadable, which is a permanent fault. In the resume test, a run stopped after 23 tasks; the restart skipped those 23 from the cache, ran the remaining 24, and produced output identical to the uninterrupted run.
@@ -714,7 +817,7 @@ Santoro 2021~\cite{santoro2021global} & GlobBiomass & 110\,k plots & SD $\approx
 Three findings change how clouds should be handled. First, \emph{how often} a plot is clear matters less than \emph{how} clearness is decided. A clear look within $\pm$30 days exists for 96\% of dates in Indonesia, because revisit compensates for an 80\% cloud frequency~\cite{wilson2016cloud,li2017revisit}. The scene-level filter that most pipelines apply, by contrast, discards two thirds of the clear looks and keeps a third of cloudy ones. Pixel-level masking at the plot, with SCL, Fmask, or Cloud Score+~\cite{zhu2012fmask,skakun2022cmix,pasquarella2023cloudscore}, nearly triples the usable data. Second, \emph{season matters}: in Indonesia the clear share in May is 4.4 times that in January, so field campaigns and their satellite windows should be planned for the dry months. Third, a model led by radar and an annual product loses only two points of accuracy without any optical data, so clouds are an availability problem for optical indices but not for a well-designed multi-sensor stock estimate. That is the practical form of the SAR--optical fusion argued for by Reiche \textit{et al.}~\cite{reiche2016combining}. Filling optical gaps from radar and feeding them to the model, however, was the worst option we tested. Reconstructed reflectance is a model output whose error does not disappear because the image looks complete.
 
 \subsection{Confidence That Means Something}
-Honest confidence has three layers, and each failed in a characteristic way. At \emph{plot} level, conformal intervals were honest overall, but only CQR was both honest and usable, and missing-data-augmented calibration~\cite{zaffran2023conformal} kept it honest when optical data were missing, outside the assumptions under which that method is guaranteed. The guarantee is marginal: under the shift from large to small plots (HCSA), coverage fell to 68--81\% for every method. Spatially weighted conformal prediction~\cite{tibshirani2019conformal,mao2024spatial} is the next step. At \emph{project} level, independence is the dangerous assumption. Map errors are correlated over tens of kilometres~\cite{araza2022comprehensive}, a project shares one regional bias, and an interval that ignores it covered only 74\% of projects. The two-component interval is honest, and it shows that a satellite-only project estimate would lose most of its credits under VM0047. At the level of the \emph{standard}, a deduction of $U-10\%$ is not a lower confidence bound. With ten field plots, the deducted estimate still exceeded the true stock in a third of draws. Crediting the lower bound of a calibrated interval instead would make the over-crediting rate a design parameter rather than an accident.
+Honest confidence has three layers, and each failed in a characteristic way. At \emph{plot} level, conformal intervals were honest overall, but only CQR was both honest and usable, and missing-data-augmented calibration~\cite{zaffran2023conformal} kept it honest when optical data were missing, outside the assumptions under which that method is guaranteed. The guarantee is marginal: under the shift from large to small plots (HCSA), coverage fell to 68--81\% for every method. Spatially weighted conformal prediction~\cite{tibshirani2019conformal,mao2024spatial} is the next step. At \emph{project} level, independence is the dangerous assumption. Map errors are correlated over tens of kilometres~\cite{araza2022comprehensive}, a project shares one regional bias, and an interval that ignores it covered only 74\% of projects. The two-component interval is honest, and it shows that a satellite-only project estimate would lose most of its credits under VM0047. At the level of the \emph{standard}, a deduction of $U-10\%$ is not a lower confidence bound. With ten field plots, the deducted estimate still exceeded the true stock in a third of draws. Conformal crediting (Section~\ref{sec:ccresults}) makes the over-crediting rate a design parameter rather than an accident, and removes the reward for inflating the map.
 
 A metadata quality score answers a different question from a confidence interval. Ours rewarded recent, cloud-checked imagery. Over all plots it trusted most the plots the model got most wrong, and within a dataset it said nothing at all about error. Confidence has to be learned from errors against field data and reported in the units of the claim, as an interval in t\,C\,ha$^{-1}$, not as a grade.
 
@@ -730,7 +833,7 @@ Our audit found default constants where measurements were expected, a scene-leve
 \item Mask clouds per pixel at the plot (SCL or Cloud Score+) instead of \texttt{CLOUDY\_PIXEL\_PERCENTAGE}, and widen the window in the wet season.
 \item Estimate stock with a radar-led multi-sensor model trained with modality dropout, and attach a cloud-aware CQR interval instead of the letter grade.
 \item Report projects with the two-component interval, and calibrate each project with ten to twenty large field plots through a ratio estimator.
-\item Credit the lower confidence bound.
+\item Credit with a bound whose risk is calibrated: conformal crediting from a calibration bank of field-verified projects when no plot is measured, the design lower bound when random plots are, never the $U-10\%$ deduction alone.
 \item Credit sequestration from field remeasurement of permanent plots, and use satellites to detect loss and disturbance.
 \item Log every estimate through the commit-reveal ledger.
 \item Fix the GEDI band that is read as canopy height.
@@ -758,7 +861,7 @@ Our audit found default constants where measurements were expected, a scene-leve
 \section{Conclusion}
 We asked whether open satellite data can replace the field plot in forest carbon MRV, and tested it blind. A sealed right grid was computed step by step to SNI 7724, IPCC, CDM, Verra, and Gold Standard rules with a full uncertainty budget. A left grid saw only coordinates and dates. A hash-chained ledger makes any change to a prediction after the answer was opened detectable.
 
-Across 476 stock plots, the best blind estimate missed by 45--49\% relative RMSE overall: about 30\% on 1\,ha plots and about 100\% on small Indonesian plots. In Indonesia only 21.5\% of Sentinel-2 acquisitions see a plot clear. Masking at the plot instead of filtering scenes nearly triples the usable data, and a radar-led model loses only two points without optical data. Missing-data-augmented conformal calibration kept 90\% intervals honest under full cloud, while a metadata confidence score carried no information about error beyond dataset differences. At project scale, an interval that ignores spatially correlated error covered only 74\% of projects; with field plots as calibration, the satellite was 1.4--2.3 times as efficient as field plots alone on large-plot datasets. For annual sequestration, no satellite estimator beat ``no change'', and even the field answer was too uncertain to credit without the correlation of permanent plots.
+Across 476 stock plots, the best blind estimate missed by 45--49\% relative RMSE overall: about 30\% on 1\,ha plots and about 100\% on small Indonesian plots. In Indonesia only 21.5\% of Sentinel-2 acquisitions see a plot clear. Masking at the plot instead of filtering scenes nearly triples the usable data, and a radar-led model loses only two points without optical data. Missing-data-augmented conformal calibration kept 90\% intervals honest under full cloud, while a metadata confidence score carried no information about error beyond dataset differences. At project scale, an interval that ignores spatially correlated error covered only 74\% of projects; with field plots as calibration, the satellite was 1.4--2.3 times as efficient as field plots alone on large-plot datasets. Conformal crediting met a stated over-crediting risk without a single field plot in the project, earning 72\% of the true stock at 10\% risk, was invariant to map inflation, and showed that the registry deduction sits below the integrity-yield frontier. For annual sequestration, no satellite estimator beat ``no change'', and even the field answer was too uncertain to credit without the correlation of permanent plots.
 
 Satellites are a stock-mapping, disturbance, and plot-saving tool, not a replacement for the field plot, and their confidence must be calibrated, not graded. The contribution is the evaluation, not a new method: the protocol, the ledger, and the extraction runner are reusable. Together they turn a platform's accuracy claim into something a third party can check.
 
@@ -1002,7 +1105,7 @@ A.~I. Flores-Anderson \textit{et al.}, ``Spatial and temporal availability of cl
 M.~Kuronen, J.~R\"aty, P.~Packalen, and M.~Myllym\"aki, ``Uncertainty quantification for forest attribute maps with conformal prediction and $k$-nearest neighbor method,'' \textit{Remote Sens. Environ.}, vol.~325, art.~114758, 2025, doi: 10.1016/j.rse.2025.114758.
 
 \bibitem{singh2024uncertainty}
-G.~Singh, G.~Moncrieff, Z.~Venter, K.~Cawse-Nicholson, J.~Slingsby, and T.~B. Robinson, ``Uncertainty quantification for probabilistic machine learning in Earth observation using conformal prediction,'' arXiv:2401.06421, 2024.
+G.~Singh, G.~Moncrieff, Z.~Venter, K.~Cawse-Nicholson, J.~Slingsby, and T.~B. Robinson, ``Uncertainty quantification for probabilistic machine learning in Earth observation using conformal prediction,'' \textit{Sci. Rep.}, vol.~14, art.~16166, 2024, doi: 10.1038/s41598-024-65954-w.
 
 \bibitem{mauya2015effects}
 E.~W. Mauya \textit{et al.}, ``Effects of field plot size on prediction accuracy of aboveground biomass in airborne laser scanning-assisted inventories in tropical rain forests of Tanzania,'' \textit{Carbon Balance Manag.}, vol.~10, art.~10, 2015, doi: 10.1186/s13021-015-0021-x.
@@ -1027,6 +1130,18 @@ G.~Badgley \textit{et al.}, ``Systematic over-crediting in California's forest c
 
 \bibitem{requenasuarez2019estimating}
 D.~Requena Suarez \textit{et al.}, ``Estimating aboveground net biomass change for tropical and subtropical forests: Refinement of IPCC default rates using forest plot data,'' \textit{Global Change Biol.}, vol.~25, pp.~3609--3624, 2019, doi: 10.1111/gcb.14767.
+
+\bibitem{neeff2021risk}
+T.~Neeff, ``What is the risk of overestimating emission reductions from forests -- and what can be done about it?'' \textit{Climatic Change}, vol.~166, art.~26, 2021, doi: 10.1007/s10584-021-03079-z.
+
+\bibitem{dunn2023distribution}
+R.~Dunn, L.~Wasserman, and A.~Ramdas, ``Distribution-free prediction sets for two-layer hierarchical models,'' \textit{J. Amer. Statist. Assoc.}, vol.~118, no.~544, pp.~2491--2502, 2023, doi: 10.1080/01621459.2022.2060112.
+
+\bibitem{zhang2026conformal}
+L.-C. Zhang and T.~Tuoto, ``Conformal confidence intervals with an application to small area estimation,'' arXiv:2608.02766, 2026.
+
+\bibitem{kaul2024meta}
+S.~Kaul and G.~J. Gordon, ``Meta-analysis with untrusted data,'' arXiv:2407.09387, 2024.
 
 \end{thebibliography}
 

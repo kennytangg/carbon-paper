@@ -1,0 +1,9 @@
+level,estimator,rmse,mae,bias
+plot,no change,8.122,4.523,-1.869
+plot,regional default rate,7.912,4.025,0.002
+plot,gain-loss (d_nbr),7.93,4.047,-0.006
+plot,gain-loss (d_ndvi),7.963,4.076,-0.024
+block mean,no change,2.298,2.054,-1.919
+block mean,regional default rate,1.324,0.982,-0.05
+block mean,gain-loss (d_nbr),1.401,1.057,-0.063
+block mean,gain-loss (d_ndvi),1.439,1.1,-0.1

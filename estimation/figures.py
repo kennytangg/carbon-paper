@@ -146,7 +146,34 @@ def fig_model_assisted():
     save(fig, "fig_model_assisted")
 
 
+def fig_frontier():
+    f = pd.read_csv(RES / "crediting_frontier.csv")
+    fig, ax = plt.subplots(figsize=(ONE_COL, 2.4))
+    curves = [("satellite: conformal plain", "satellite only, conformal", BLUE, "o", "-"),
+              ("satellite: parametric two-component bound", "satellite only, parametric bound", GREY, "s", "--"),
+              ("satellite + 10 plots: design lower bound", "satellite + 10 plots, design bound", ORANGE, "^", "-")]
+    for rule, lab, col, mk, ls in curves:
+        g = f[f["rule"] == rule].sort_values("delta")
+        g = g[g["delta"] <= 0.3]
+        ax.plot(g["over"], g["yield"], color=col, marker=mk, ms=3.5, ls=ls, label=lab)
+    for rule, lab, dx, dy in [("satellite: VM0047 deduction", "VM0047, satellite only", 0.012, -0.03),
+                              ("satellite + 10 plots: VM0047 deduction", "VM0047, 10 plots", -0.01, -0.06)]:
+        r = f[f["rule"] == rule].iloc[0]
+        ax.scatter([r["over"]], [r["yield"]], marker="X", s=40, color=INK, zorder=5)
+        ax.text(r["over"] + dx, r["yield"] + dy, lab, fontsize=6.5, color=INK, ha="left" if dx > 0 else "right")
+    ax.axvline(0.10, color=INK2, lw=0.8, ls=":")
+    ax.text(0.103, 0.975, "10% risk", fontsize=6.5, color=INK2, va="top")
+    ax.set_xlabel("Over-crediting rate (share of projects)")
+    ax.set_ylabel("Credit yield (credited / true)")
+    ax.xaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0, decimals=0))
+    ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0, decimals=0))
+    ax.set_xlim(-0.01, 0.36); ax.set_ylim(0.45, 1.0)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=1, frameon=False, fontsize=6)
+    save(fig, "fig_frontier")
+
+
 def main():
+    fig_frontier()
     fig_scatter()
     fig_cloud_month()
     fig_closing_gap()
