@@ -1,6 +1,6 @@
 # estimation: blind satellite-vs-field carbon benchmark
 
-This package produces every number in `docs/carbon_paper.tex`. The **right grid** is the field ground truth, computed by the standard formula and sealed. The **left grid** is the satellite-only estimate; it sees only the public manifest. A hash-chained ledger (`data/estimation/blind_ledger.jsonl`) records the order of seal, commit, release, and reveal.
+This package produces every number in `docs/carbon_paper.tex` (the 6-page conference version) and `docs/carbon_paper_extended.tex` (the full version with every table). The **right grid** is the field ground truth, computed by the standard formula and sealed. The **left grid** is the satellite-only estimate; it sees only the public manifest. A hash-chained ledger (`data/estimation/blind_ledger.jsonl`) records the order of seal, commit, release, and reveal.
 
 ## Setup
 
