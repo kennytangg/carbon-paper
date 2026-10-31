@@ -1,0 +1,24 @@
+{
+  "name": "nusacarbon-results-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Visual dashboard of the blind satellite-vs-ground-truth forest carbon benchmark",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx serve out",
+    "typecheck": "tsc --noEmit",
+    "data": "python scripts/export_data.py"
+  },
+  "dependencies": {
+    "next": "16.3.8",
+    "react": "19.2.9",
+    "react-dom": "19.2.9"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "typescript": "5.9.3"
+  }
+}
