@@ -10,8 +10,8 @@ bounds that all target delta (one-sided, multiplicative on the project mean):
   conformal                 S exp(-q), q from ln(S/Y) of projects in other regions
 
 s_w and s_b come from the estimator's own residuals in other regions. Estimators: E2, the Chloris
-product, the E2-Chloris average, and E2 scaled by 1.1 and 1.2 (a product that over-predicts,
-as a vendor map might in a new biome).
+product, the E2-Chloris average, E2 scaled by 1.1 and 1.2 (a product that over-predicts,
+as a vendor map might in a new biome), and E2 with canopy height and GEDI (run accuracy_gee first).
 
 Usage: python -m estimation.crediting_robustness
 """
@@ -31,9 +31,14 @@ def main() -> None:
     ev = pd.read_parquet(RES / "evaluation_table.parquet").dropna(subset=["E2_loro_lgbm", "E0_chloris"])
     ev = ev[ev["agb_Mg_ha"] > 1]
     ev = ev.assign(ensemble=(ev["E2_loro_lgbm"] + ev["E0_chloris"]) / 2, e2_x110=ev["E2_loro_lgbm"] * 1.1, e2_x120=ev["E2_loro_lgbm"] * 1.2)
+    # the sharper map of accuracy_gee (E2 + canopy height + GEDI, leave-one-region-out)
+    gee = pd.read_parquet(RES / "accuracy_gee_preds.parquet")[["plot_id", "+ canopy height + GEDI"]]
+    ev = ev.merge(gee.rename(columns={"+ canopy height + GEDI": "e2_gee"}), on="plot_id", how="left")
+    assert ev["e2_gee"].notna().all(), "accuracy_gee_preds is missing plots"
     P = make_projects(ev)
     estimators = {"E2 (blind LightGBM)": "E2_loro_lgbm", "Chloris product": "E0_chloris", "E2-Chloris average": "ensemble",
-                  "E2 x 1.1 (over-predicting)": "e2_x110", "E2 x 1.2 (over-predicting)": "e2_x120"}
+                  "E2 x 1.1 (over-predicting)": "e2_x110", "E2 x 1.2 (over-predicting)": "e2_x120",
+                  "E2 + canopy height + GEDI": "e2_gee"}
     rows = []
     for name, col in estimators.items():
         Q = P.assign(lr=np.log(P["agb_Mg_ha"] / P[col]))
