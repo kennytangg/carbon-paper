@@ -188,6 +188,42 @@ def main() -> None:
     data["seed_stability"] = rows(csv("seed_stability.csv"), list(csv("seed_stability.csv").columns), 2)
     data["bootstrap_ci"] = rows(csv("bootstrap_ci.csv"), ["subset", "metric", "value", "ci_lo", "ci_hi"], 2)
 
+    # ---------------------------------------------------------------- trees from space (tree_benchmark)
+    tco2 = 0.47 * 44 / 12  # Mg AGB/ha -> t CO2e/ha, the right grid's own factors
+    data["trees_summary"] = {k: r(v, 4) for k, v in csv("tree_benchmark_summary.csv").iloc[0].items()}
+    data["wood_classes"] = rows(csv("gt_wood_density_classes.csv"), ["class", "species", "stem_share_pct", "carbon_share_pct", "mean_wd", "top_families"], 3)
+    data["diameter_classes"] = rows(csv("gt_diameter_classes.csv"), ["diameter", "stems_ha", "stem_share_pct", "carbon_share_pct"], 2)
+    data["tree_benchmark"] = rows(csv("tree_benchmark.csv"), ["subset", "estimator", "plots", "field_tCO2e_ha_mean", "sat_tCO2e_ha_mean",
+                                                             "sat_pct_of_field_total", "plot_pct_median", "plots_within_25pct"], 2)
+    data["ndvi"] = rows(csv("ndvi_saturation.csv"), ["agb_class", "n", "median", "p10", "p90", "spearman_all", "spearman_agb150"], 3)
+    tp = csv("tree_benchmark_plots.csv")
+    data["plots"] = [
+        {"id": p.plot_id, "d": p.dataset, "reg": p.region, "f": r(p.agb_Mg_ha * tco2, 1), "m": r(p.map_agb_Mg_ha * tco2, 1),
+         "e4": r(p.sat_agb_Mg_ha * tco2, 1), "e4s": r(p.e4cal_agb_Mg_ha * tco2, 1), "st": r(p.field_stems_ha, 0), "tr": r(p.sat_trees_ha, 0),
+         "h": r(p.chm_mean_m, 1)}
+        for p in tp.itertuples()
+    ]
+    data["no_canopy_plots"] = int(((tp["chm_mean_m"] < 2) & (tp["agb_Mg_ha"] > 150)).sum())
+    data["chm_examples"] = json.loads((RES / "chm_examples.json").read_text(encoding="utf-8"))
+    data["stem_example"] = rows(csv("stem_list_example.csv"), ["plot_id", "dbh_cm", "height_m", "local_name", "scientific_name", "family",
+                                                               "wood_density", "plot_area_ha", "agb_kg", "agb_Mg_ha"], 3)
+
+    # ---------------------------------------------------------------- project simulations
+    sims = csv("simulations.csv")
+    data["simulations"] = rows(sims.head(10), ["sim", "dataset", "site", "plots", "area_ha", "field_stems_ha", "sat_trees_ha", "field_tCO2e",
+                                               "map_tCO2e", "map_pct", "e4_tCO2e", "e4_pct", "e4cal_tCO2e", "e4cal_pct", "credited_tCO2e",
+                                               "credited_pct", "over_credited"], 3)
+    data["simulation_plots"] = rows(csv("simulation_plots.csv"), ["sim", "plot_id", "site", "field_stems_ha", "sat_trees_ha", "field_tCO2e_ha",
+                                                                   "map_tCO2e_ha", "e4_tCO2e_ha", "e4cal_tCO2e_ha"], 3)
+    data["simulations_summary"] = rows(csv("simulations_summary.csv"), ["estimate", "median_pct", "p5_pct", "p95_pct", "within_10pct",
+                                                                         "within_25pct", "above_field_pct"], 3)
+    edges = list(range(0, 210, 10))
+    hist = {}
+    for col in ["map_pct", "e4_pct", "e4cal_pct", "credited_pct"]:
+        counts = pd.cut(sims[col].clip(upper=209.9), edges + [210], right=False).value_counts(sort=False).tolist()
+        hist[col.replace("_pct", "")] = counts
+    data["simulation_hist"] = {"edges": edges, "n": len(sims), **hist}
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size / 1024:.0f} KB)")

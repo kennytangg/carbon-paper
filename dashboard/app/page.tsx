@@ -1,9 +1,13 @@
 import { Accuracy, Clouds, Confidence, Crediting, GroundTruth, Method, Overview, Sequestration } from "@/components/sections";
+import { HowItWorks, Simulations, Trees } from "@/components/trees";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const NAV = [
   ["overview", "Overview"],
+  ["how", "How it works"],
   ["accuracy", "Accuracy"],
+  ["trees", "Trees & wood"],
+  ["simulations", "10 projects"],
   ["ground-truth", "Ground truth"],
   ["clouds", "Clouds"],
   ["confidence", "Confidence"],
@@ -42,7 +46,10 @@ export default function Page() {
       </nav>
       <main>
         <Overview />
+        <HowItWorks />
         <Accuracy />
+        <Trees />
+        <Simulations />
         <GroundTruth />
         <Clouds />
         <Confidence />

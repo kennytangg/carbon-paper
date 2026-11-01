@@ -78,3 +78,6 @@ Thumbs.db
 .venv/
 data/estimation/cache/
 data/gt_raw/safe/TreeCensus11_20.xlsx
+
+# the dashboard's lib/ is TypeScript source, not a Python build folder
+!dashboard/lib/

@@ -21,6 +21,8 @@
   --critical: #d03b3b;
   --warning: #fab219;
   --accent-wash: rgba(42, 120, 214, 0.08);
+  --seq-lo: #eef5f0;
+  --seq-hi: #0d6b46;
   --shadow: 0 1px 2px rgba(11, 11, 11, 0.04);
   --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -46,6 +48,8 @@
     --ref: #c3c2b7;
     --good-text: #0ca30c;
     --accent-wash: rgba(57, 135, 229, 0.12);
+  --seq-lo: #1c2621;
+  --seq-hi: #7ad9ae;
     --shadow: none;
   }
 }
@@ -70,6 +74,8 @@
   --ref: #c3c2b7;
   --good-text: #0ca30c;
   --accent-wash: rgba(57, 135, 229, 0.12);
+  --seq-lo: #1c2621;
+  --seq-hi: #7ad9ae;
   --shadow: none;
 }
 
@@ -529,6 +535,148 @@ th.num {
   color: var(--text-muted);
   background: transparent;
   line-height: 1;
+}
+
+/* ---------------------------------------------------------------- how it works, trees, simulations */
+.steps {
+  margin: 6px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.steps b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.formula {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13.5px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.calc {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 14px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+.calc label {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 8px;
+}
+.calc input[type="range"] {
+  width: 100%;
+  accent-color: var(--series-3);
+}
+.calc output {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text-primary);
+}
+.calc b {
+  color: var(--text-primary);
+}
+.canopy {
+  display: grid;
+  grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 820px) {
+  .canopy {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.canopy-fig {
+  position: relative;
+  min-width: 0;
+}
+.canopy-fig canvas {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+  touch-action: none;
+}
+.colorbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+.colorbar .bar {
+  width: 120px;
+  height: 10px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--seq-lo), var(--seq-hi));
+  border: 1px solid var(--border);
+}
+.kv {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 12px;
+  font-size: 13.5px;
+  margin: 0;
+}
+.kv dt {
+  color: var(--text-secondary);
+}
+.kv dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.search {
+  font: inherit;
+  font-size: 13.5px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-primary);
+  width: 220px;
+  max-width: 100%;
+}
+tr.clickable {
+  cursor: pointer;
+}
+tr.clickable:hover td,
+tr.clickable:focus-visible td {
+  background: var(--surface-2);
+}
+tr.open td {
+  background: var(--accent-wash);
+}
+td.sub-rows {
+  padding: 0 0 10px 18px;
+  background: var(--surface-2);
+}
+td small {
+  color: var(--text-muted);
+}
+.bigtable {
+  max-height: 520px;
+  overflow: auto;
+}
+.link-btn {
+  font: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--series-1);
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 code {

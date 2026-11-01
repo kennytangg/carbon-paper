@@ -16,7 +16,7 @@ const range = (a: number, b: number, nd = 0) => {
   return lo.toFixed(nd) === hi.toFixed(nd) ? `${lo.toFixed(nd)}%` : `${lo.toFixed(nd)}–${hi.toFixed(nd)}%`;
 };
 
-function Section({ id, title, sub, children }: { id: string; title: string; sub?: string; children: React.ReactNode }) {
+export function Section({ id, title, sub, children }: { id: string; title: string; sub?: string; children: React.ReactNode }) {
   return (
     <section className="block" id={id}>
       <div className="wrap">
@@ -117,6 +117,22 @@ export function Overview() {
           detail={`of ${H.n_projects} test projects over-credited (target 10%), satellite only, keeping ${share(H.sat_conformal_yield)} of the true stock (${share(H.gee_conformal_yield)} with the canopy height + GEDI map). The VM0047 deduction with 5–10 field plots over-credited ${range(H.vm0047_field_over_min * 100, H.vm0047_field_over_max * 100)}.`}
           status="good"
           statusText="Meets its target"
+        />
+        <Tile
+          label="1,000 simulated 1,000 ha projects"
+          value={`${D.simulations_summary.find((r) => r.estimate === "map")!.median_pct.toFixed(0)}%`}
+          detail={`median share of the field carbon that the map finds for a whole project, within ±25% in ${D.simulations_summary.find((r) => r.estimate === "map")!.within_25pct.toFixed(0)}% of projects. See the ten projects plot by plot.`}
+          status="good"
+          statusText="Close at project scale"
+          meter={D.simulations_summary.find((r) => r.estimate === "map")!.within_25pct}
+        />
+        <Tile
+          label="Counting trees from space"
+          value={`${D.trees_summary.count_sat_share_of_stems_pct.toFixed(0)}%`}
+          detail={`of the field stems found on the 1 m canopy height map; the field formula applied to them finds ${D.tree_benchmark.find((r) => r.subset === "All" && r.estimator === "E4 count + formula (as is)")!.sat_pct_of_field_total.toFixed(0)}% of the carbon. Wood species, which moves a plot by a fifth, cannot be seen at all.`}
+          status="critical"
+          statusText="Canopy, not stems"
+          meter={D.trees_summary.count_sat_share_of_stems_pct}
         />
       </div>
     </Section>

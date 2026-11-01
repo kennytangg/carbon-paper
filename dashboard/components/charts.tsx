@@ -126,6 +126,7 @@ export function HBarChart({
   tipExtra,
   barH,
   ariaLabel,
+  colors,
 }: {
   categories: string[];
   series: BarSeries[];
@@ -136,7 +137,9 @@ export function HBarChart({
   tipExtra?: (ci: number, si: number) => TipRow[];
   barH?: number;
   ariaLabel: string;
+  colors?: string[];
 }) {
+  const pal = colors ?? SERIES;
   const [ref, width] = useWidth();
   const [tip, setTip] = useState<TipState>(null);
   const [hover, setHover] = useState<string | null>(null);
@@ -158,7 +161,7 @@ export function HBarChart({
 
   return (
     <div className="chart" ref={ref} onPointerLeave={() => (setTip(null), setHover(null))}>
-      {ns > 1 && <Legend items={series.map((s, i) => ({ label: s.label, color: SERIES[i] }))} />}
+      {ns > 1 && <Legend items={series.map((s, i) => ({ label: s.label, color: pal[i] }))} />}
       <svg width={width} height={height} role="img" aria-label={ariaLabel}>
         {ticks.map((t) => (
           <g key={t}>
@@ -192,7 +195,7 @@ export function HBarChart({
                 return (
                   <g key={si}>
                     {v != null && (
-                      <path d={hbarPath(0, x(v), y, bh)} fill={SERIES[si]} opacity={dim ? 0.55 : 1} />
+                      <path d={hbarPath(0, x(v), y, bh)} fill={pal[si]} opacity={dim ? 0.55 : 1} />
                     )}
                     {v != null && (
                       <text x={x(v) + 6} y={y + bh / 2 + 4} fontSize={11.5} fill="var(--text-secondary)" {...HALO} style={{ paintOrder: "stroke", fontVariantNumeric: "tabular-nums" }}>
@@ -213,7 +216,7 @@ export function HBarChart({
                           y: e.clientY - box.top + (ns > 1 ? 28 : 0),
                           title: c,
                           rows: [
-                            { color: SERIES[si], label: s.label, value: v == null ? "n/a" : format(v) },
+                            { color: pal[si], label: s.label, value: v == null ? "n/a" : format(v) },
                             ...(tipExtra ? tipExtra(ci, si) : []),
                           ],
                         });
@@ -242,6 +245,7 @@ export function ColumnChart({
   height = 260,
   ariaLabel,
   yLabel,
+  colors,
 }: {
   categories: string[];
   series: BarSeries[];
@@ -251,7 +255,9 @@ export function ColumnChart({
   height?: number;
   ariaLabel: string;
   yLabel?: string;
+  colors?: string[];
 }) {
+  const pal = colors ?? SERIES;
   const [ref, width] = useWidth();
   const [tip, setTip] = useState<TipState>(null);
   const [hover, setHover] = useState<number | null>(null);
@@ -273,7 +279,7 @@ export function ColumnChart({
       {(ns > 1 || refs.length > 0) && (
         <Legend
           items={[
-            ...(ns > 1 ? series.map((s, i) => ({ label: s.label, color: SERIES[i] })) : []),
+            ...(ns > 1 ? series.map((s, i) => ({ label: s.label, color: pal[i] })) : []),
             ...refs.map((r) => ({ label: r.label, kind: "ref" as const })),
           ]}
         />
@@ -303,7 +309,7 @@ export function ColumnChart({
                   <path
                     key={si}
                     d={vbarPath(gx + si * (bw + 2), bw, y(0), y(v))}
-                    fill={SERIES[si]}
+                    fill={pal[si]}
                     opacity={hover != null && hover !== ci ? 0.55 : 1}
                   />
                 );
@@ -335,7 +341,7 @@ export function ColumnChart({
                     y: e.clientY - box.top + (ns > 1 ? 28 : 0),
                     title: c.replace("\n", " "),
                     rows: series.map((s, si) => ({
-                      color: SERIES[si],
+                      color: pal[si],
                       label: s.label,
                       value: s.values[ci] == null ? "n/a" : format(s.values[ci] as number),
                     })),
