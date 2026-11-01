@@ -1,0 +1,4 @@
+class,records,species,stem_share_pct,carbon_share_pct,mean_wd,top_families,top_species
+light (< 0.5),570,83,23.867924528301888,15.898024675193785,0.4628171929824561,Lauraceae; Moraceae; Anacardiaceae,Litsea sp.; Hevea brasiliensis; Campnosperma auriculata
+medium (0.5-0.7),1144,179,44.088050314465406,43.827951753695345,0.6047848776223776,Dipterocarpaceae; Moraceae; Anacardiaceae,Durio zibethinus; Gluta renghas L.; Shorea sp
+heavy (>= 0.7),814,127,32.0440251572327,40.27402357111088,0.7782275184275185,Dipterocarpaceae; Lauraceae; Myrtaceae,Litsea sp.; Combretocarpus rotundatus; Calophyllum wallichianum

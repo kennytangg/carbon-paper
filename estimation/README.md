@@ -42,6 +42,9 @@ Satellite reads use the Microsoft Planetary Computer (anonymous). `extract_gee.p
 | 13b. Conformal crediting | `python -m estimation.conformal_crediting`, `python -m estimation.crediting_frontier`, `python -m estimation.crediting_robustness` | `results/conformal_crediting.csv`, `results/crediting_frontier.csv`, `results/crediting_robustness.csv` |
 | 13c. Gain-loss test (SAFE) | `python -m estimation.gain_loss` | `results/gain_loss.csv` |
 | 13d. Sharper inputs (GEE) | `python -m estimation.accuracy_gee` | `results/accuracy_gee*.csv` |
+| 13e. Count trees from space (E4) | `python -m estimation.extract_chm` (1 m canopy height patches, GEE), then `python -m estimation.tree_count` | `cache/chm/*.npy`, `left_tree_count.parquet`, `left_tree_list.parquet` |
+| 13f. Trees, wood and E4 against the field | `python -m estimation.tree_benchmark` | `results/tree_benchmark*.csv`, `results/gt_wood_density_classes.csv`, `results/gt_diameter_classes.csv`, `results/ndvi_saturation.csv`, `results/chm_examples.json`, `results/stem_list_example.csv` |
+| 13g. Project simulations | `python -m estimation.simulations` | `results/simulations.csv` (1,000 projects), `results/simulation_plots.csv` (plot rows of the first ten), `results/simulations_summary.csv` |
 | 14. Systems experiments | `python -m estimation.systems_experiments --n-tasks 48` | `results/systems_experiments.json` |
 | 15. Figures | `python -m estimation.figures` | `docs/figures/*.pdf` |
 
