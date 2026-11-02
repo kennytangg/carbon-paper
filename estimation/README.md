@@ -20,6 +20,7 @@ Satellite reads use the Microsoft Planetary Computer (anonymous). `extract_gee.p
 | SAFE tree census 2011–2020 | Zenodo 10.5281/zenodo.14882506 (download, not committed: 41 MB) | see record |
 | SAFE gazetteer, location aliases | Zenodo record 3906082 | see record |
 | Global Wood Density Database | BIOMASS v2.1.11 `wdData.rda` | see package |
+| Danum Revised plots, Sabah, 2020 (unseen test) | Zenodo 10.5281/zenodo.8042468 (stem list and plot centres, md5 checked) | CC BY 4.0 |
 
 ## Run order
 
@@ -45,7 +46,12 @@ Satellite reads use the Microsoft Planetary Computer (anonymous). `extract_gee.p
 | 13e. Count trees from space (E4) | `python -m estimation.extract_chm` (1 m canopy height patches, GEE), then `python -m estimation.tree_count` | `cache/chm/*.npy`, `left_tree_count.parquet`, `left_tree_list.parquet` |
 | 13f. Trees, wood and E4 against the field | `python -m estimation.tree_benchmark` | `results/tree_benchmark*.csv`, `results/gt_wood_density_classes.csv`, `results/gt_diameter_classes.csv`, `results/ndvi_saturation.csv`, `results/chm_examples.json`, `results/stem_list_example.csv` |
 | 13g. Project simulations | `python -m estimation.simulations` | `results/simulations.csv` (1,000 projects), `results/simulation_plots.csv` (plot rows of the first ten), `results/simulations_summary.csv` |
+| 13h. New inputs | `python -m estimation.extract_embeddings` (AlphaEarth, GEE), `python -m estimation.extract_chm_v2` (CHMv2, open AWS tiles), `python -m estimation.tree_count --chm v2` | `left_features_embeddings.parquet`, `left_features_chm_v2.parquet`, `left_tree_count_v2.parquet` |
+| 13i. Maps with the new inputs | `python -m estimation.accuracy_embeddings` | `results/accuracy_embeddings*.csv`, `results/accuracy_embeddings_preds.parquet` |
+| 13j. Published height equations, unfitted | `python -m estimation.height_equations` | `results/height_equations*.csv` |
+| 13k. Bias correction, local plots, credit calibration | `python -m estimation.crediting_fixes` | `results/crediting_fixes*.csv` |
+| 13l. Unseen test (Danum), in order | `python -m estimation.external_danum seal`, then `features`, `predict`, `reveal` (and `exploratory` after it) | `external/danum_*` with its own ledger, `results/external_danum*.csv` |
 | 14. Systems experiments | `python -m estimation.systems_experiments --n-tasks 48` | `results/systems_experiments.json` |
 | 15. Figures | `python -m estimation.figures` | `docs/figures/*.pdf` |
 
-Steps 1–2 append seals to the ledger, and steps 5–6 open a new epoch and reveal. Run them once per evaluation, in order. Steps 7–15 come after the reveal and are exploratory, and the paper labels them so.
+Steps 1–2 append seals to the ledger, and steps 5–6 open a new epoch and reveal. Run them once per evaluation, in order. Steps 7–15 come after the reveal and are exploratory, and the paper labels them so, except step 13l: the Danum plots are sealed in their own ledger before the frozen method (constant `PRODUCTION` in `external_danum.py`) reads them, so that test is confirmatory.
