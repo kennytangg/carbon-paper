@@ -52,6 +52,6 @@ Satellite reads use the Microsoft Planetary Computer (anonymous). `extract_gee.p
 | 13k. Bias correction, local plots, credit calibration | `python -m estimation.crediting_fixes` | `results/crediting_fixes*.csv` |
 | 13l. Unseen test (Danum), in order | `python -m estimation.external_danum seal`, then `features`, `predict`, `reveal` (and `exploratory` after it) | `external/danum_*` with its own ledger, `results/external_danum*.csv` |
 | 14. Systems experiments | `python -m estimation.systems_experiments --n-tasks 48` | `results/systems_experiments.json` |
-| 15. Figures | `python -m estimation.figures` | `docs/figures/*.pdf` |
+| 15. Figures | `python -m estimation.figures`; `python -m estimation.figure_pixels` (reads one Sentinel-2 scene from Planetary Computer, cached) | `docs/figures/*.pdf`, `results/input_saturation*.csv` |
 
 Steps 1–2 append seals to the ledger, and steps 5–6 open a new epoch and reveal. Run them once per evaluation, in order. Steps 7–15 come after the reveal and are exploratory, and the paper labels them so, except step 13l: the Danum plots are sealed in their own ledger before the frozen method (constant `PRODUCTION` in `external_danum.py`) reads them, so that test is confirmatory.
