@@ -253,7 +253,7 @@ n=\left(\frac{t_{0.95}}{E}\right)^2\Big(\sum_h w_h s_h\Big)^2,\qquad n_h=n\,\fra
 \label{eq:nplots}
 \end{equation}
 
-\textbf{Step 5, uncertainty.} AR-TOOL14 counts sampling error only. The IPCC asks for all sources, combined by Approach~1, $U=\sqrt{\sum_k U_k^2}$ for products and $U=\sqrt{\sum_k(U_kx_k)^2}/|\sum_k x_k|$ for sums, or by Monte Carlo (Approach~2)~\cite{ipcc2006v1}. We use Approach~2 with 2{,}000 draws per tree and the error models of the BIOMASS package~\cite{rejou2017biomass}: diameter error with SD $0.0062D+0.0904$\,cm for 95\% of stems and 4.64\,cm for a random 5\%~\cite{chave2004error}; height error of 10\%~\cite{chave2004error}; wood-density SD of 0.0708, 0.0941, and 0.1234\,g\,cm$^{-3}$ at species, genus, and family level; the allometric residual $\varepsilon_i\sim\mathcal N(0,\sigma_{\ln}^2)$; CF $\sim\mathcal N(0.4713,0.0206^2)$~\cite{thomas2012carbon}; and $R$ with its 2019 SD. The project error budget splits the variance of $\bar b$ into a sampling part (Eq.~\ref{eq:strat}) and a measurement-plus-allometry part (the Monte Carlo variance of the same weighted mean).
+\textbf{Step 5, uncertainty.} AR-TOOL14 counts sampling error only. The IPCC asks for all sources, combined by Approach~1, $U=\sqrt{\sum_k U_k^2}$ for products and $U=\sqrt{\sum_k(U_kx_k)^2}/|\sum_k x_k|$ for sums, or by Monte Carlo (Approach~2)~\cite{ipcc2006v1}, which suits errors that are large, not normal, or combined nonlinearly. All three hold here: the allometric residual alone has $\sigma_{\ln}=0.357$ per tree, wood density errors are skewed, and every error passes through the power law of Eq.~\ref{eq:chave4}, where summing variances is inexact. We use Approach~2 with 2{,}000 draws per tree and the error models of the BIOMASS package~\cite{rejou2017biomass}: diameter error with SD $0.0062D+0.0904$\,cm for 95\% of stems and 4.64\,cm for a random 5\%~\cite{chave2004error}; height error of 10\%~\cite{chave2004error}; wood-density SD of 0.0708, 0.0941, and 0.1234\,g\,cm$^{-3}$ at species, genus, and family level; the allometric residual $\varepsilon_i\sim\mathcal N(0,\sigma_{\ln}^2)$; CF $\sim\mathcal N(0.4713,0.0206^2)$~\cite{thomas2012carbon}; and $R$ with its 2019 SD. The project error budget splits the variance of $\bar b$ into a sampling part (Eq.~\ref{eq:strat}) and a measurement-plus-allometry part (the Monte Carlo variance of the same weighted mean).
 
 \textbf{Step 6, change and deduction.} Sequestration uses the IPCC stock-difference method, $\Delta C=(C_{t_2}-C_{t_1})/(t_2-t_1)$ (Vol.~4 Eq.~2.5), on the same plots at both dates~\cite{ipcc2006v4}. Its uncertainty follows VM0047 v1.1 Eq.~28~\cite{verra2025vm0047},
 \begin{equation}
@@ -275,7 +275,14 @@ Field inventories record a date or, more often, a year; no public inventory reco
 \subsection{Left Grid: Satellite Features}
 For each plot the left grid reads, inside a square window around the plot centre: Sentinel-2 L2A reflectance in ten bands with scene-classification cloud masking and seven indices (NDVI, EVI, NDRE, NDMI, NBR, IRECI, SAVI); Landsat 5--9 Collection~2 surface reflectance with QA cloud masking; Sentinel-1 RTC backscatter (VV, VH, ratio); the ALOS PALSAR annual L-band mosaic (HH, HV); and Copernicus 30\,m elevation and slope. Two global products are read as zero-shot baselines: Chloris annual AGB (2003--2019)~\cite{chloris2022} and the 2010 harmonized map~\cite{spawn2020harmonized}. Through Google Earth Engine the left grid also reads the Meta 1\,m~\cite{tolan2024meta} and ETH 10\,m~\cite{lang2023eth} canopy height maps, in the plot and in a 50\,m buffer. It also reads GEDI L4A footprint biomass and L2A relative height within 500\,m and 1\,km (quality-filtered, April 2019 to March 2023), the GEDI L4B 1\,km grid~\cite{duncanson2022gedi,dubayah2022gedi}, ESA CCI Biomass for the nearest year~\cite{santoro2021global}, the ALOS/ALOS-2 PALSAR mosaic for the nearest year (2007--2024), and Hansen forest loss up to the field year~\cite{hansen2013high}. The canopy height maps describe 2018--2020 imagery and GEDI 2019--2023, so for plots measured earlier they are not time-matched.
 
-\textbf{From pixels to carbon.} A satellite does not see trees. It records, per pixel, the light reflected in each band and the radar echo; GEDI records the height profile of 25\,m footprints. Optical bands are combined into vegetation indices, of which the best known is the normalized difference vegetation index~\cite{tucker1979red},
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_pixels}
+\caption{What the left grid sees around HCSA plot KT30, Central Kalimantan (field: 342\,Mg\,ha$^{-1}$ from 23 stems; circle: the 0.05\,ha plot), on one 140\,m window: (a) Sentinel-2 true colour at 10\,m (2 September 2023, every pixel clear); (b) its NDVI, 0.88--0.95 (5th--95th percentile) across the window; (c) the 1\,m canopy height (0--40\,m) with the 67 tree tops E4 finds, four inside the plot.}
+\label{fig:pixels}
+\end{figure}
+
+\textbf{From pixels to carbon.} A satellite does not see trees (Fig.~\ref{fig:pixels}). It records, per pixel, the light reflected in each band and the radar echo; GEDI records the height profile of 25\,m footprints. Optical bands are combined into vegetation indices, of which the best known is the normalized difference vegetation index~\cite{tucker1979red},
 \begin{equation}
 \mathrm{NDVI}=\frac{R_{\mathrm{NIR}}-R_{\mathrm{red}}}{R_{\mathrm{NIR}}+R_{\mathrm{red}}},
 \label{eq:ndvi}
@@ -410,7 +417,7 @@ One task is one (plot, date, window, sensor) request. Its result is stored under
 \subsection{How Certain Is the Right Grid?}
 Before scoring the satellites we score the field answer.
 
-\textbf{Plot level.} On the 148 HCSA plots, the Monte Carlo 95\% interval of plot AGB has a median half-width of 31\% (IQR 25--45\%). Of the stems, 45\% have a species-level wood density, 42\% genus-level, 7\% family-level, and 5\% none. The Monte Carlo median is 5\% above the deterministic value, because the allometric error is log-normal; the deterministic value is the one the standards use.
+\textbf{Plot level.} On the 148 HCSA plots, the Monte Carlo 95\% interval of plot AGB has a median half-width, half its length divided by the plot value, of 31\% (IQR 25--45\%): the field answer itself is known only to about $\pm31$\%. Of the stems, 45\% have a species-level wood density, 42\% genus-level, 7\% family-level, and 5\% none. The Monte Carlo median is 5\% above the deterministic value, because the allometric error is log-normal; the deterministic value is the one the standards use.
 
 \textbf{Equation choice.} Consistent with earlier comparisons of generic and regional equations~\cite{rutishauser2013generic}, the regional equation of Basuki \textit{et al.} gives almost the same total over all plots (ratio 1.01). By region, however, the stock moves from $-40$\% (Central Kalimantan) to $+121$\% (South Sumatra), because it ignores height where HCSA measured short trees.
 
@@ -478,14 +485,14 @@ Labr.\ (186) & E0 Chloris & 101.2 & 31.0\% & $-10.3$\% & 0.18 & 0.37\\
 \subsection{Where the Error Comes From}
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{fig_scatter}
-\caption{Blind E2 prediction against the field value for 476 plots (log axes). Above about 300\,Mg\,ha$^{-1}$ predictions flatten; small HCSA plots scatter widely in both directions.}
-\label{fig:scatter}
+\includegraphics[width=\columnwidth]{fig_saturation}
+\caption{Blind error and its source. (a) Blind E2 prediction against the field value for 475 plots (log axes): above about 300\,Mg\,ha$^{-1}$ predictions flatten, and small HCSA plots scatter widely. (b) Spearman correlation of each input, and of E2, with field AGB in two bands of equal relative width ($\times$3): 100--300\,Mg\,ha$^{-1}$ (181 plots) and 300--876 (205). NDVI and Sentinel-1 have fewer plots (clear looks only).}
+\label{fig:sat}
 \end{figure}
 
-\textbf{Saturation.} Fig.~\ref{fig:scatter} shows the pattern. Binned by field AGB, both E0 and E2 regress toward $\sim$300\,Mg\,ha$^{-1}$. For plots above 400\,Mg\,ha$^{-1}$ (mean 480) the E2 mean prediction is 293 and the Chloris mean is 295, a median under-estimate of about one third. Below 50\,Mg\,ha$^{-1}$ (mean 21) E2 predicts 60 and Chloris 178. Between 100 and 300\,Mg\,ha$^{-1}$ the median error of E2 is only $+5$ to $+12$\%. The satellite signal therefore carries useful information in the middle of the range and little at either end, which is the behaviour reported for optical and L-band signals~\cite{mitchard2009using,mermoz2015decrease}.
+\textbf{Saturation.} Fig.~\ref{fig:sat}a shows the pattern. Binned by field AGB, both E0 and E2 regress toward $\sim$300\,Mg\,ha$^{-1}$. For plots above 400\,Mg\,ha$^{-1}$ (mean 480) the E2 mean prediction is 293 and the Chloris mean is 295, a median under-estimate of about one third. Below 50\,Mg\,ha$^{-1}$ (mean 21) E2 predicts 60 and Chloris 178. Between 100 and 300\,Mg\,ha$^{-1}$ the median error of E2 is only $+5$ to $+12$\%. The satellite signal therefore carries useful information in the middle of the range and little at either end, which is the behaviour reported for optical and L-band signals~\cite{mitchard2009using,mermoz2015decrease,rejou2019upscaling}. The cause is in the inputs, not the model (Fig.~\ref{fig:sat}b). From field means of 262 to 480\,Mg\,ha$^{-1}$ the median Meta canopy height rose only from 19.6 to 21.7\,m, ETH from 31.8 to 37.1\,m, GEDI biomass from 199 to 207\,Mg\,ha$^{-1}$, PALSAR HV by 0.2\,dB, and NDVI not at all (0.83 to 0.81). Between 100 and 300\,Mg\,ha$^{-1}$ canopy height and GEDI still rank plots (Spearman 0.48--0.62); above 300 none does (at most 0.26, ETH), and radar is flat already from 100. A model cannot separate plots its inputs do not, so it predicts the average of what it saw. Numbers: \texttt{input\_saturation.csv} and \texttt{input\_saturation\_bins.csv}.
 
-\textbf{Scale.} The HCSA plots are nested 0.01/0.05\,ha plots with a median of 15 stems, so one large tree more or less moves the plot by hundreds of Mg\,ha$^{-1}$. Their field values span 2 to 876\,Mg\,ha$^{-1}$ within one province. A 30\,m pixel window cannot resolve that, and the 4.6\,km Chloris pixel averages open land and forest together, which explains its large over-estimate on HCSA open-land and scrub plots. The HCSA land-cover labels would separate these plots well (within-class standard deviations of 10--40\,Mg\,ha$^{-1}$ for all classes except high-density forest), but they are released with the field records, so they belong to the right grid and are never shown to the left grid. A satellite classifier that reproduced the HCS stratification is a promising left-grid estimator for future work.
+\textbf{Scale.} The HCSA plots are nested 0.01/0.05\,ha plots with a median of 15 stems. The largest stem alone holds a median 24\% of a plot's AGB (IQR 16--41\%), and one stem of 1\,m diameter adds about 110\,Mg\,ha$^{-1}$ to a 0.05\,ha plot (the largest single stem, 498), so one tree more or less moves a plot by tens to hundreds of Mg\,ha$^{-1}$, as found for small plots~\cite{chave2004error,rejou2014local}. Their field values span 2 to 876\,Mg\,ha$^{-1}$ within one province. A 30\,m pixel window cannot resolve that, and the 4.6\,km Chloris pixel averages open land and forest together, which explains its large over-estimate on HCSA open-land and scrub plots. The HCSA land-cover labels would separate these plots well (within-class standard deviations of 10--40\,Mg\,ha$^{-1}$ for all classes except high-density forest), but they are released with the field records, so they belong to the right grid and are never shown to the left grid. A satellite classifier that reproduced the HCS stratification is a promising left-grid estimator for future work.
 
 \textbf{Field truth is not the bottleneck.} Labri\`ere publish a 95\% credible interval for every unit; the implied standard error of the field value is 5.0\% (RMS), against a 28.6\% satellite error on the same units. The right grid is far more precise than the left grid, so the gap is a satellite gap, not a ground-truth gap.
 
@@ -650,7 +657,14 @@ Labri\`ere (185) & 567 & E4, as is & 147 & 26 & 26 & 0\\
 
 \subsection{Ten Simulated Projects}
 \label{sec:sims}
-The tables above score plots. A buyer of credits sees a project. We therefore simulate 1{,}000 projects of 1{,}000\,ha. Each simulation draws one of the 16 regions with at least 10 plots, each region equally likely, and 10 of its plots at random; the 10 plots stand for the project. For those plots it reports the carbon of the whole project by the field (right grid), the map (E2 with canopy height and GEDI), E4 as is, E4 scaled, and conformal crediting on the map at $\delta=0.1$ (Section~\ref{sec:ccresults}), as tonnes of CO$_2$e and as a percentage of the field amount. Table~\ref{tab:sim} lists the first ten simulations and Appendix~\ref{app:rows} every one of their plots.
+The tables above score plots. A buyer of credits sees a project. We therefore simulate 1{,}000 projects of 1{,}000\,ha. Each simulation draws one of the 16 regions with at least 10 plots, each region equally likely, and 10 of its plots at random; the 10 plots stand for the project. For those plots it reports the carbon of the whole project by the field (right grid), the map (E2 with canopy height and GEDI), E4 as is, E4 scaled, and conformal crediting on the map at $\delta=0.1$ (Section~\ref{sec:ccresults}), as tonnes of CO$_2$e and as a percentage of the field amount. Table~\ref{tab:sim} lists the first ten simulations, Fig.~\ref{fig:sim} draws them beside the spread of all 1{,}000, and Appendix~\ref{app:rows} lists every one of their plots.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_projects}
+\caption{Carbon found in simulated 1{,}000\,ha projects of 10 random plots, as \% of the field amount: (a) the ten projects of Table~\ref{tab:sim}, with their field carbon in kt\,CO$_2$e; (b) all 1{,}000, median and 5th--95th percentile, with the share of projects within $\pm25$\% at right. The shaded band is $\pm25$\% of the field.}
+\label{fig:sim}
+\end{figure}
 
 \begin{table}[t]
 \centering
@@ -682,7 +696,7 @@ The tables above score plots. A buyer of credits sees a project. We therefore si
 \end{tabular}
 
 \vspace{2pt}
-{\scriptsize Field: kt\,CO$_2$e from the measured trees, Eq.~\ref{eq:chave4}, $\times0.47\times\frac{44}{12}$. Map: E2 + canopy height + GEDI. E4 sc.: scaled on other regions. Credit: conformal crediting on the map, $\delta=0.1$. Seeds 1--10; none drew a GEO-TREES region.\par}
+{\scriptsize Field: kt\,CO$_2$e from the measured trees, Eq.~\ref{eq:chave4}, $\times0.47\times\frac{44}{12}$. Map: E2 + canopy height + GEDI. E4 sc.: E4 times the field-to-E4 ratio of the other regions (about 3.8). Credit: conformal crediting on the map, $\delta=0.1$. Seeds 1--10; none drew a GEO-TREES region.\par}
 \end{table}
 
 Across all 1{,}000 simulations the map found a median 95\% of the field carbon, within $\pm10$\% in half of the projects and within $\pm25$\% in 80\%. E4 never came within 25\%. Conformal crediting issued a median 86\% of the field amount and exceeded it in 12\% of projects, near its 10\% target; these random 10-plot projects are not the 31 calibration projects of Section~\ref{sec:ccresults}, so the guarantee holds only approximately. The raw map exceeded the field amount in 38\% of projects, which is the over-crediting a platform without a bound would issue. Inside a project the plots disagree far more than the totals: in simulation~1 the map gave one Riau plot six times its field value and another half, and the project still came out at 71\%.
@@ -782,9 +796,16 @@ Credit, region-level $q$ on the realm-corrected map & 85 & 68--111 & 85.1 & 10.9
 {\scriptsize Same 1{,}000 projects as Table~\ref{tab:sim}; all maps leave-one-region-out. Local plots are drawn from the project's region outside its 10 plots, so only projects in regions with enough remaining plots count (869 for $k=3$, 568 for $k=10$). Credits target $\delta=0.1$.\par}
 \end{table*}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_fixes}
+\caption{Each fix of Table~\ref{tab:fixes} on the 1{,}000 projects (median and 5th--95th percentile; right: share within $\pm25$\% of the field) and its total on the 35 unseen Danum plots (Table~\ref{tab:danum}). The shaded band is $\pm25$\% of the field. Jucker's equation is unfitted and was run on Danum after the reveal.}
+\label{fig:prod}
+\end{figure}
+
 \subsubsection{Unseen Test: Danum, Sabah}
 \label{sec:danum}
-To test the method rather than our tuning of it, we froze it before opening any new data: the production map trained on every plot except the three GEO-TREES plots of the Danum valley, the realm correction $\mu$ from the six Indonesian provinces ($\mu=-0.283$, a factor of 1.33), and the region-level credit ($q=0.081$, a factor of 0.92), both from the leave-one-region-out predictions of regions with at least 10 plots. The test data are the 35 ``Danum Revised'' plots~\cite{keller2023danum}: circles of 30\,m radius in the Danum Valley, Sabah, measured from January to June 2020, with diameter, height, and species for every stem of 10\,cm or more. The right grid applied Eq.~\ref{eq:chave4} to the 4{,}201 live stems inside the radius with their measured heights and wood density from the Global Wood Density Database (species, genus, family, plot mean), and was sealed in a separate ledger before any feature was read. The left grid read only the manifest. The prediction file was committed, then the seal opened; the ledger verifies seal, commit, reveal.
+Fig.~\ref{fig:prod} sets each fix beside its result on unseen plots. To test the method rather than our tuning of it, we froze it before opening any new data: the production map trained on every plot except the three GEO-TREES plots of the Danum valley, the realm correction $\mu$ from the six Indonesian provinces ($\mu=-0.283$, a factor of 1.33), and the region-level credit ($q=0.081$, a factor of 0.92), both from the leave-one-region-out predictions of regions with at least 10 plots. The test data are the 35 ``Danum Revised'' plots~\cite{keller2023danum}: circles of 30\,m radius in the Danum Valley, Sabah, measured from January to June 2020, with diameter, height, and species for every stem of 10\,cm or more. The right grid applied Eq.~\ref{eq:chave4} to the 4{,}201 live stems inside the radius with their measured heights and wood density from the Global Wood Density Database (species, genus, family, plot mean), and was sealed in a separate ledger before any feature was read. The left grid read only the manifest. The prediction file was committed, then the seal opened; the ledger verifies seal, commit, reveal.
 
 \begin{table}[t]
 \centering
@@ -1384,7 +1405,7 @@ Tables~\ref{tab:rows1} and~\ref{tab:rows2} list every plot of the ten simulation
 \section*{Data and Code Availability}
 All field sources are public: HCSA Indonesia (CC BY-SA 4.0)~\cite{hcsa2023data}, GEO-TREES~\cite{geotrees2024}, Labri\`ere \textit{et al.} (CC0)~\cite{labriere2018insitu}, and the SAFE tree census~\cite{svatek2025safe}. Satellite data were read from the Microsoft Planetary Computer~\cite{mpc2022} and Google Earth Engine. The pipeline (Python; pandas, LightGBM, rasterio, pystac) is in the project repository, including the ledger, the runner, the right-grid builder, and the evaluation scripts. Every reported number is regenerated by the modules \texttt{right\_grid}, \texttt{right\_grid\_seq}, \texttt{right\_grid\_uncertainty}, \texttt{extract\_left}, \texttt{evaluate}, \texttt{evaluate\_seq}, \texttt{improve}, \texttt{improve\_seq}, \texttt{window\_sensitivity}, \texttt{cloud\_climatology}, \texttt{cloud\_analysis}, \texttt{robust}, \texttt{project\_uncertainty}, \texttt{systems\_experiments}, together with \texttt{extract\_gee}, \texttt{accuracy\_gee}, \texttt{conformal\_crediting}, \texttt{crediting\_frontier}, \texttt{crediting\_robustness}, \texttt{extract\_chm}, \texttt{tree\_count}, \texttt{tree\_benchmark}, \texttt{simulations}, \texttt{gain\_loss}, \texttt{reliability}, and \texttt{figures}, of the \texttt{estimation} package. Wood density is from the GWDD copy shipped with BIOMASS v2.1.11~\cite{rejou2017biomass}.
 
-\begin{thebibliography}{111}
+\begin{thebibliography}{112}
 
 \bibitem{chave2014improved}
 J. Chave \textit{et al.}, ``Improved allometric models to estimate the aboveground biomass of tropical trees,'' \textit{Global Change Biol.}, vol. 20, no. 10, pp. 3177--3190, 2014, doi: 10.1111/gcb.12629.
@@ -1655,6 +1676,9 @@ M. Sv\'atek \textit{et al.}, ``Tree census data from the SAFE Project 2011--2020
 
 \bibitem{ewers2011safe}
 R. M. Ewers \textit{et al.}, ``A large-scale forest fragmentation experiment: The Stability of Altered Forest Ecosystems Project,'' \textit{Philos. Trans. R. Soc. B}, vol. 366, pp. 3292--3302, 2011, doi: 10.1098/rstb.2011.0049.
+
+\bibitem{rejou2019upscaling}
+M.~R\'ejou-M\'echain \textit{et al.}, ``Upscaling forest biomass from field to satellite measurements: Sources of errors and ways to reduce them,'' \textit{Surv. Geophys.}, vol.~40, pp.~881--911, 2019, doi: 10.1007/s10712-019-09532-0.
 
 \bibitem{brown2025alphaearth}
 C.~F. Brown \textit{et al.}, ``AlphaEarth Foundations: An embedding field model for accurate and efficient global mapping from sparse label data,'' arXiv:2507.22291, 2025.
