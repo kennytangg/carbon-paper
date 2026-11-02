@@ -74,7 +74,7 @@ jmartinez@binus.edu}
 \maketitle
 
 \begin{abstract}
-Satellite platforms promise to replace field inventories in forest carbon crediting, but their estimates are rarely tested blind against the standard-formula answer, and credits are issued with deductions of unknown risk. We separate the question into two isolated grids. The right grid computes sealed field ground truth to SNI 7724, IPCC, CDM, and Verra rules. The left grid sees only plot coordinates and dates and estimates carbon from time-matched Sentinel-1/2, Landsat, PALSAR, canopy height, and GEDI lidar. On 476 plots, blind error was 21\% on 1\,ha plots and 7--9\% on project totals outside Indonesia, but near 100\% on small Indonesian plots. Counting trees on a 1\,m canopy height map and applying the field formula found 3\% of the stems and 25\% of the carbon. In 1{,}000 simulated projects the best map found a median 95\% of the field carbon. Only 21.5\% of Sentinel-2 acquisitions see an Indonesian plot clear, and a common scene filter discards 65\% of those. We propose conformal crediting, a lower bound calibrated on other projects with field truth. It met a 10\% over-crediting target for five maps within 2.9 points, was invariant to map inflation, and credited 72--84\% of the true stock without a field plot, while the VM0047 deduction over-credited 23--29\% of projects that had field plots. No satellite estimate of annual growth beat assuming no change.
+Satellite platforms promise to replace field inventories in forest carbon crediting, but their estimates are rarely tested blind against the standard-formula answer, and credits are issued with deductions of unknown risk. We separate the question into two isolated grids. The right grid computes sealed field ground truth to SNI 7724, IPCC, CDM, and Verra rules. The left grid sees only plot coordinates and dates and estimates carbon from time-matched Sentinel-1/2, Landsat, PALSAR, canopy height, and GEDI lidar. On 476 plots, blind error was 21\% on 1\,ha plots and 7--9\% on project totals outside Indonesia, but near 100\% on small Indonesian plots. Counting trees on a 1\,m canopy height map found 3\% of the stems and 25\% of the carbon (62\% on the 2026 map). In 1{,}000 simulated projects the best map found a median 95\% of the field carbon; satellite embeddings and a regional bias correction raised the share within $\pm25$\% from 80\% to 88.5\%, and on 35 unseen Bornean plots the frozen method found 85\%. Only 21.5\% of Sentinel-2 acquisitions see an Indonesian plot clear. We propose conformal crediting, a lower bound calibrated on other projects with field truth. It met a 10\% over-crediting target for five maps within 2.9 points, was invariant to map inflation, and credited 72--84\% of the true stock without a field plot, while the VM0047 deduction over-credited 23--29\% of projects that had field plots. No satellite estimate of annual growth beat assuming no change.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -89,7 +89,7 @@ How close is a satellite number to what the standard formula gives at the same p
 
 We separate the problem into two grids (Fig.~\ref{fig:grids}). The \textbf{right grid} is fixed: public field plots, the standard formula, a carbon density. The \textbf{left grid} is free, any satellite data and any algorithm, subject to one rule: it never sees the right grid's outcomes for the plots it is scored on. We ask: \textbf{RQ1} (methodology) how far a blind satellite estimate deviates from standard-formula ground truth, by plot size and aggregation; \textbf{RQ2} (AI) which inputs and learners close the gap, and whether trees can be counted from space; \textbf{RQ3} how often clouds hide an Indonesian plot, and whether uncertainty can be stated honestly at plot and project scale; \textbf{RQ4} whether a credit can be issued at a stated, verified risk of over-crediting, and whether growth can be estimated; and \textbf{RQ5} (distributed systems) whether extraction can be sharded and made fault tolerant with bit-identical output.
 
-\textbf{Contributions.} (i) A blind, time-matched protocol with a commit-reveal ledger (476 stock and 196 repeat-census plots). (ii) A standards-based right grid with a Monte Carlo uncertainty budget. (iii) A plot-level clear-sky climatology for Indonesia and the error rate of the scene cloud filter. (iv) A test of missing-data conformal intervals under cloud. (v) \emph{Conformal crediting}, a crediting rule with a calibrated over-crediting risk that is invariant to map inflation. (vi) A tree-by-tree satellite estimator benchmarked against field stem lists, and 1{,}000 project simulations reported as carbon amounts. (vii) A sharded, idempotent extraction runner. Conformal crediting reuses standard conformal machinery~\cite{lei2018distribution} for a new decision.
+\textbf{Contributions.} (i) A blind, time-matched protocol with a commit-reveal ledger (476 stock and 196 repeat-census plots). (ii) A standards-based right grid with a Monte Carlo uncertainty budget. (iii) A plot-level clear-sky climatology for Indonesia and the error rate of the scene cloud filter. (iv) A test of missing-data conformal intervals under cloud. (v) \emph{Conformal crediting}, a crediting rule with a calibrated over-crediting risk that is invariant to map inflation. (vi) A tree-by-tree satellite estimator benchmarked against field stem lists, and 1{,}000 project simulations reported as carbon amounts. (vii) Fixes for each limit found, frozen and tested blind on 35 unseen plots. (viii) A sharded, idempotent extraction runner. Conformal crediting reuses standard conformal machinery~\cite{lei2018distribution} for a new decision.
 
 \begin{figure}[t]
 \centering
@@ -98,7 +98,7 @@ We separate the problem into two grids (Fig.~\ref{fig:grids}). The \textbf{right
   box/.style={draw=binusblue,rounded corners=1.5pt,align=center,inner sep=2.5pt,text width=3.55cm},
   arr/.style={-{Stealth[length=1.8mm]},thick,binusblue}]
 \node[box,fill=leftgrid] (L1) {\textbf{Left grid (free)}\\coordinates + date only};
-\node[box,fill=leftgrid,below=1.8mm of L1] (L2) {S1, S2, Landsat, PALSAR,\\canopy height, GEDI};
+\node[box,fill=leftgrid,below=1.8mm of L1] (L2) {S1, S2, Landsat, PALSAR,\\canopy height, GEDI, embeddings};
 \node[box,fill=leftgrid,below=1.8mm of L2] (L3) {E0 products / E2 LightGBM\\E3 $k$-shot / E4 tree count};
 \node[box,fill=rightgrid,right=4mm of L1] (R1) {\textbf{Right grid (fixed)}\\field plots $D,H,\rho$};
 \node[box,fill=rightgrid,below=1.8mm of R1] (R2) {Chave 2014 $\to$ CF 0.47\\$\to$ 44/12 (Verra/IPCC)};
@@ -113,7 +113,7 @@ We separate the problem into two grids (Fig.~\ref{fig:grids}). The \textbf{right
 
 %=====================================================================
 \section{Related Work}
-\textbf{Remote sensing.} Optical and radar signals saturate over dense canopy. GEDI lidar samples canopy height in 25\,m footprints~\cite{duncanson2022gedi}; global maps include ESA CCI Biomass~\cite{santoro2021global}, Chloris~\cite{chloris2022}, and 1\,m and 10\,m canopy height~\cite{tolan2024meta,lang2023eth}. Sentinel-1 and PALSAR reached 31--38\% in Kalimantan against a lidar layer~\cite{berninger2018sar}, and airborne lidar 13\% at 1\,ha in Sabah~\cite{jucker2018estimating}.
+\textbf{Remote sensing.} Optical and radar signals saturate over dense canopy. GEDI lidar samples canopy height in 25\,m footprints~\cite{duncanson2022gedi}; global maps include ESA CCI Biomass~\cite{santoro2021global}, Chloris~\cite{chloris2022}, and 1\,m and 10\,m canopy height~\cite{tolan2024meta,lang2023eth}.
 
 \textbf{Validation and uncertainty.} The BIOMASS package propagates the uncertainty of Chave's allometry~\cite{rejou2017biomass}. Conformal prediction gives finite-sample intervals~\cite{lei2018distribution}; conformalized quantile regression (CQR) adapts their width~\cite{romano2019cqr}, and Zaffran \textit{et al.} extend conformal prediction to missing covariates~\cite{zaffran2023conformal}. Conservative crediting asks that a credited stock exceed the truth with small probability~\cite{grassi2008applying}, which Neeff solves parametrically~\cite{neeff2021risk}.
 
@@ -144,7 +144,7 @@ with CF $=0.47$ and root-to-shoot $R=0.37$ (SNI 7724, IPCC 2006) or 0.21 (IPCC 2
 \textbf{Uncertainty and deduction.} Plots are grouped into strata $h$ with weights $w_h$, and the project uncertainty at 90\% is $u=t_{0.95}\sqrt{\sum_h w_h^2s_h^2/n_h}/\bar b$ (AR-TOOL14)~\cite{artool14}. AR-TOOL14 counts sampling error only, so we add IPCC Approach~2: 2{,}000 Monte Carlo draws per tree of diameter, height, wood density, allometric residual, and CF errors with the BIOMASS error models~\cite{rejou2017biomass}. For change on the same plots, VM0047 v1.1 Eq.~28 gives $U=T\sqrt{SE_0^2+SE_1^2-2\rho\,SE_0SE_1}/\Delta C$, where $\rho$ is the correlation of the two stock means; credits are multiplied by $1-\min(1,\max(0,U-0.1))$~\cite{verra2025vm0047}.
 
 \subsection{Left Grid: Inputs and Estimators}
-For each plot, using only coordinates and the field date $t_j$, the left grid reads clear observations within $t_j\pm90$\,days: Sentinel-2 L2A bands and indices, Landsat 5--9, Sentinel-1 backscatter, the annual ALOS PALSAR mosaic, and elevation. Through Google Earth Engine it also reads the Meta 1\,m and ETH 10\,m canopy height maps~\cite{tolan2024meta,lang2023eth}, GEDI L4A biomass and L2A height within 1\,km~\cite{duncanson2022gedi}, ESA CCI Biomass~\cite{santoro2021global}, and Hansen forest loss~\cite{hansen2013high}. \textbf{E0} reads published products as they are. \textbf{E2} is LightGBM~\cite{ke2017lightgbm} on $\ln\mathrm{AGB}$, trained on all region blocks except the target and predicting it blind (leave-one-region-out, LORO), with smearing retransformation. \textbf{E3} recalibrates E2 by the ratio on $k$ random plots of the target block. We score relative RMSE (rRMSE), bias, $R^2$, and the error of the mean of $n$ plots, which approximates a project total, with a region-block bootstrap (2{,}000 draws) and five seeds.
+For each plot, using only coordinates and the field date $t_j$, the left grid reads clear observations within $t_j\pm90$\,days: Sentinel-2 L2A bands and indices, Landsat 5--9, Sentinel-1 backscatter, the annual ALOS PALSAR mosaic, and elevation. Through Google Earth Engine it also reads the Meta 1\,m and ETH 10\,m canopy height maps~\cite{tolan2024meta,lang2023eth}, GEDI L4A biomass and L2A height within 1\,km~\cite{duncanson2022gedi}, ESA CCI Biomass~\cite{santoro2021global}, and Hansen forest loss~\cite{hansen2013high}; the fixes of Section~\ref{sec:prod} add the AlphaEarth embedding (64 features per 10\,m pixel)~\cite{brown2025alphaearth} and the 2026 canopy height map~\cite{brandt2026chmv2}. \textbf{E0} reads published products as they are. \textbf{E2} is LightGBM~\cite{ke2017lightgbm} on $\ln\mathrm{AGB}$, trained on all region blocks except the target and predicting it blind (leave-one-region-out, LORO), with smearing retransformation. \textbf{E3} recalibrates E2 by the ratio on $k$ random plots of the target block. We score relative RMSE (rRMSE), bias, $R^2$, and the error of the mean of $n$ plots, which approximates a project total, with a region-block bootstrap (2{,}000 draws) and five seeds.
 
 \textbf{From pixels to carbon.} A satellite does not see trees; it records reflected light and radar echoes per pixel. Optical bands become indices such as the normalized difference vegetation index~\cite{tucker1979red}
 \begin{equation}
@@ -161,7 +161,7 @@ D=a\,(H\cdot CD)^{b}\ \text{[cm]},\qquad (a,b)=(0.486,\,0.802),
 for Indo-Malaya (0.428, 0.821 Afrotropic; 0.591, 0.781 Neotropic). A satellite cannot identify species, so every tree takes the mean $\rho$ of its region's tropical species in the Global Wood Density Database (0.574 for Southeast Asia)~\cite{rejou2017biomass}, and Eq.~\ref{eq:chave4} gives its biomass. E4 uses no field data; \emph{E4 scaled} multiplies it by the field-to-E4 ratio of the other regions.
 
 \subsection{Clouds}
-For 97 locations we read the Sentinel-2 scene classification of all 22{,}697 acquisitions of 2021--2023 in a 5$\times$5 window of 20\,m pixels; an acquisition is \emph{clear} if every pixel is. We test the common scene filter (\texttt{CLOUDY\_PIXEL\_PERCENTAGE}~$<30$) against this condition. For a share $q$ of target plots we then remove the optical block and compare a naive model, modality dropout~\cite{neverova2016moddrop}, a switch to a radar model, and imputing optical features from radar.
+For 97 locations we read the Sentinel-2 scene classification of all 22{,}697 acquisitions of 2021--2023 in a 5$\times$5 window of 20\,m pixels (\emph{clear} if every pixel is) and test the scene filter \texttt{CLOUDY\_PIXEL\_PERCENTAGE}~$<30$ against it. For a share $q$ of target plots we then remove the optical block and compare a naive model, modality dropout~\cite{neverova2016moddrop}, a switch to a radar model, and imputing optical features from radar.
 
 \subsection{Confidence: Plot and Project Intervals}
 All intervals target 90\% and are calibrated on inner LORO residuals of the training regions only. CQR~\cite{romano2019cqr} scores $s=\max\{\hat q_{\mathrm{lo}}(x)-y,\,y-\hat q_{\mathrm{hi}}(x)\}$ on $y=\ln\mathrm{AGB}$ and widens the quantile band by the conformal quantile of $s$. \emph{Cloud-aware} CQR scores each calibration plot twice, as observed and with its optical block removed, and gives each test plot the threshold of its own missingness pattern, a two-pattern case of CP-MDA~\cite{zaffran2023conformal}. Its guarantee assumes missingness independent of the outcome, which clouds violate, so coverage must be measured. A project's satellite mean has errors that share one regional bias, so its standard error is $SE^2=s_w^2/n+s_b^2$, with $s_w$ and $s_b$ the within- and between-region spread of log residuals in other regions. With $k$ field plots, the satellite becomes auxiliary data for a ratio estimator.
@@ -175,7 +175,7 @@ C=\hat Y\exp(-q\,r),\qquad q=z_{(\lceil (m+1)(1-\delta)\rceil)}.
 If projects are exchangeable, $P(C>Y)\le\delta$, as in split conformal prediction with projects as units~\cite{lei2018distribution}; plots inside a project may be correlated in any way. The rule needs $m\ge1/\delta-1$ projects, nine for $\delta=0.1$. If every map value is multiplied by $c$, every plain score shifts by $\ln c$, so $q$ shifts by $\ln c$ and $C$ is unchanged: \emph{inflating a map earns no credit}. We split regions of 16 or more plots into spatial sub-projects of about 10 plots, giving 31 projects in 19 regions, and calibrate each project only on projects from other regions. We score the realised over-crediting rate and the \emph{yield}, the mean share $C_j/Y_j$ of the true stock credited.
 
 \subsection{Ledger and Distributed Extraction}
-Every protocol step is an entry in an append-only log carrying the SHA-256 of the previous entry~\cite{haber1991timestamp}: \texttt{seal} (digest of the sealed outcomes), \texttt{commit} (digest of each prediction file), \texttt{release} (training labels per fold), and \texttt{reveal}, accepted only if the sealed file still matches; commits after a reveal are refused. An extraction task is one (plot, date, window, sensor) request stored under its hash, so re-execution is idempotent and the cache is a checkpoint. Transient errors are retried with capped backoff, and dense tiles are split and placed by consistent hashing~\cite{karger1997consistent} or the longest-processing-time (LPT) rule~\cite{graham1969bounds}.
+Every protocol step is an entry in an append-only log carrying the SHA-256 of the previous entry~\cite{haber1991timestamp}: \texttt{seal}, \texttt{commit} (digest of each prediction file), \texttt{release}, and \texttt{reveal}, accepted only if the sealed file still matches; later commits are refused. An extraction task is one (plot, date, window, sensor) request stored under its hash, so re-execution is idempotent and the cache is a checkpoint. Transient errors are retried with capped backoff, and dense tiles are split and placed by consistent hashing~\cite{karger1997consistent} or the longest-processing-time (LPT) rule~\cite{graham1969bounds}.
 
 %=====================================================================
 \section{Results}
@@ -201,31 +201,33 @@ E0 ESA CCI, as published & 49.4 & 38.8 & 105.4 & 31.5\\
 E0 GEDI L4A, as published & 59.2 & 50.0 & 107.0 & 46.6\\
 E2 (S1/S2, Landsat, PALSAR, DEM) & 49.1 & 42.0 & 104.8 & 28.8\\
 \quad + GEDI & 45.5 & 36.6 & 102.4 & 24.5\\
-\quad + canopy height & 41.5 & 32.2 & \textbf{94.8} & 22.4\\
-\quad + canopy height + GEDI & \textbf{40.1} & \textbf{27.7} & 95.6 & \textbf{20.6}\\
+\quad + canopy height & 41.5 & 32.2 & 94.8 & 22.4\\
+\quad + canopy height + GEDI & 40.1 & 27.7 & 95.6 & 20.6\\
 \midrule
 Gain over E2 (points) & $-9.0$ & $-14.3$ & $-9.2$ & $-8.2$\\
+\midrule
+Embeddings + CH + GEDI & \textbf{35.8} & \textbf{25.9} & \textbf{85.2} & \textbf{17.6}\\
 \bottomrule
 \end{tabular}
 
 \vspace{2pt}
-{\scriptsize 475 plots with AGB $>$1\Mgha: GEO-TREES 142, HCSA 148 (0.05\,ha), Labri\`ere 185 (1\,ha). Region-bootstrap 95\% intervals of the gain row all exclude zero.\par}
+{\scriptsize 475 plots with AGB $>$1\Mgha: GEO-TREES 142, HCSA 148 (0.05\,ha), Labri\`ere 185 (1\,ha). Region-bootstrap 95\% intervals of the gain row all exclude zero. Last row: Section~\ref{sec:prod}, $-4.3$ points ($-8.0$ to $-1.7$) against canopy height + GEDI.\par}
 \end{table}
 
-\textbf{Where the error comes from.} Predictions saturate: above 400\Mgha{} (mean 480) the E2 mean is 293, and below 50 (mean 21) it is 60, while between 100 and 300\Mgha{} the median error is only $+5$ to $+12$\%. The HCSA plots hold a median of 15 stems, so one large tree moves a plot by hundreds of Mg\,ha$^{-1}$, which no 10--30\,m pixel can resolve.
+\textbf{Where the error comes from.} Predictions saturate (above 400\Mgha{} the E2 mean is 293, below 50 it is 60), and an HCSA plot holds a median of 15 stems, so one large tree moves it by hundreds of Mg\,ha$^{-1}$.
 
-\textbf{Aggregation and local plots.} With canopy height and GEDI and no field plot, the median error of a block total was 7\% on the 1\,ha units, 9\% on GEO-TREES, and 20\% on HCSA, and the mean of 20 plots was within 3--5\% of its field mean outside Indonesia. A ratio correction on $k=10$--20 local plots (E3) brought E2 block totals from 29\% to 9--10\% on GEO-TREES and from 11\% to 6\% on Labri\`ere, but hurt on HCSA until $k=20$.
+\textbf{Aggregation and local plots.} With canopy height and GEDI and no field plot, the median error of a block total was 7\% on the 1\,ha units, 9\% on GEO-TREES, and 20\% on HCSA. A ratio correction on $k=10$--20 local plots (E3) brought E2 block totals from 29\% to 9--10\% on GEO-TREES and from 11\% to 6\% on Labri\`ere, but hurt on HCSA until $k=20$.
 
 \subsection{Counting Trees from Space, and Ten Projects}
 \textbf{What the field counts.} The median HCSA plot holds 700 stems per hectare of five species. Most stems are small and most carbon sits in a few large trees: stems of 5--15\,cm are 75\% of the count but 13\% of the carbon, and the 6\% of stems of 30\,cm or more hold 58\%. By wood density, light wood ($\rho<0.5$\,g\,cm$^{-3}$, mostly Lauraceae and Moraceae) is 24\% of the stems and 16\% of the carbon, medium wood (0.5--0.7, led by Dipterocarpaceae) 44\% and 44\%, and heavy wood ($\ge0.7$) 32\% and 40\%. Giving every stem the regional default $\rho$ instead of its species value leaves 91\% of the total carbon, and 78--115\% of a plot's (10th to 90th percentile).
 
-\textbf{What the satellite counts.} On the HCSA plots E4 found a median of 20 trees per hectare: 3\% of the stems, 11\% of those of 15\,cm or more, with a rank correlation of 0.18 against the field count. The map stores whole metres and is smoother than a crown: without smoothing every stair step becomes a top (270 per hectare), so the count is a processing choice, not a measurement. E4 found 25\% of the field carbon, 23--26\% in every dataset. Scaled on other regions ($\times$3.8), it found 97\% of the total, but only 36\% of plots fell within $\pm25$\% of the field value, against 60\% for the map. Indices alone cannot do better: of the 136 plots with a clear Sentinel-2 view, the median NDVI (Eq.~\ref{eq:ndvi}) was 0.77 below 100\Mgha{} and 0.83 above 300, and above 150\Mgha{} its rank correlation with biomass was $-0.13$. A closed canopy is equally green at any biomass.
+\textbf{What the satellite counts.} On the HCSA plots E4 found a median of 20 trees per hectare: 3\% of the stems, 11\% of those of 15\,cm or more. The map stores whole metres and is smoother than a crown: without smoothing every stair step becomes a top (270 per hectare), so the count is a processing choice, not a measurement. E4 found 25\% of the field carbon, 23--26\% in every dataset. Scaled on other regions ($\times$3.8), it found 97\% of the total, but only 36\% of plots fell within $\pm25$\% of the field value, against 60\% for the map. Indices cannot do better: on 136 clear plots the median NDVI (Eq.~\ref{eq:ndvi}) was 0.77 below 100\Mgha{} and 0.83 above 300; a closed canopy is equally green at any biomass.
 
-\textbf{Ten projects.} Table~\ref{tab:sim} reports, without RMSE, how much carbon each grid finds in a simulated 1{,}000\,ha project of 10 random plots from one region: seeds 1--10 of 1{,}000, with per-plot rows in the extended version. Over all 1{,}000, the map found a median 95\% of the field carbon, within $\pm25$\% in 80\% of projects. Conformal crediting issued a median 86\% and exceeded the field amount in 12\% of these random projects, near its 10\% target.
+\textbf{Ten projects.} Table~\ref{tab:sim} reports, without RMSE, the carbon each grid finds in a simulated 1{,}000\,ha project of 10 random plots of one region (seeds 1--10 of 1{,}000; plot rows in the extended version). Over all 1{,}000, the map found a median 95\% of the field carbon, within $\pm25$\% in 80\% of projects. Conformal crediting issued a median 86\% and exceeded the field amount in 12\% of these random projects, near its 10\% target.
 
 \begin{table}[t]
 \centering
-\caption{Ten Simulated 1{,}000\,ha Projects of 10 Random Plots: Carbon Found by Each Grid, \% of the Field Amount}
+\caption{Ten Simulated 1{,}000\,ha Projects: Carbon Found, \% of the Field}
 \label{tab:sim}
 \footnotesize
 \setlength{\tabcolsep}{3pt}
@@ -254,67 +256,70 @@ Gain over E2 (points) & $-9.0$ & $-14.3$ & $-9.2$ & $-8.2$\\
 {\scriptsize Field: kt\,CO$_2$e from the measured trees, Eq.~\ref{eq:chave4}, $\times0.47\times\frac{44}{12}$. Map: E2 + canopy height + GEDI. E4 sc.: scaled on other regions. Credit: conformal, $\delta=0.1$. HCSA projects: field 570--924 stems\,ha$^{-1}$, E4 14--18.\par}
 \end{table}
 
-\subsection{Clouds and Confidence (RQ3)}
-\textbf{How often is a plot clear?} At a median Indonesian location only 21.5\% of Sentinel-2 acquisitions see the plot clear (7.6\% in January, 33.5\% in May; the Americas 39\%), but revisit compensates: the median gap between clear looks is 10 days. \emph{The scene filter is the real problem}: in Indonesia it keeps 11.5\% of acquisitions, 34\% of them cloudy over the plot, and discards 65\% of the clear ones. Masking at the plot gives 2.8 times as many clear looks. Removing every optical feature raised the error only from 48.0\% to 50.0\%, because the model leans on radar, terrain, and annual products; imputing optical features from radar was harmful (bias $-61$\%).
-
-\textbf{Which intervals are honest?} CQR is the only interval method that reaches the 90\% target with usable width (89.9\%, upper bound 5.3 times the lower). Split conformal covers 88.4\% at a ratio of 16.3, and normalized conformal under-covers (79.4\%) because a difficulty model fitted on other regions does not transfer. When every target plot is clouded, plain CQR falls to 86.5\%, and cloud-aware CQR keeps 90.5\% by widening honestly ($+4.0$ points, interval $+1.9$ to $+6.6$). HCSA stays under-covered (68--81\%) by every method. A metadata confidence score like our platform's carries no information about error once the dataset is controlled for (partial rank correlation $-0.03$ to $+0.07$).
-
-\textbf{Projects.} For 19 projects (blocks of eight or more plots), a naive interval with independent plot errors covered only 74\% (HCSA 33\%); the two-component interval covered all 19, at a half-width of 71--86\%. With field plots, the satellite as auxiliary data cut the plots needed for $\pm$10\% from 408 to 216 (GEO-TREES) and from 381 to 162 (Labri\`ere), and none on HCSA.
-
-\subsection{From Intervals to Credits and Growth (RQ4)}
-Table~\ref{tab:cc} credits the 31 projects at $\delta=0.10$. Crediting the raw map over-credits 35\% of projects. VM0047 on the honest two-component uncertainty never over-credits but credits only 48\% of the true stock. Conformal crediting meets its target: 9.7\% of projects are over-credited, and 72\% of the true stock is credited without a field plot in the project, 84\% with the canopy height and GEDI map. A better map buys credits; it does not buy risk. With field plots, the VM0047 deduction still over-credits 23\% of projects with 5 plots and 29\% with 10 (yield 90\%), because the deduction only starts above 10\% uncertainty. The design lower bound at the same $\delta$ meets the target (8.5\% with 10 plots, yield 86\%).
+\subsection{Toward Production: Fixes and an Unseen Test}
+\label{sec:prod}
+We attacked each limit after the reveal (exploratory, Table~\ref{tab:prod}), then froze the method and tested it blind. \textbf{Inputs.} The embedding cut plot error from 40.1 to 35.8\% (Table~\ref{tab:acc}) from Earth Engine layers alone; the 2026 map added little (35.1\%). \textbf{Bias.} The map's bias repeats within a realm, so we multiply it by $e^{-\mu}$, $\mu$ the mean log ratio of map to field over the realm's other regions; HCSA projects within $\pm25$\% rose from 56 to 68\%. Ten local plots added little (1\,ha) or noise (0.05\,ha), even with shrinkage. \textbf{Credit.} Errors are shared within a region, so the region is the exchangeable unit: one score per region in Eq.~\ref{eq:cc} cut over-crediting from 13.6 to 9.7\%. \textbf{Height.} On the 2026 map, 4\,m taller on our plots, E4 found 62\% of the carbon, not 25\%. Our platform's formula, $3.836H^{1.131}$, is in no publication; it acts as a carbon model read as biomass, so 0.47 is applied twice, and it found 35\% (5\% of projects within $\pm25$\%). \textbf{Frozen method.} Per 1\,ha cell of a drawn polygon: Earth Engine features, the LightGBM map, the estimate $\hat Y e^{-\mu}$, the credit $\hat Y e^{-q}$ ($q$ over field-verified regions), and growth from the IPCC default (0.7\,t\,d.m.\,ha$^{-1}$\,yr$^{-1}$ primary, 2.7--3.4 secondary~\cite{ipcc2019v4}). \textbf{Unseen test.} 35 plots of 0.28\,ha measured in 2020 in Danum, Sabah~\cite{keller2023danum} (4{,}201 live stems, 366\Mgha), were sealed before the frozen method, trained without the three GEO-TREES Danum plots, committed. The map found 64\% of the field carbon, the corrected estimate 85\% (93\% of 10-plot draws within $\pm25$\%), and the credit 59\%, never above the field.
 
 \begin{table}[t]
 \centering
-\caption{Crediting Rules at $\delta=0.10$, 31 Projects, Cross-Region Calibration}
-\label{tab:cc}
+\caption{Fixes and the Unseen Danum Test, \% of the Field Carbon}
+\label{tab:prod}
 \footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}l r r@{}}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r r r r@{}}
 \toprule
-\textbf{Rule} & \textbf{Over-credited} & \textbf{Yield}\\
+ & \multicolumn{3}{c}{\textbf{1{,}000 projects}} & \textbf{Danum}\\
+\textbf{Estimate} & \textbf{Median} & \textbf{5--95th} & \textbf{$\pm$25\%} & \textbf{total}\\
 \midrule
-\multicolumn{3}{@{}l}{\emph{Satellite only (no plot in the project)}}\\
-No deduction & 35.5\% & 94.4\%\\
-Parametric bound, independent errors & 9.7\% & 72.6\%\\
-Conformal (Eq.~\ref{eq:cc}) & 9.7\% & 72.2\%\\
-Conformal, canopy height + GEDI map & 9.7\% & 84\%\\
-\midrule
-\multicolumn{3}{@{}l}{\emph{Satellite + 5 random field plots (ratio estimator)}}\\
-VM0047 ($U-10\%$) & 22.6\% & 82.2\%\\
-Design lower bound & 9.9\% & 80.7\%\\
-Conformal, studentized & 9.6\% & 80.7\%\\
+Map of Table~\ref{tab:sim} & 95 & 46--115 & 80.0 & --\\
+Embeddings + CH + GEDI & 95 & 61--111 & 84.2 & 64\\
+\quad $\times\,e^{-\mu}$, realm bias & 101 & 78--132 & \textbf{88.5} & \textbf{85}\\
+\quad credit, region-level $q$ & 87 & 56--104 & 79.4 & 59\\
+Jucker 2018 on CHMv2, unfitted & 101 & 41--196 & 62.5 & 94\\
 \bottomrule
 \end{tabular}
+
+\vspace{2pt}
+{\scriptsize Credit over the field: 9.7\% of projects. Jucker on Danum: post-reveal.\par}
 \end{table}
 
-\textbf{Whatever the map?} Applied to five maps (E2, Chloris, their average, and E2 inflated by 10\% and 20\%), the conformal bound's realised over-crediting stayed within 2.9 points of the target, against 9.4 for the parametric bound. A map inflated by 20\% earns 87\% instead of 73\% and doubles the over-crediting rate under the parametric bound, and the same 72.2\% under conformal crediting. Varying $\delta$ traces an integrity-yield frontier that prices a field plot: at about 10\% risk the satellite alone earns 72\% of the true stock, 5 plots 81\%, 10 plots 86\%, and both VM0047 points lie below it. With a bank of six to eight projects of one type, yield fell to 18\%.
+\subsection{Clouds and Confidence (RQ3)}
+\textbf{How often is a plot clear?} At a median Indonesian location only 21.5\% of Sentinel-2 acquisitions see the plot clear (Americas 39\%), but revisit compensates: the median gap between clear looks is 10 days. \emph{The scene filter is the real problem}: in Indonesia it keeps 11.5\% of acquisitions, 34\% of them cloudy over the plot, and discards 65\% of the clear ones. Removing every optical feature raised the error only from 48.0\% to 50.0\%, because the model leans on radar, terrain, and annual products; imputing optical features from radar was harmful (bias $-61$\%).
 
-\textbf{Growth.} Excluding oil palm (Chave's equation gave 505\Mgha), 196 SAFE plots gained a mean 1.87\Mgha\,yr$^{-1}$. At plot level, the Chloris difference had the same error as predicting no change (RMSE 8.06 vs 8.12), and the E2 stock difference was twice as bad with the wrong sign: a stock error of 30--100\% cannot resolve growth of 1\% per year. The mean rate of the other blocks was the most accurate estimator (block MAE 0.98 vs 2.05 for no change), and PALSAR, CCI change, and Hansen loss did not beat it (1.20).
+\textbf{Which intervals are honest?} CQR is the only interval method that reaches the 90\% target with usable width (89.9\%, upper bound 5.3 times the lower). Normalized conformal under-covers (79.4\%): a difficulty model fitted on other regions does not transfer. When every target plot is clouded, plain CQR falls to 86.5\%, and cloud-aware CQR keeps 90.5\% by widening honestly ($+4.0$ points, interval $+1.9$ to $+6.6$). HCSA stays under-covered (68--81\%). A metadata confidence score like our platform's carries no information about error once the dataset is controlled for (partial rank correlation $-0.03$ to $+0.07$).
+
+\textbf{Projects.} For 19 projects, an interval with independent plot errors covered only 74\% (HCSA 33\%); the two-component interval covered all 19 (half-width 71--86\%). With field plots, the satellite as auxiliary data cut the plots needed for $\pm$10\% from 408 to 216 (GEO-TREES) and from 381 to 162 (Labri\`ere), and none on HCSA.
+
+\subsection{From Intervals to Credits and Growth (RQ4)}
+We credit the 31 projects at $\delta=0.10$. Crediting the raw map over-credits 35.5\% of projects; VM0047 on the honest two-component uncertainty never over-credits but credits only 48\% of the true stock. Conformal crediting meets its target: 9.7\% of projects are over-credited, and 72\% of the true stock is credited without a field plot in the project, 84\% with the canopy height and GEDI map. A better map buys credits; it does not buy risk. With 5 random field plots and a ratio estimator, VM0047 still over-credits 22.6\% of projects (yield 82\%), and 29\% with 10, because its deduction starts only above 10\% uncertainty; the design lower bound and studentized conformal meet the target (9.9 and 9.6\%, yield 81\%).
+
+\textbf{Whatever the map?} On five maps (E2, Chloris, their average, E2 inflated by 10\% and 20\%) the conformal bound's over-crediting stayed within 2.9 points of the target (parametric bound: 9.4); a 20\% inflated map earns the same 72.2\%.
+
+\textbf{Growth.} Excluding oil palm, 196 SAFE plots gained a mean 1.87\Mgha\,yr$^{-1}$. The Chloris difference had the error of predicting no change (RMSE 8.06 vs 8.12), and the E2 stock difference was twice as bad: a stock error of 30--100\% cannot resolve growth of 1\% per year. The mean rate of the other blocks was the most accurate estimator (block MAE 0.98 vs 2.05 for no change), and PALSAR, CCI change, and Hansen loss did not beat it (1.20).
 
 \subsection{Systems (RQ5)}
-The stock extraction ran 2{,}052 tasks on 24 workers in 2.1\,h. Splitting dense tiles cut the worst-worker load factor from 6.75 to 1.40 (LPT), and retries absorbed 85 transient errors. Results were bit-identical to the single-worker run at every worker count, under injected faults, and after a resume, and the 37-entry ledger verifies end to end.
+The stock extraction ran 2{,}052 tasks on 24 workers in 2.1\,h. Splitting dense tiles cut the worst-worker load factor from 6.75 to 1.40 (LPT), and retries absorbed 85 transient errors. Results were bit-identical to the single-worker run at every worker count, under injected faults, and after a resume, and the 37-entry ledger verifies end to end, as does Danum's own.
 
 %=====================================================================
 \section{Discussion}
-\textbf{Can satellites replace the field plot?} Not at plot scale, and not for growth. Tested blind, open satellite data put a 1\,ha plot's stock within about 21\%, against 13\% for airborne lidar in Sabah~\cite{jucker2018estimating} and 31--38\% reported for radar in Kalimantan against a lidar layer~\cite{berninger2018sar}, but a 0.05\,ha plot within about 100\%. Nor can they count trees: the 1\,m map shows a canopy surface, not stems, and the field formula applied to what it shows finds a quarter of the carbon. For growth, the quantity credits are paid on, no satellite estimator beat a regional average of measured growth. What satellites do well is \emph{replace part of the inventory}: project totals within 7--9\% outside Indonesia, and half the field plots where plots are large enough to rank.
+\textbf{Can satellites replace the field plot?} Not at plot scale, and not for growth. Open satellite data put a 1\,ha plot within about 21\% (airborne lidar: 13\% in Sabah~\cite{jucker2018estimating}; radar: 31--38\% in Kalimantan~\cite{berninger2018sar}), a 0.05\,ha plot within about 100\%. Nor can they count trees: the 1\,m map shows a canopy surface, not stems, and the field formula applied to it finds a quarter of the carbon, 62\% on its 2026 successor. For growth, the quantity credits are paid on, no satellite estimator beat a regional average of measured growth. What satellites do well is \emph{replace part of the inventory}: project totals, and half the field plots where plots are large.
 
-\textbf{The ground truth is a model too.} Two valid standards differ by 13\% in total carbon, and deductions for the same data range from 14 to 34\%. ``100\% accuracy'' has no meaning; the target is the fully computed uncertainty of a field estimate made to a stated standard.
+\textbf{The ground truth is a model too.} With valid standards 13\% apart in carbon and 14--34\% apart in deductions, ``100\% accuracy'' has no meaning; the target is the computed uncertainty of a field estimate made to a stated standard.
 
-\textbf{Confidence must be calibrated, not graded.} A metadata score said nothing about error, and the $U-10\%$ deduction is not a lower confidence bound. Conformal crediting makes the over-crediting rate a design parameter and removes the reward for inflating the map. Its novelty is narrow: the target is Grassi's and Neeff's, the machinery is split conformal prediction, and conformal bounds for area-level parameters exist~\cite{zhang2026conformal}; we found no crediting rule calibrated across projects against field truth and tested under transfer and biased maps.
+\textbf{Confidence must be calibrated, not graded.} A metadata score said nothing about error, and the $U-10\%$ deduction is not a lower confidence bound. Conformal crediting makes the over-crediting rate a design parameter and removes the reward for inflating the map. Its novelty is narrow: the target is Grassi's and Neeff's, the machinery split conformal prediction, and area-level conformal bounds exist~\cite{zhang2026conformal}; we found no crediting rule calibrated across projects against field truth.
 
-\textbf{Implications and roadmap.} For NusaCarbon the evidence implies per-pixel cloud masking at the plot, a radar-led model with canopy height and GEDI, a cloud-aware CQR interval instead of a letter grade, conformal crediting from a bank of at least nine field-verified projects, and growth from remeasured permanent plots. Canopy structure gave the largest gain and stems are what the satellite cannot see, which motivates the planned drone tiers: a DJI Matrice 350 RTK with a Zenmuse L2 lidar above the canopy, and an under-canopy swarm for stem diameters, where piloted scanning has reached 0.6--0.9\,cm DBH error~\cite{hyyppa2020under}. Three hypotheses are to be tested on Indonesian 1\,ha plots: swarm DBH within 3\% of tape, lidar AGB within 15\%, and repeat-flight growth beating the regional default rate.
+\textbf{Implications and roadmap.} For NusaCarbon the evidence implies the frozen method of Section~\ref{sec:prod} in place of the height formula, plot-level cloud masking, and cloud-aware CQR instead of a letter grade. Stems remain what the satellite cannot see, which motivates drone lidar and under-canopy scanning on Indonesian 1\,ha plots.
 
-\textbf{Threats to validity.} Only E0, E2, and the first change estimates are confirmatory; all later experiments, E4 included, were defined after the reveal and are exploratory, and we report every variant we ran. GEDI and Chloris were calibrated on field data that may include some of our sites. HCSA and Labri\`ere dates are known only to the year. Projects are region blocks, not registered projects.
+\textbf{Threats to validity.} Only E0, E2, the first change estimates, and the Danum test are confirmatory; all other experiments, E4 included, were defined after the reveal and are exploratory, and we report every variant we ran. Danum is one valley of tall forest. GEDI and Chloris were calibrated on field data that may include some of our sites. HCSA and Labri\`ere dates are known only to the year. Projects are region blocks, not registered projects.
 
 %=====================================================================
 \section{Conclusion}
-We tested blind, against a sealed standard-formula right grid, whether open satellite data can replace the field plot. Satellites reached 21\% error on 1\,ha plots, 7--9\% on project totals, and a median 95\% of the field carbon in 1{,}000 simulated projects, but failed on small plots, tree counts, and growth. Plot-level cloud masking nearly triples usable optical data, cloud-aware CQR keeps intervals honest, and conformal crediting issues credits at a stated risk without a field plot, unaffected by map inflation.
+We tested blind, against a sealed standard-formula right grid, whether open satellite data can replace the field plot. Satellites reached 21\% error on 1\,ha plots, 7--9\% on project totals, and a median 95\% of the field carbon in 1{,}000 simulated projects, but failed on small plots, tree counts, and growth. Embeddings and a realm bias correction put 88.5\% of simulated projects within $\pm25$\% of the field carbon, and the frozen method found 85\% on unseen Bornean plots. Plot-level cloud masking nearly triples usable optical data, cloud-aware CQR keeps intervals honest, and conformal crediting issues credits at a stated risk without a field plot, unaffected by map inflation.
 
 \section*{Data and Code Availability}
 Field data are public~\cite{hcsa2023data,geotrees2024,labriere2018insitu,svatek2025safe}. Code, results, an extended version with all tables, and an interactive dashboard are at \url{https://github.com/kennytangg/carbon-paper}.
 
-\begin{thebibliography}{37}
+\begin{thebibliography}{39}
 
 \bibitem{chave2014improved}
 J. Chave \textit{et al.}, ``Improved allometric models to estimate the aboveground biomass of tropical trees,'' \textit{Global Change Biol.}, vol. 20, no. 10, pp. 3177--3190, 2014, doi: 10.1111/gcb.12629.
@@ -323,7 +328,7 @@ J. Chave \textit{et al.}, ``Improved allometric models to estimate the abovegrou
 Verra, \textit{VM0047 Afforestation, Reforestation, and Revegetation}, ver. 1.1, May 2025. [Online]. Available: \url{https://verra.org/wp-content/uploads/2025/05/VM0047-v1.1_Final.pdf}
 
 \bibitem{ipcc2019v4}
-IPCC, \textit{2019 Refinement to the 2006 IPCC Guidelines for National Greenhouse Gas Inventories, Vol.~4}, Ch.~4 Forest Land, Table~4.4 (Updated). Geneva: IPCC, 2019.
+IPCC, \textit{2019 Refinement to the 2006 IPCC Guidelines for National Greenhouse Gas Inventories, Vol.~4}, Ch.~4 Forest Land, Tables~4.4 and~4.9 (Updated). Geneva: IPCC, 2019.
 
 \bibitem{santoro2021global}
 M. Santoro \textit{et al.}, ``The global forest above-ground biomass pool for 2010 estimated from high-resolution satellite observations,'' \textit{Earth Syst. Sci. Data}, vol. 13, pp. 3927--3950, 2021.
@@ -348,12 +353,6 @@ J.~Tolan \textit{et al.}, ``Very high resolution canopy height maps from RGB ima
 
 \bibitem{lang2023eth}
 N.~Lang, W.~Jetz, K.~Schindler, and J.~D. Wegner, ``A high-resolution canopy height model of the Earth,'' \textit{Nature Ecol. Evol.}, vol.~7, pp.~1778--1789, 2023, doi: 10.1038/s41559-023-02206-6.
-
-\bibitem{berninger2018sar}
-A.~Berninger, S.~Lohberger, M.~St\"angel, and F.~Siegert, ``SAR-based estimation of above-ground biomass and its changes in tropical forests of Kalimantan using L- and C-band,'' \textit{Remote Sens.}, vol.~10, no.~6, art.~831, 2018, doi: 10.3390/rs10060831.
-
-\bibitem{jucker2018estimating}
-T.~Jucker \textit{et al.}, ``Estimating aboveground carbon density and its uncertainty in Borneo's structurally complex tropical forests using airborne laser scanning,'' \textit{Biogeosciences}, vol.~15, pp.~3811--3830, 2018, doi: 10.5194/bg-15-3811-2018.
 
 \bibitem{rejou2017biomass}
 M. R\'ejou-M\'echain, A. Tanguy, C. Piponiot, J. Chave, and B. H\'erault, ``BIOMASS: An R package for estimating above-ground biomass and its uncertainty in tropical forests,'' \textit{Methods Ecol. Evol.}, vol. 8, no. 9, pp. 1163--1167, 2017.
@@ -397,6 +396,12 @@ Gold Standard, \textit{Afforestation/Reforestation GHG Emissions Reduction \& Se
 \bibitem{hansen2013high}
 M.~C. Hansen \textit{et al.}, ``High-resolution global maps of 21st-century forest cover change,'' \textit{Science}, vol.~342, pp.~850--853, 2013, doi: 10.1126/science.1244693.
 
+\bibitem{brown2025alphaearth}
+C.~F. Brown \textit{et al.}, ``AlphaEarth Foundations: An embedding field model for accurate and efficient global mapping from sparse label data,'' arXiv:2507.22291, 2025.
+
+\bibitem{brandt2026chmv2}
+J.~Brandt \textit{et al.}, ``CHMv2: Improvements in global canopy height mapping using DINOv3,'' arXiv:2603.06382, 2026.
+
 \bibitem{ke2017lightgbm}
 G. Ke \textit{et al.}, ``LightGBM: A highly efficient gradient boosting decision tree,'' in \textit{Adv. Neural Inf. Process. Syst. 30}, 2017, pp. 3146--3154.
 
@@ -421,11 +426,17 @@ D. Karger, E. Lehman, T. Leighton, R. Panigrahy, M. Levine, and D. Lewin, ``Cons
 \bibitem{graham1969bounds}
 R. L. Graham, ``Bounds on multiprocessing timing anomalies,'' \textit{SIAM J. Appl. Math.}, vol. 17, no. 2, pp. 416--429, 1969.
 
+\bibitem{keller2023danum}
+N.~Keller \textit{et al.}, ```Danum Revised' forest field plot data for thirty-five 0.28 hectare field plots, measured in 2020,'' Zenodo, 2023, doi: 10.5281/zenodo.8042468.
+
+\bibitem{jucker2018estimating}
+T.~Jucker \textit{et al.}, ``Estimating aboveground carbon density and its uncertainty in Borneo's structurally complex tropical forests using airborne laser scanning,'' \textit{Biogeosciences}, vol.~15, pp.~3811--3830, 2018, doi: 10.5194/bg-15-3811-2018.
+
+\bibitem{berninger2018sar}
+A.~Berninger, S.~Lohberger, M.~St\"angel, and F.~Siegert, ``SAR-based estimation of above-ground biomass and its changes in tropical forests of Kalimantan using L- and C-band,'' \textit{Remote Sens.}, vol.~10, no.~6, art.~831, 2018, doi: 10.3390/rs10060831.
+
 \bibitem{zhang2026conformal}
 L.-C. Zhang and T.~Tuoto, ``Conformal confidence intervals with an application to small area estimation,'' arXiv:2608.02766, 2026.
-
-\bibitem{hyyppa2020under}
-E.~Hyypp\"a \textit{et al.}, ``Under-canopy UAV laser scanning for accurate forest field measurements,'' \textit{ISPRS J. Photogramm. Remote Sens.}, vol.~164, pp.~41--60, 2020, doi: 10.1016/j.isprsjprs.2020.03.021.
 
 \end{thebibliography}
 

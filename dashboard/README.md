@@ -39,6 +39,7 @@ This rewrites `dashboard/data/results.json` (about 250 KB) and prints the headli
 | `components/charts.tsx` | Hand-written SVG charts (bars, columns, lines, log-log scatter, ranked intervals) with hover tooltips |
 | `components/sections.tsx` | Overview and the original seven sections |
 | `components/trees.tsx` | How it works (stem list, NDVI, canopy map with detected trees), trees and wood, the ten simulated projects and every plot |
+| `components/production.tsx` | Toward production: each fix on the 1,000 projects, the unseen Danum test, published height equations, the frozen method |
 | `components/ui.tsx` | Cards, stat tiles, status tags, table views |
 | `app/` | Page, layout, global styles (light and dark tokens) |
 

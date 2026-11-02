@@ -171,6 +171,38 @@ export interface Results {
     above_field_pct: number;
   }[];
   simulation_hist: { edges: number[]; n: number; map: number[]; e4: number[]; e4cal: number[]; credited: number[] };
+  /** Fixes after the reveal (exploratory) on the same 1,000 projects, and the blind test on 35 unseen Danum plots. */
+  production: {
+    fixes: {
+      key: string;
+      median_pct_all: number;
+      p5_pct_all: number;
+      p95_pct_all: number;
+      within_25pct_all: number;
+      within_25pct_hcsa: number;
+      median_pct_hcsa?: number;
+      above_field_pct_all?: number;
+      above_field_pct_hcsa?: number;
+    }[];
+    danum: {
+      estimate: "map" | "estimate" | "credit";
+      plots: number;
+      rrmse_pct: number;
+      total_pct_of_field: number;
+      draws10_median_pct: number;
+      draws10_p5_pct: number;
+      draws10_p95_pct: number;
+      draws10_within_25pct: number;
+      draws10_above_field_pct: number;
+    }[];
+    heights: { name: string; v1: number; v2: number; danum: number }[];
+    e4: { v1: { trees_ha: number; pct: number }; v2: { trees_ha: number; pct: number } };
+    rrmse_paper: number;
+    rrmse_prod: number;
+    rrmse_gain: number;
+    rrmse_gain_lo: number;
+    rrmse_gain_hi: number;
+  };
 }
 
 /** A 1 m canopy height patch (heights as characters, code 35 = 0 m) with the trees E4 detected inside the plot. */

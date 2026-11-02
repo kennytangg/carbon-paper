@@ -17,7 +17,8 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[2]
-RES = ROOT / "data" / "estimation" / "results"
+EST = ROOT / "data" / "estimation"
+RES = EST / "results"
 OUT = ROOT / "dashboard" / "data" / "results.json"
 
 DATASETS = {
@@ -223,6 +224,42 @@ def main() -> None:
         counts = pd.cut(sims[col].clip(upper=209.9), edges + [210], right=False).value_counts(sort=False).tolist()
         hist[col.replace("_pct", "")] = counts
     data["simulation_hist"] = {"edges": edges, "n": len(sims), **hist}
+
+    # ---------------------------------------------------------------- toward production (exploratory) and the unseen Danum test
+    fx = csv("crediting_fixes.csv")
+    fx = fx[(fx["map"] == "embeddings + CH + GEDI") & fx["subset"].isin(["All", "HCSA_Indonesia"])]
+    fx = fx.pivot(index="estimate", columns="subset", values=["median_pct", "p5_pct", "p95_pct", "within_25pct", "above_field_pct"])
+    fx.columns = [f"{a}_{'all' if b == 'All' else 'hcsa'}" for a, b in fx.columns]
+    ref = pick(csv("simulations_summary.csv"), estimate="map")
+    ref_hcsa = pick(csv("accuracy_embeddings_projects.csv"), variant="best map", subset="HCSA_Indonesia")
+    fixes = [{"key": "paper", "median_pct_all": ref["median_pct"], "p5_pct_all": ref["p5_pct"], "p95_pct_all": ref["p95_pct"],
+              "within_25pct_all": ref["within_25pct"], "within_25pct_hcsa": ref_hcsa["within_25pct"]}]
+    for k in ["map_pct", "map_mu_realm_pct", "local3_pct", "local3_shrunk_realm_pct", "local10_shrunk_realm_pct", "credit_project_q", "credit_region_q"]:
+        fixes.append({"key": k, **fx.loc[k].to_dict()})
+    dz = csv("external_danum.csv")
+    eq = csv("height_equations.csv").query("subset == 'All'")
+    eq_d = csv("external_danum_equations.csv").set_index("estimate")["total_pct_of_field"]
+    heights = []
+    for name in ["Jucker 2018 Eq 10", "Coomes 2017", "app as coded", "app read as carbon"]:
+        heights.append({"name": name, "v1": eq.loc[eq["estimate"] == f"{name} [CHMv1]", "pct_of_field"].iloc[0],
+                        "v2": eq.loc[eq["estimate"] == f"{name} [CHMv2]", "pct_of_field"].iloc[0], "danum": eq_d[f"{name} [CHMv2]"]})
+    gt = pd.read_parquet(EST / "right_grid_sealed.parquet")[["plot_id", "agb_Mg_ha"]]
+    e4 = {}
+    for tag, f in [("v1", "left_tree_count.parquet"), ("v2", "left_tree_count_v2.parquet")]:
+        t = pd.read_parquet(EST / f).merge(gt, on="plot_id")
+        t = t[t["agb_Mg_ha"] > 1]
+        e4[tag] = {"trees_ha": float(t["sat_trees_ha"].median()), "pct": 100 * t["sat_agb_Mg_ha"].sum() / t["agb_Mg_ha"].sum()}
+    boot = pick(csv("accuracy_embeddings_bootstrap.csv"), comparison="embeddings + CH + GEDI - best map")
+    acc = csv("accuracy_embeddings.csv").query("subset == 'All'").set_index("variant")["rrmse_pct"]
+    data["production"] = {
+        "fixes": [{k: r(v, 3) if not isinstance(v, str) else v for k, v in f.items()} for f in fixes],
+        "danum": rows(dz, ["estimate", "plots", "rrmse_pct", "total_pct_of_field", "draws10_median_pct", "draws10_p5_pct", "draws10_p95_pct",
+                           "draws10_within_25pct", "draws10_above_field_pct"], 3),
+        "heights": [{k: r(v, 3) if not isinstance(v, str) else v for k, v in h.items()} for h in heights],
+        "e4": {k: {kk: r(vv, 3) for kk, vv in v.items()} for k, v in e4.items()},
+        "rrmse_paper": r(acc["best map"], 3), "rrmse_prod": r(acc["embeddings + CH + GEDI"], 3),
+        "rrmse_gain": r(boot["diff_points"], 3), "rrmse_gain_lo": r(boot["ci_lo"], 3), "rrmse_gain_hi": r(boot["ci_hi"], 3),
+    }
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
