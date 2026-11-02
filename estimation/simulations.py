@@ -61,6 +61,16 @@ def conformal_q_by_region(d: pd.DataFrame) -> dict:
     return {reg: conformal_q(pr.loc[pr["region"] != reg, "z"], DELTA) for reg in d["region"].unique()}
 
 
+def draw_projects(d: pd.DataFrame):
+    """The simulated projects: (sim number, region, its 10 plots), seeded so every caller gets the same draws."""
+    regions = sorted(r for r, n in d["region"].value_counts().items() if n >= N_PLOTS)
+    for s in range(1, N_SIM + 1):
+        rng = np.random.default_rng(s)
+        reg = regions[rng.integers(len(regions))]
+        g = d[d["region"] == reg]
+        yield s, reg, g.iloc[rng.choice(len(g), N_PLOTS, replace=False)]
+
+
 def main() -> None:
     d = eval_table()
     t = hcsa_trees()
@@ -71,11 +81,7 @@ def main() -> None:
     regions = sorted(r for r, n in d["region"].value_counts().items() if n >= N_PLOTS)
     t_ha = lambda x: x * CF * CO2  # Mg AGB/ha -> t CO2e/ha
     sims, plot_rows = [], []
-    for s in range(1, N_SIM + 1):
-        rng = np.random.default_rng(s)
-        reg = regions[rng.integers(len(regions))]
-        g = d[d["region"] == reg]
-        g = g.iloc[rng.choice(len(g), N_PLOTS, replace=False)]
+    for s, reg, g in draw_projects(d):
         field = t_ha(g["agb_Mg_ha"].mean()) * AREA_HA
         row = {"sim": s, "dataset": g["dataset"].iloc[0], "region": reg, "site": site_name(reg), "plots": N_PLOTS, "area_ha": AREA_HA,
                "field_stems_ha": g["field_stems_ha"].mean(), "sat_trees_ha": g["sat_trees_ha"].mean(), "field_tCO2e": field}

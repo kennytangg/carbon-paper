@@ -22,11 +22,12 @@ manifest (coordinates, dataset protocol), never a field outcome.
 Writes data/estimation/left_tree_count.parquet (one row per plot) and left_tree_list.parquet (one
 row per detected tree).
 
-Usage: python -m estimation.tree_count
+Usage: python -m estimation.tree_count [--chm v2]
 """
 
 from __future__ import annotations
 
+import argparse
 import heapq
 from pathlib import Path
 
@@ -119,6 +120,9 @@ def plot_trees(h: np.ndarray, reg: str, rho: float, sigma: float = 1.0) -> pd.Da
 
 
 def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--chm", choices=["v1", "v2"], default="v1", help="v2: the CHMv2 patches of extract_chm_v2")
+    chm, suffix = (CHM, "") if ap.parse_args().chm == "v1" else (EST / "cache" / "chm_v2", "_v2")
     m = pd.read_parquet(EST / "plot_manifest.parquet")
     rho = default_wood_density()
     print("default wood density (GWDD species mean):", {k: round(v, 3) for k, v in rho.items()})
@@ -126,7 +130,7 @@ def main() -> None:
     dist = np.hypot(yy + 0.5 - HALF, xx + 0.5 - HALF)
     rows, trees = [], []
     for p in m.itertuples(index=False):
-        f = CHM / f"{p.plot_id}.npy"
+        f = chm / f"{p.plot_id}.npy"
         if not f.exists():
             continue
         h = np.load(f).astype("float64")
@@ -160,8 +164,8 @@ def main() -> None:
     R = pd.DataFrame(rows)
     R["sat_carbon_tC_ha"] = R["sat_agb_Mg_ha"] * 0.47
     R["sat_co2e_t_ha"] = R["sat_carbon_tC_ha"] * 44 / 12
-    R.to_parquet(EST / "left_tree_count.parquet", index=False)
-    pd.concat(trees, ignore_index=True).to_parquet(EST / "left_tree_list.parquet", index=False)
+    R.to_parquet(EST / f"left_tree_count{suffix}.parquet", index=False)
+    pd.concat(trees, ignore_index=True).to_parquet(EST / f"left_tree_list{suffix}.parquet", index=False)
     pd.set_option("display.width", 200)
     print(R.groupby("dataset")[["chm_valid_frac", "sat_trees_ha", "sat_trees_d15_ha", "sat_top_h_mean_m", "sat_agb_Mg_ha"]].median().round(2))
     print(f"plots: {len(R)}")
