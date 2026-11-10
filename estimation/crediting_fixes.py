@@ -132,15 +132,17 @@ def main() -> None:
     m = pd.read_parquet(ROOT / "data" / "estimation" / "plot_manifest.parquet")[["plot_id", "lat", "lon"]]
     d = d.merge(m, on="plot_id", how="left")
     d["realm"] = [realm(lon, lat) for lon, lat in zip(d["lon"], d["lat"])]
-    U, R = [], []
+    U, R, P = [], [], []
     for col in a.map:
         S, u = run(d, col)
         U.append(u.assign(map=col))
+        P.append(S.assign(map=col))
         R.append(S.groupby("region").agg(projects=("sim", "size"), over_project_q=("credit_project_q", lambda x: 100 * (x > 100).mean()),
                                          over_region_q=("credit_region_q", lambda x: 100 * (x > 100).mean())).assign(map=col))
     U, R = pd.concat(U, ignore_index=True), pd.concat(R)
     U.to_csv(RES / "crediting_fixes.csv", index=False)
     R.to_csv(RES / "crediting_fixes_by_region.csv")
+    pd.concat(P, ignore_index=True).to_parquet(RES / "crediting_fixes_projects.parquet", index=False)
     pd.set_option("display.width", 220)
     print(U.round(1).to_string(index=False))
     print(R.round(1).to_string())
